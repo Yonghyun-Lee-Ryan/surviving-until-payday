@@ -45,14 +45,17 @@ namespace SurviveUntilPayday.Events
         /// <summary>
         /// 하루의 사건을 시작하고 선택 입력을 연다.
         /// </summary>
-        public void BeginEvent(EventData eventData)
+        /// <param name="replaceActiveChoice">
+        /// true면 선택 대기 중 교체(광고 새로고침 등)로 보고 경고를 내지 않는다.
+        /// </param>
+        public void BeginEvent(EventData eventData, bool replaceActiveChoice = false)
         {
             if (eventData == null)
             {
                 throw new ArgumentNullException(nameof(eventData));
             }
 
-            if (phase == ChoicePhase.AwaitingChoice)
+            if (phase == ChoicePhase.AwaitingChoice && !replaceActiveChoice)
             {
                 Debug.LogWarning(
                     $"[EffectResolver] BeginEvent called while awaiting choice for '{activeEvent?.Id}'. Replacing active event.");

@@ -48,12 +48,19 @@ namespace SurviveUntilPayday.Services
                 : adsFallback;
 
             // Firebase 심볼이 없어도 Debug로 폴백되어 Console에서 이벤트를 확인한다.
-            IAnalyticsService analytics = new FirebaseAnalyticsService(new DebugAnalyticsService());
+            // MirrorEventsToDebugConsole이 켜져 있으면 Debug를 한 번만 붙인다
+            // (Firebase 폴백 Debug + Mirror Debug가 이중 로그 나지 않게).
+            var debugAnalytics = new DebugAnalyticsService();
+            IAnalyticsService analytics;
             if (config.MirrorEventsToDebugConsole)
             {
                 analytics = new CompositeAnalyticsService(
-                    new DebugAnalyticsService(),
-                    analytics);
+                    debugAnalytics,
+                    new FirebaseAnalyticsService(fallback: null));
+            }
+            else
+            {
+                analytics = new FirebaseAnalyticsService(debugAnalytics);
             }
 
             ICrashReporter crash = config.EnableCrashCapture

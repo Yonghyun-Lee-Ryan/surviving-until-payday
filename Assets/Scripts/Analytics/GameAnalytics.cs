@@ -27,7 +27,7 @@ namespace SurviveUntilPayday.Analytics
         {
             sessionStartUtcSeconds = clock.UtcSeconds;
             sessionOpen = true;
-            Log(AnalyticsEventNames.SessionStarted, null);
+            Log(AnalyticsEventNames.GameStart, null);
         }
 
         public void SessionEnded()
@@ -61,6 +61,17 @@ namespace SurviveUntilPayday.Analytics
                 });
         }
 
+        public void DayStarted(int day, long cash)
+        {
+            Log(
+                AnalyticsEventNames.DayStarted,
+                new Dictionary<string, object>
+                {
+                    [AnalyticsParams.Day] = day,
+                    [AnalyticsParams.Cash] = cash
+                });
+        }
+
         public void EventShown(string eventId, int day)
         {
             Log(
@@ -72,8 +83,15 @@ namespace SurviveUntilPayday.Analytics
                 });
         }
 
-        public void ChoiceSelected(string eventId, int choiceIndex, int day, long cash)
+        public void ChoiceSelected(
+            string eventId,
+            int choiceIndex,
+            int day,
+            PlayerStats statsBefore,
+            PlayerStats statsAfter)
         {
+            var before = statsBefore ?? new PlayerStats();
+            var after = statsAfter ?? before;
             Log(
                 AnalyticsEventNames.ChoiceSelected,
                 new Dictionary<string, object>
@@ -81,7 +99,18 @@ namespace SurviveUntilPayday.Analytics
                     [AnalyticsParams.EventId] = SanitizeId(eventId),
                     [AnalyticsParams.ChoiceIndex] = choiceIndex,
                     [AnalyticsParams.Day] = day,
-                    [AnalyticsParams.Cash] = cash
+                    [AnalyticsParams.CashBefore] = before.Cash,
+                    [AnalyticsParams.CashAfter] = after.Cash,
+                    [AnalyticsParams.HealthBefore] = before.Health,
+                    [AnalyticsParams.HealthAfter] = after.Health,
+                    [AnalyticsParams.StressBefore] = before.Stress,
+                    [AnalyticsParams.StressAfter] = after.Stress,
+                    [AnalyticsParams.HappinessBefore] = before.Happiness,
+                    [AnalyticsParams.HappinessAfter] = after.Happiness,
+                    [AnalyticsParams.CompanyBefore] = before.CompanyScore,
+                    [AnalyticsParams.CompanyAfter] = after.CompanyScore,
+                    // 하위 호환: 단일 cash는 선택 후 잔액
+                    [AnalyticsParams.Cash] = after.Cash
                 });
         }
 

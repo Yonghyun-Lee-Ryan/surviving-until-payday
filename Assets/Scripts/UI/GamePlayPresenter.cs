@@ -316,7 +316,7 @@ namespace SurviveUntilPayday.UI
             SaveActiveRun();
         }
 
-        private void ShowEvent(EventData selected)
+        private void ShowEvent(EventData selected, bool replaceActiveChoice = false)
         {
             pendingEventId = selected != null ? selected.Id : string.Empty;
             if (selected != null)
@@ -324,7 +324,7 @@ namespace SurviveUntilPayday.UI
                 discoveredEventIdsThisRun.Add(selected.Id);
             }
 
-            effectResolver.BeginEvent(selected);
+            effectResolver.BeginEvent(selected, replaceActiveChoice);
             eventPanelView.Show(selected.Title, selected.Description, null);
 
             var texts = new string[3];
@@ -394,7 +394,8 @@ namespace SurviveUntilPayday.UI
                     result.EventId,
                     choiceIndex,
                     runManager.State.CurrentDay,
-                    result.StatsAfter != null ? result.StatsAfter.Cash : runManager.State.Stats.Cash);
+                    result.StatsBefore,
+                    result.StatsAfter);
             }
 
             StartCoroutine(ShowResultRoutine(result));
@@ -468,8 +469,45 @@ namespace SurviveUntilPayday.UI
                     return;
                 }
 
-                PresentTodaysEvent();
+                RerollTodaysEvent();
             });
+        }
+
+        /// <summary>
+        /// 광고 선택지 새로고침: 같은 날 다른 사건으로 교체한다(의도적 BeginEvent 교체).
+        /// </summary>
+        private void RerollTodaysEvent()
+        {
+            if (runManager?.State == null || eventSelector == null)
+            {
+                return;
+            }
+
+            choiceLocked = false;
+            var previousId = pendingEventId;
+            EventData selected = null;
+            for (var attempt = 0; attempt < 8; attempt++)
+            {
+                var candidate = eventSelector.Select(runManager.State, runManager.Days);
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                selected = candidate;
+                if (string.IsNullOrEmpty(previousId) || candidate.Id != previousId)
+                {
+                    break;
+                }
+            }
+
+            if (selected == null)
+            {
+                selected = fallbackEvent;
+            }
+
+            ShowEvent(selected, replaceActiveChoice: true);
+            SaveActiveRun();
         }
 
         private void OnRetryAdClicked()
@@ -611,6 +649,12 @@ namespace SurviveUntilPayday.UI
             if (AppRoot.Instance?.AdQuota != null)
             {
                 AppRoot.Instance.AdQuota.SetGameDay(day);
+            }
+
+            var analytics = AppRoot.Instance?.Analytics;
+            if (analytics != null && state != null)
+            {
+                analytics.DayStarted(day, state.Stats.Cash);
             }
 
             RefreshHudInstant();
