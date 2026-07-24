@@ -1,0 +1,12 @@
+---
+description: 커밋 메시지는 용어를 제외하고 한글로 작성한다
+alwaysApply: true
+---
+
+# 커밋 메시지 언어
+
+- 커밋 메시지는 **용어(기술 고유명사·관례적 prefix·식별자)를 제외하고 한글**로 작성한다.
+- 허용하는 영문/용어 예: `feat`, `fix`, `chore`, `docs`, unit 번호, 클래스/파일명, `JSON`, `UI`, `SDK`, `URP`, `AppRoot`, `Mock` 등 프로젝트·기술 용어.
+- 본문도 동일하게, 설명 문장은 한글로 쓴다.
+- 예: `feat(unit-12): 보상형·전면 광고를 Mock 서비스로 추상화`
+- 예로 피할 것: 전체를 영어 문장으로만 작성 (`add debug panel and run simulator` 등)
