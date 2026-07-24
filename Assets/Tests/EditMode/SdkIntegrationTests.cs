@@ -3,7 +3,6 @@ using SurviveUntilPayday.Ads;
 using SurviveUntilPayday.Analytics;
 using SurviveUntilPayday.Services;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace SurviveUntilPayday.Tests
 {
@@ -69,9 +68,8 @@ namespace SurviveUntilPayday.Tests
         {
             var crash = new DebugCrashReporter();
             crash.Initialize();
-            LogAssert.Expect(LogType.Exception, "InvalidOperationException: boom");
-            crash.RecordException(new System.InvalidOperationException("boom"));
-            Assert.GreaterOrEqual(crash.ExceptionCount, 1);
+            crash.RecordException(new System.InvalidOperationException("sample"));
+            Assert.AreEqual(1, crash.ExceptionCount);
             crash.Dispose();
         }
 

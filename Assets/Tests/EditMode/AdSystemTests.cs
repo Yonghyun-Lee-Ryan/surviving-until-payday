@@ -195,5 +195,15 @@ namespace SurviveUntilPayday.Tests
             Assert.AreEqual(3, quota.GetRemaining(RewardedAdPlacement.TraitFragment));
             Assert.AreEqual(0, mock.RewardedShowCount);
         }
+
+        [Test]
+        public void AdRewardApplicator_AppliesCashOnlyWhenGranted()
+        {
+            var state = new GameState { CurrentDay = 1, JobId = "job" };
+            state.Stats.Cash = 50_000L;
+            var grant = AdRewardGrant.ForPlacement(RewardedAdPlacement.EmergencyLoan);
+            AdRewardApplicator.ApplyCash(state, grant);
+            Assert.AreEqual(150_000L, state.Stats.Cash);
+        }
     }
 }

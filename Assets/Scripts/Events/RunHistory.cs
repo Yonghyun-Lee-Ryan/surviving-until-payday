@@ -40,5 +40,16 @@ namespace SurviveUntilPayday.Events
             result = entries[entries.Count - 1];
             return true;
         }
+
+        public bool TryRemoveLast(out ChoiceResult result)
+        {
+            if (!TryGetLast(out result))
+            {
+                return false;
+            }
+
+            entries.RemoveAt(entries.Count - 1);
+            return true;
+        }
     }
 }

@@ -37,6 +37,31 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void TryUndoLastChoice_RestoresStatsAndReopensChoice()
+        {
+            var state = CreateState(1);
+            var days = new DayManager(state);
+            var history = new RunHistory();
+            var resolver = new EffectResolver(state, new SeededRandomService(1), history, days);
+            var eventData = CreateEventWithFixedChoice(
+                "event_ot",
+                new StatEffect(StatType.Health, -5),
+                new StatEffect(StatType.Cash, -10_000L));
+
+            resolver.BeginEvent(eventData);
+            Assert.IsTrue(resolver.TryResolveChoice(0, out _, out var error), error);
+            var healthAfter = state.Stats.Health;
+            var cashAfter = state.Stats.Cash;
+
+            Assert.IsTrue(resolver.TryUndoLastChoice(out error), error);
+            Assert.AreEqual(ChoicePhase.AwaitingChoice, resolver.Phase);
+            Assert.AreEqual(0, history.Count);
+            Assert.AreNotEqual(healthAfter, state.Stats.Health);
+            Assert.AreNotEqual(cashAfter, state.Stats.Cash);
+            Assert.IsTrue(resolver.CanSelectChoice);
+        }
+
+        [Test]
         public void TryResolveChoice_LocksDuplicateSelection()
         {
             var state = CreateState(1);

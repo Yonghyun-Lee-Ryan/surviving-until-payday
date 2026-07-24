@@ -171,6 +171,26 @@ namespace SurviveUntilPayday.Events
             dayManager.ResetReadyForNextDay();
         }
 
+        /// <summary>
+        /// 광고(결과 재시도)용: 직전 선택 효과를 되돌리고 다시 선택 가능하게 한다.
+        /// </summary>
+        public bool TryUndoLastChoice(out string error)
+        {
+            error = null;
+            if (phase != ChoicePhase.ResultReady || lastResult == null || activeEvent == null)
+            {
+                error = "No resolved choice to undo.";
+                return false;
+            }
+
+            history.TryRemoveLast(out _);
+            state.Stats.CopyFrom(lastResult.StatsBefore);
+            lastResult = null;
+            phase = ChoicePhase.AwaitingChoice;
+            dayManager.ResetReadyForNextDay();
+            return true;
+        }
+
         private RandomOutcome PickRandomOutcome(IReadOnlyList<RandomOutcome> outcomes)
         {
             var totalWeight = 0;

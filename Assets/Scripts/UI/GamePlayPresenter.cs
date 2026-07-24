@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using SurviveUntilPayday.Ads;
 using SurviveUntilPayday.Core;
 using SurviveUntilPayday.Data;
 using SurviveUntilPayday.DebugTools;
@@ -59,11 +60,15 @@ namespace SurviveUntilPayday.UI
             if (choicePanelView != null)
             {
                 choicePanelView.ChoiceClicked += OnChoiceClicked;
+                choicePanelView.RerollAdClicked += OnRerollAdClicked;
             }
 
             if (resultPopupView != null)
             {
                 resultPopupView.NextDayClicked += OnNextDayClicked;
+                resultPopupView.RetryAdClicked += OnRetryAdClicked;
+                resultPopupView.SideJobAdClicked += OnSideJobAdClicked;
+                resultPopupView.LoanAdClicked += OnLoanAdClicked;
             }
         }
 
@@ -72,11 +77,15 @@ namespace SurviveUntilPayday.UI
             if (choicePanelView != null)
             {
                 choicePanelView.ChoiceClicked -= OnChoiceClicked;
+                choicePanelView.RerollAdClicked -= OnRerollAdClicked;
             }
 
             if (resultPopupView != null)
             {
                 resultPopupView.NextDayClicked -= OnNextDayClicked;
+                resultPopupView.RetryAdClicked -= OnRetryAdClicked;
+                resultPopupView.SideJobAdClicked -= OnSideJobAdClicked;
+                resultPopupView.LoanAdClicked -= OnLoanAdClicked;
             }
 
             if (runManager != null
@@ -330,6 +339,7 @@ namespace SurviveUntilPayday.UI
             choicePanelView.SetInteractable(true);
             resultPopupView.Hide();
             RefreshHudInstant();
+            RefreshChoiceAdButtons();
 
             var analytics = AppRoot.Instance?.Analytics;
             if (analytics != null && selected != null && runManager?.State != null)
@@ -367,6 +377,7 @@ namespace SurviveUntilPayday.UI
 
             choiceLocked = true;
             choicePanelView.SetInteractable(false);
+            choicePanelView.SetRerollVisible(false, false);
 
             if (!effectResolver.TryResolveChoice(choiceIndex, out var result, out var error))
             {
@@ -398,6 +409,157 @@ namespace SurviveUntilPayday.UI
             resultPopupView.Show("선택 결과", result.Message, changes, nextLabel);
             RefreshCrisis(result.StatsAfter);
             hudView.SetCash(result.StatsAfter.Cash);
+            RefreshResultAdButtons(result);
+        }
+
+        private void RefreshChoiceAdButtons()
+        {
+            if (choicePanelView == null)
+            {
+                return;
+            }
+
+            var rewarded = AppRoot.Instance?.RewardedAds;
+            var can = rewarded != null
+                      && !choiceLocked
+                      && effectResolver != null
+                      && effectResolver.CanSelectChoice
+                      && rewarded.CanRequest(RewardedAdPlacement.ChoiceReroll, out _);
+            var remaining = AppRoot.Instance?.AdQuota?.GetRemaining(RewardedAdPlacement.ChoiceReroll) ?? 0;
+            choicePanelView.SetRerollVisible(
+                visible: remaining > 0 || can,
+                interactable: can,
+                label: $"광고: 선택지 새로고침 ({remaining})");
+        }
+
+        private void RefreshResultAdButtons(ChoiceResult result)
+        {
+            if (resultPopupView == null)
+            {
+                return;
+            }
+
+            var rewarded = AppRoot.Instance?.RewardedAds;
+            var quota = AppRoot.Instance?.AdQuota;
+            var canRetry = rewarded != null && rewarded.CanRequest(RewardedAdPlacement.RetryOutcome, out _);
+            var canSide = rewarded != null && rewarded.CanRequest(RewardedAdPlacement.DailySideJob, out _);
+            var cash = result?.StatsAfter != null ? result.StatsAfter.Cash : runManager?.State?.Stats.Cash ?? 0;
+            var needsLoan = cash < 50_000L
+                            || (result != null && result.FailureAfter == FailureReason.Bankruptcy);
+            var canLoan = needsLoan
+                          && rewarded != null
+                          && rewarded.CanRequest(RewardedAdPlacement.EmergencyLoan, out _);
+
+            resultPopupView.SetAdButtons(
+                retryVisible: quota == null || quota.GetRemaining(RewardedAdPlacement.RetryOutcome) > 0,
+                retryInteractable: canRetry,
+                sideJobVisible: quota == null || quota.GetRemaining(RewardedAdPlacement.DailySideJob) > 0,
+                sideJobInteractable: canSide,
+                loanVisible: needsLoan,
+                loanInteractable: canLoan);
+        }
+
+        private void OnRerollAdClicked()
+        {
+            RequestRewarded(RewardedAdPlacement.ChoiceReroll, grant =>
+            {
+                if (grant == null || !grant.Value.ChoiceReroll)
+                {
+                    return;
+                }
+
+                PresentTodaysEvent();
+            });
+        }
+
+        private void OnRetryAdClicked()
+        {
+            RequestRewarded(RewardedAdPlacement.RetryOutcome, grant =>
+            {
+                if (grant == null || !grant.Value.RetryOutcome || effectResolver == null)
+                {
+                    return;
+                }
+
+                if (!effectResolver.TryUndoLastChoice(out var error))
+                {
+                    Debug.LogWarning($"[GamePlayPresenter] Retry undo failed: {error}", this);
+                    return;
+                }
+
+                choiceLocked = false;
+                resultPopupView.Hide();
+                RefreshHudInstant();
+                var active = effectResolver.ActiveEvent;
+                if (active != null)
+                {
+                    ShowEvent(active);
+                }
+                else
+                {
+                    PresentTodaysEvent();
+                }
+            });
+        }
+
+        private void OnSideJobAdClicked()
+        {
+            RequestRewarded(RewardedAdPlacement.DailySideJob, grant =>
+            {
+                if (grant == null || runManager?.State == null)
+                {
+                    return;
+                }
+
+                AdRewardApplicator.ApplyCash(runManager.State, grant.Value);
+                RefreshHudInstant();
+                SaveActiveRun();
+                RefreshResultAdButtons(effectResolver?.LastResult);
+            });
+        }
+
+        private void OnLoanAdClicked()
+        {
+            RequestRewarded(RewardedAdPlacement.EmergencyLoan, grant =>
+            {
+                if (grant == null || runManager?.State == null)
+                {
+                    return;
+                }
+
+                AdRewardApplicator.ApplyCash(runManager.State, grant.Value);
+                RefreshHudInstant();
+                SaveActiveRun();
+                RefreshResultAdButtons(effectResolver?.LastResult);
+            });
+        }
+
+        private void RequestRewarded(
+            RewardedAdPlacement placement,
+            System.Action<AdRewardGrant?> onGranted)
+        {
+            var rewarded = AppRoot.Instance?.RewardedAds;
+            if (rewarded == null)
+            {
+                Debug.LogWarning("[GamePlayPresenter] RewardedAds unavailable.", this);
+                onGranted?.Invoke(null);
+                return;
+            }
+
+            rewarded.Request(placement, result =>
+            {
+                if (!result.RewardGranted)
+                {
+                    Debug.Log(
+                        $"[GamePlayPresenter] Ad not rewarded ({placement}): {result.ShowResult.Status}");
+                    RefreshChoiceAdButtons();
+                    RefreshResultAdButtons(effectResolver?.LastResult);
+                    onGranted?.Invoke(null);
+                    return;
+                }
+
+                onGranted?.Invoke(result.Reward);
+            });
         }
 
         private IEnumerator AnimateStatsTo(PlayerStats target)

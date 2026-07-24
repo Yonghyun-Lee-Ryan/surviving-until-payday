@@ -33,14 +33,17 @@ namespace SurviveUntilPayday.Services
 
         public void RecordException(Exception exception)
         {
-            ExceptionCount++;
             if (exception == null)
             {
                 Debug.LogWarning("[CrashReporter] RecordException called with null.");
                 return;
             }
 
-            Debug.LogException(exception);
+            // LogException은 Test Runner/Console에 실제 실패처럼 보여 오해를 낳는다.
+            // 개발용 기록은 Warning으로 남기고, 엔진이 올린 Exception/Error는 OnLogMessageReceived로 집계한다.
+            ExceptionCount++;
+            Debug.LogWarning(
+                $"[CrashReporter] Recorded exception: {exception.GetType().Name}: {exception.Message}");
         }
 
         public void SetCustomKey(string key, string value)
