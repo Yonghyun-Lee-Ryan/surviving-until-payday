@@ -44,7 +44,9 @@ namespace SurviveUntilPayday.EditorTools
 
             iterations = EditorGUILayout.IntField("Iterations", iterations);
             baseSeed = EditorGUILayout.IntField("Base Seed", baseSeed);
-            policy = (SimulatorChoicePolicy)EditorGUILayout.EnumPopup("Choice Policy", policy);
+            policy = (SimulatorChoicePolicy)EditorGUILayout.EnumPopup(
+                new GUIContent("Choice Policy", "Random / Safe(안전) / Thrifty(절약) / Risky(위험)"),
+                policy);
 
             job = (JobData)EditorGUILayout.ObjectField("Job", job, typeof(JobData), false);
             trait = (TraitData)EditorGUILayout.ObjectField("Trait", trait, typeof(TraitData), false);
@@ -63,6 +65,12 @@ namespace SurviveUntilPayday.EditorTools
             {
                 if (GUILayout.Button("Run Simulation", GUILayout.Height(36f)))
                 {
+                    Run();
+                }
+
+                if (GUILayout.Button("Run 1,000 (파일 저장)", GUILayout.Height(28f)))
+                {
+                    iterations = 1000;
                     Run();
                 }
             }
@@ -103,6 +111,11 @@ namespace SurviveUntilPayday.EditorTools
 
             var summary = simulator.Run(iterations, baseSeed, policy);
             lastReport = summary.ToString();
+
+            var logsDir = System.IO.Path.Combine(Application.dataPath, "..", "Logs");
+            var savedPath = summary.WriteToFile(logsDir);
+            lastReport += "\n\nSaved: " + savedPath;
+
             Debug.Log("[RunSimulator]\n" + lastReport);
             Repaint();
         }

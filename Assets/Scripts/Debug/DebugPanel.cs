@@ -40,6 +40,7 @@ namespace SurviveUntilPayday.DebugTools
         private void Awake()
         {
 #if !(UNITY_EDITOR || DEVELOPMENT_BUILD)
+            DestroyReleaseDebugChrome();
             Destroy(gameObject);
             return;
 #else
@@ -50,6 +51,23 @@ namespace SurviveUntilPayday.DebugTools
 
             RebuildDropdowns();
 #endif
+        }
+
+        private static void DestroyReleaseDebugChrome()
+        {
+            foreach (var canvas in UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include))
+            {
+                if (canvas == null)
+                {
+                    continue;
+                }
+
+                var hint = canvas.transform.Find("DebugHint");
+                if (hint != null)
+                {
+                    Destroy(hint.gameObject);
+                }
+            }
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

@@ -1,16 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using SurviveUntilPayday.Core;
 using SurviveUntilPayday.Data;
 using SurviveUntilPayday.Events;
 
 namespace SurviveUntilPayday.DebugTools
 {
+    /// <summary>
+    /// 시뮬레이터 선택 정책. 안전=첫 선택, 절약=중간, 위험=마지막.
+    /// </summary>
     public enum SimulatorChoicePolicy
     {
         Random = 0,
-        FirstChoice = 1,
-        LastChoice = 2
+        Safe = 1,
+        Thrifty = 2,
+        Risky = 3
     }
 
     public sealed class SimulationSummary
@@ -23,6 +29,20 @@ namespace SurviveUntilPayday.DebugTools
         public Dictionary<FailureReason, int> FailureCounts { get; } = new Dictionary<FailureReason, int>();
         public Dictionary<string, int> EndingCounts { get; } = new Dictionary<string, int>();
 
+        public int FailureCount
+        {
+            get
+            {
+                var total = 0;
+                foreach (var pair in FailureCounts)
+                {
+                    total += pair.Value;
+                }
+
+                return total;
+            }
+        }
+
         public override string ToString()
         {
             var lines = new List<string>
@@ -33,17 +53,39 @@ namespace SurviveUntilPayday.DebugTools
                 $"AvgCash={AverageCash:F0}"
             };
 
+            var failures = FailureCount;
             foreach (var pair in FailureCounts)
             {
-                lines.Add($"Fail:{pair.Key}={pair.Value}");
+                var ofAll = Iterations <= 0 ? 0 : pair.Value / (double)Iterations;
+                var ofFails = failures <= 0 ? 0 : pair.Value / (double)failures;
+                lines.Add(
+                    $"Fail:{pair.Key}={pair.Value} (전체 {ofAll:P1}, 실패 중 {ofFails:P1})");
             }
 
             foreach (var pair in EndingCounts)
             {
-                lines.Add($"Ending:{pair.Key}={pair.Value}");
+                var ofAll = Iterations <= 0 ? 0 : pair.Value / (double)Iterations;
+                lines.Add($"Ending:{pair.Key}={pair.Value} ({ofAll:P1})");
             }
 
             return string.Join("\n", lines);
+        }
+
+        /// <summary>
+        /// 리포트를 텍스트 파일로 저장하고 경로를 반환한다.
+        /// </summary>
+        public string WriteToFile(string directoryPath, string fileNamePrefix = "run_sim")
+        {
+            if (string.IsNullOrWhiteSpace(directoryPath))
+            {
+                throw new ArgumentException("directoryPath is required.", nameof(directoryPath));
+            }
+
+            Directory.CreateDirectory(directoryPath);
+            var fileName = $"{fileNamePrefix}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            var path = Path.Combine(directoryPath, fileName);
+            File.WriteAllText(path, ToString(), Encoding.UTF8);
+            return path;
         }
     }
 
@@ -141,7 +183,6 @@ namespace SurviveUntilPayday.DebugTools
                 var choiceIndex = PickChoiceIndex(dayEvent, random, policy);
                 if (!resolver.TryResolveChoice(choiceIndex, out _, out var error))
                 {
-                    // 선택 실패 시 0번 재시도
                     if (!resolver.TryResolveChoice(0, out _, out error))
                     {
                         throw new InvalidOperationException($"Simulator choice failed: {error}");
@@ -182,9 +223,11 @@ namespace SurviveUntilPayday.DebugTools
 
             switch (policy)
             {
-                case SimulatorChoicePolicy.FirstChoice:
+                case SimulatorChoicePolicy.Safe:
                     return 0;
-                case SimulatorChoicePolicy.LastChoice:
+                case SimulatorChoicePolicy.Thrifty:
+                    return count / 2;
+                case SimulatorChoicePolicy.Risky:
                     return count - 1;
                 default:
                     return random.Next(count);

@@ -23,7 +23,7 @@ namespace SurviveUntilPayday.Tests
                 new List<EndingData> { ending },
                 ending);
 
-            var result = simulator.RunOnce(seed: 11, SimulatorChoicePolicy.FirstChoice);
+            var result = simulator.RunOnce(seed: 11, SimulatorChoicePolicy.Safe);
 
             Assert.IsNotNull(result);
             Assert.GreaterOrEqual(result.DaysSurvived, 1);
@@ -45,8 +45,8 @@ namespace SurviveUntilPayday.Tests
                 new List<EndingData> { ending },
                 ending);
 
-            var a = simulator.Run(iterations: 5, baseSeed: 42, SimulatorChoicePolicy.FirstChoice);
-            var b = simulator.Run(iterations: 5, baseSeed: 42, SimulatorChoicePolicy.FirstChoice);
+            var a = simulator.Run(iterations: 5, baseSeed: 42, SimulatorChoicePolicy.Safe);
+            var b = simulator.Run(iterations: 5, baseSeed: 42, SimulatorChoicePolicy.Safe);
 
             Assert.AreEqual(a.SuccessCount, b.SuccessCount);
             Assert.AreEqual(a.AverageDaysSurvived, b.AverageDaysSurvived);
@@ -68,12 +68,44 @@ namespace SurviveUntilPayday.Tests
                 new List<EndingData> { ending },
                 ending);
 
-            var summary = simulator.Run(iterations: 3, baseSeed: 1, SimulatorChoicePolicy.FirstChoice);
+            var summary = simulator.Run(iterations: 3, baseSeed: 1, SimulatorChoicePolicy.Safe);
 
             Assert.AreEqual(3, summary.Iterations);
             Assert.AreEqual(3, summary.SuccessCount);
             Assert.AreEqual(1.0, summary.SuccessRate, 0.0001);
             Assert.AreEqual(30.0, summary.AverageDaysSurvived, 0.0001);
+        }
+
+        [Test]
+        public void SimulationSummary_ToString_IncludesFailureRatios()
+        {
+            var summary = new SimulationSummary { Iterations = 10, SuccessCount = 7 };
+            summary.FailureCounts[FailureReason.Bankruptcy] = 2;
+            summary.FailureCounts[FailureReason.Burnout] = 1;
+
+            var text = summary.ToString();
+            StringAssert.Contains("Fail:Bankruptcy=2", text);
+            StringAssert.Contains("전체", text);
+            StringAssert.Contains("실패 중", text);
+        }
+
+        [Test]
+        public void PickPolicy_SafeThriftyRisky_MapToChoiceIndices()
+        {
+            var job = ScriptableObject.CreateInstance<JobData>();
+            var rest = CreateRestEvent("rest");
+            var ending = CreateSuccessEnding("barely");
+            var simulator = new RunSimulator(
+                job,
+                null,
+                new List<EventData> { rest },
+                rest,
+                new List<EndingData> { ending },
+                ending);
+
+            Assert.DoesNotThrow(() => simulator.RunOnce(1, SimulatorChoicePolicy.Safe));
+            Assert.DoesNotThrow(() => simulator.RunOnce(2, SimulatorChoicePolicy.Thrifty));
+            Assert.DoesNotThrow(() => simulator.RunOnce(3, SimulatorChoicePolicy.Risky));
         }
 
         private static EventData CreateRestEvent(string id)
