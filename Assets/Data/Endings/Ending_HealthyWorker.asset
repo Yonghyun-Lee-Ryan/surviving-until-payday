@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da7c8072f6a29ed40a86dd8e20e0761d, type: 3}
+  m_Name: Ending_HealthyWorker
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EndingData
+  id: ending_healthy_worker
+  title: "\uAC74\uAC15\uD55C \uC9C1\uC7A5\uC778"
+  description: "\uBAB8\uACFC \uB9C8\uC74C\uC744 \uC9C0\uD0A4\uBA70 \uC6D4\uAE09\uB0A0\uC744
+    \uB9DE\uC558\uB2E4."
+  priority: 90
+  isFailureEnding: 0
+  linkedFailureReason: 0
+  condition:
+    requireMinCash: 0
+    minCash: 0
+    requireMaxCash: 0
+    maxCash: 0
+    requireMinHealth: 1
+    minHealth: 70
+    requireMaxHealth: 0
+    maxHealth: 0
+    requireMinStress: 0
+    minStress: 0
+    requireMaxStress: 1
+    maxStress: 40
+    requireMinHappiness: 0
+    minHappiness: 0
+    requireMaxHappiness: 0
+    maxHappiness: 0
+    requireMinCompanyScore: 0
+    minCompanyScore: 0
+    requireMaxCompanyScore: 0
+    maxCompanyScore: 0
