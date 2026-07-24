@@ -126,42 +126,45 @@ namespace SurviveUntilPayday.Core
                 result != null ? result.DaysSurvived : 0,
                 result != null && result.IsSuccess,
                 result?.FinalStats,
-                endingNewlyUnlocked);
+                endingNewlyUnlocked,
+                progress.NewlyUnlockedEvents.Count,
+                newlyUnlockedAchievementCount: 0);
             TotalExperience += gained;
+
+            UnlockEligibleTraits(allTraits, progress);
+
+            var achievementsBeforeBonus = progress.NewlyUnlockedAchievements.Count;
+            EvaluateAchievements(result, progress);
+            var firstWaveAchievements = progress.NewlyUnlockedAchievements.Count - achievementsBeforeBonus;
+            var achievementBonus = firstWaveAchievements * ExperienceCalculator.NewAchievementBonus;
+            if (achievementBonus > 0)
+            {
+                TotalExperience += achievementBonus;
+                gained += achievementBonus;
+            }
+
+            UnlockEligibleTraits(allTraits, progress);
+            var achievementsBeforeSecond = progress.NewlyUnlockedAchievements.Count;
+            EvaluateAchievements(result, progress);
+            var secondWave = progress.NewlyUnlockedAchievements.Count - achievementsBeforeSecond;
+            if (secondWave > 0)
+            {
+                var extra = secondWave * ExperienceCalculator.NewAchievementBonus;
+                TotalExperience += extra;
+                gained += extra;
+                UnlockEligibleTraits(allTraits, progress);
+            }
+
             progress.ExperienceGained = gained;
             progress.TotalExperience = TotalExperience;
             progress.LevelAfter = Level;
-
-            if (allTraits != null)
-            {
-                foreach (var trait in allTraits)
-                {
-                    if (trait == null || trait.UnlockLevel <= 0)
-                    {
-                        continue;
-                    }
-
-                    if (Level < trait.UnlockLevel)
-                    {
-                        continue;
-                    }
-
-                    if (Traits.TryUnlock(trait.Id))
-                    {
-                        progress.NewlyUnlockedTraits.Add(trait.Id);
-                        RaiseUnlock("trait", trait.Id, trait.DisplayName);
-                    }
-                }
-            }
-
-            EvaluateAchievements(result, progress);
             return progress;
         }
 
         /// <summary>
         /// 결과 화면 보상형 광고(경험치 2배) 등 보너스 XP.
         /// </summary>
-        public void AddBonusExperience(int amount)
+        public void AddBonusExperience(int amount, IEnumerable<TraitData> allTraits = null)
         {
             if (amount <= 0)
             {
@@ -169,6 +172,49 @@ namespace SurviveUntilPayday.Core
             }
 
             TotalExperience += amount;
+            if (allTraits != null)
+            {
+                UnlockEligibleTraits(allTraits, progress: null);
+            }
+        }
+
+        private void UnlockEligibleTraits(IEnumerable<TraitData> allTraits, MetaProgressResult progress)
+        {
+            if (allTraits == null)
+            {
+                return;
+            }
+
+            foreach (var trait in allTraits)
+            {
+                if (trait == null || string.IsNullOrWhiteSpace(trait.Id))
+                {
+                    continue;
+                }
+
+                // unlockLevel 0~1: 기본 해금. 도감률용으로 한 번만 등록한다.
+                if (trait.UnlockLevel <= 1)
+                {
+                    if (Traits.TryUnlock(trait.Id))
+                    {
+                        progress?.NewlyUnlockedTraits.Add(trait.Id);
+                        RaiseUnlock("trait", trait.Id, trait.DisplayName);
+                    }
+
+                    continue;
+                }
+
+                if (Level < trait.UnlockLevel)
+                {
+                    continue;
+                }
+
+                if (Traits.TryUnlock(trait.Id))
+                {
+                    progress?.NewlyUnlockedTraits.Add(trait.Id);
+                    RaiseUnlock("trait", trait.Id, trait.DisplayName);
+                }
+            }
         }
 
         private void EvaluateAchievements(ResultData result, MetaProgressResult progress)
@@ -200,7 +246,7 @@ namespace SurviveUntilPayday.Core
                 return;
             }
 
-            progress.NewlyUnlockedAchievements.Add(id);
+            progress?.NewlyUnlockedAchievements.Add(id);
             RaiseUnlock("achievement", id, id);
         }
 

@@ -80,12 +80,16 @@ namespace SurviveUntilPayday.Core
     public static class ExperienceCalculator
     {
         public const int NewEndingBonus = 50;
+        public const int NewEventBonus = 15;
+        public const int NewAchievementBonus = 30;
 
         public static int Calculate(
             int daysSurvived,
             bool isSuccess,
             PlayerStats stats,
-            bool newEndingUnlocked = false)
+            bool newEndingUnlocked = false,
+            int newlyUnlockedEventCount = 0,
+            int newlyUnlockedAchievementCount = 0)
         {
             var xp = Math.Max(0, daysSurvived) * 10;
             if (isSuccess)
@@ -109,6 +113,16 @@ namespace SurviveUntilPayday.Core
             if (newEndingUnlocked)
             {
                 xp += NewEndingBonus;
+            }
+
+            if (newlyUnlockedEventCount > 0)
+            {
+                xp += newlyUnlockedEventCount * NewEventBonus;
+            }
+
+            if (newlyUnlockedAchievementCount > 0)
+            {
+                xp += newlyUnlockedAchievementCount * NewAchievementBonus;
             }
 
             return xp;

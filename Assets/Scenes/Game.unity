@@ -1809,7 +1809,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5893c98202b5f8c40a3cd6a3da00233d, type: 2}
   - {fileID: 11400000, guid: f96a362a820e0e74bbf57e8c7b351119, type: 2}
   fallbackSuccessEnding: {fileID: 11400000, guid: 51647e7e7b0188e449d5e73f8332ff1f, type: 2}
-  allTraits: []
+  allTraits:
+  - {fileID: 11400000, guid: 8beb6b6aaeaa1714197e2acf7c520c68, type: 2}
+  - {fileID: 11400000, guid: 3f8a1c2e9b7d4e6a8c0d1e2f3a4b5c6d, type: 2}
+  - {fileID: 11400000, guid: 4a9b2d3f0c8e5f7b9d1e2f3a4b5c6d7e, type: 2}
+  - {fileID: 11400000, guid: 5b0c3e4a1d9f6a8c0e2f3a4b5c6d7e8f, type: 2}
 --- !u!4 &433361270
 Transform:
   m_ObjectHideFlags: 0

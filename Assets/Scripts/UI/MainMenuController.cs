@@ -19,6 +19,8 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private int totalTraitCount = 4;
         [SerializeField] private int totalAchievementCount = 5;
 
+        private MetaProgressionManager subscribedMeta;
+
         private void Awake()
         {
             if (startGameButton == null)
@@ -45,6 +47,8 @@ namespace SurviveUntilPayday.UI
         {
             RefreshContinueButton();
             RefreshCodex();
+            SubscribeUnlockNotifications();
+            ShowLastRunUnlockToast();
         }
 
         private void OnDestroy()
@@ -62,6 +66,12 @@ namespace SurviveUntilPayday.UI
             if (settingsButton != null)
             {
                 settingsButton.onClick.RemoveListener(OnSettingsClicked);
+            }
+
+            if (subscribedMeta != null)
+            {
+                subscribedMeta.UnlockNotified -= OnUnlockNotified;
+                subscribedMeta = null;
             }
         }
 
@@ -102,6 +112,93 @@ namespace SurviveUntilPayday.UI
                 totalEventCount,
                 totalTraitCount,
                 totalAchievementCount);
+        }
+
+        private void SubscribeUnlockNotifications()
+        {
+            var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
+            subscribedMeta = appRoot.Session?.Meta;
+            if (subscribedMeta != null)
+            {
+                subscribedMeta.UnlockNotified -= OnUnlockNotified;
+                subscribedMeta.UnlockNotified += OnUnlockNotified;
+            }
+        }
+
+        private void ShowLastRunUnlockToast()
+        {
+            if (codexPanel == null)
+            {
+                return;
+            }
+
+            var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
+            var metaProgress = appRoot.Session?.LastResult?.MetaProgress;
+            if (metaProgress == null)
+            {
+                return;
+            }
+
+            var message = BuildUnlockToast(metaProgress);
+            if (!string.IsNullOrEmpty(message))
+            {
+                codexPanel.ShowUnlockToast(message);
+            }
+        }
+
+        private void OnUnlockNotified(string category, string id, string displayName)
+        {
+            if (codexPanel == null)
+            {
+                return;
+            }
+
+            var label = string.IsNullOrWhiteSpace(displayName) ? id : displayName;
+            codexPanel.ShowUnlockToast($"해금: {CategoryLabel(category)} {label}");
+            RefreshCodex();
+        }
+
+        private static string BuildUnlockToast(MetaProgressResult progress)
+        {
+            var parts = new System.Collections.Generic.List<string>();
+            if (progress.NewlyUnlockedEndings.Count > 0)
+            {
+                parts.Add($"엔딩 {progress.NewlyUnlockedEndings.Count}");
+            }
+
+            if (progress.NewlyUnlockedEvents.Count > 0)
+            {
+                parts.Add($"사건 {progress.NewlyUnlockedEvents.Count}");
+            }
+
+            if (progress.NewlyUnlockedTraits.Count > 0)
+            {
+                parts.Add($"특성 {progress.NewlyUnlockedTraits.Count}");
+            }
+
+            if (progress.NewlyUnlockedAchievements.Count > 0)
+            {
+                parts.Add($"업적 {progress.NewlyUnlockedAchievements.Count}");
+            }
+
+            return parts.Count == 0 ? string.Empty : $"새 해금: {string.Join(", ", parts)}";
+        }
+
+        private static string CategoryLabel(string category)
+        {
+            switch (category)
+            {
+                case "ending":
+                    return "엔딩";
+                case "event":
+                    return "사건";
+                case "trait":
+                    return "특성";
+                case "achievement":
+                    return "업적";
+                default:
+                    return category ?? string.Empty;
+            }
         }
 
         private void OnStartGameClicked()

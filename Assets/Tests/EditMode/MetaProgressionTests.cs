@@ -28,6 +28,20 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void ExperienceCalculator_AddsNewEventAndAchievementBonus()
+        {
+            var stats = new PlayerStats(0, 50, 50, 50, 50);
+            var baseXp = ExperienceCalculator.Calculate(10, false, stats);
+            var withEvents = ExperienceCalculator.Calculate(
+                10, false, stats, false, newlyUnlockedEventCount: 2);
+            var withAchievements = ExperienceCalculator.Calculate(
+                10, false, stats, false, 0, newlyUnlockedAchievementCount: 1);
+
+            Assert.AreEqual(baseXp + ExperienceCalculator.NewEventBonus * 2, withEvents);
+            Assert.AreEqual(baseXp + ExperienceCalculator.NewAchievementBonus, withAchievements);
+        }
+
+        [Test]
         public void Meta_DiscoverEventAndEnding_NoDuplicates()
         {
             var meta = new MetaProgressionManager();
@@ -42,6 +56,64 @@ namespace SurviveUntilPayday.Tests
             Assert.AreEqual(1, meta.Events.UnlockedCount);
             Assert.AreEqual(1, meta.Endings.UnlockedCount);
             Assert.AreEqual(2, notifications.Count);
+        }
+
+        [Test]
+        public void Meta_ApplyRunResult_GrantsEventXpOnce()
+        {
+            var ending = ScriptableObject.CreateInstance<EndingData>();
+            ending.EditorSet("e", "엔딩", "d", 1, false, FailureReason.None, new EndingCondition());
+            var draft = new ResultData(
+                5,
+                false,
+                FailureReason.None,
+                new PlayerStats(0, 50, 50, 50, 50),
+                ending,
+                0,
+                false);
+
+            var meta = new MetaProgressionManager();
+            var first = meta.ApplyRunResult(draft, null, new[] { "event_once" });
+            var xpAfterFirst = meta.TotalExperience;
+            Assert.Contains("event_once", first.NewlyUnlockedEvents);
+            Assert.GreaterOrEqual(
+                first.ExperienceGained,
+                5 * 10 + ExperienceCalculator.NewEventBonus + ExperienceCalculator.NewEndingBonus);
+
+            var second = meta.ApplyRunResult(draft, null, new[] { "event_once" });
+            Assert.IsEmpty(second.NewlyUnlockedEvents);
+            Assert.IsEmpty(second.NewlyUnlockedEndings);
+            Assert.AreEqual(
+                xpAfterFirst + ExperienceCalculator.Calculate(5, false, draft.FinalStats, false, 0, 0),
+                meta.TotalExperience);
+        }
+
+        [Test]
+        public void Meta_ApplyRunResult_AchievementUnlocksOnceWithXp()
+        {
+            var ending = ScriptableObject.CreateInstance<EndingData>();
+            ending.EditorSet("e", "엔딩", "d", 1, false, FailureReason.None, new EndingCondition());
+            var draft = new ResultData(
+                7,
+                false,
+                FailureReason.None,
+                new PlayerStats(0, 50, 50, 50, 50),
+                ending,
+                0,
+                false);
+
+            var meta = new MetaProgressionManager();
+            var first = meta.ApplyRunResult(draft, null, null);
+            Assert.Contains(AchievementIds.Survive7Days, first.NewlyUnlockedAchievements);
+            Assert.Contains(AchievementIds.FirstEnding, first.NewlyUnlockedAchievements);
+            Assert.GreaterOrEqual(
+                first.ExperienceGained,
+                ExperienceCalculator.NewAchievementBonus * 2);
+
+            var second = meta.ApplyRunResult(draft, null, null);
+            Assert.IsEmpty(second.NewlyUnlockedAchievements);
+            Assert.IsTrue(meta.Achievements.IsUnlocked(AchievementIds.Survive7Days));
+            Assert.IsTrue(meta.Achievements.IsUnlocked(AchievementIds.FirstEnding));
         }
 
         [Test]
@@ -69,6 +141,31 @@ namespace SurviveUntilPayday.Tests
             Assert.IsTrue(meta.IsTraitUnlocked(trait));
             Assert.Contains("event_x", result.NewlyUnlockedEvents);
             Assert.Contains("e", result.NewlyUnlockedEndings);
+            Assert.Contains("trait_gym", result.NewlyUnlockedTraits);
+        }
+
+        [Test]
+        public void Meta_RegistersStarterTrait_InCodexOnce()
+        {
+            var starter = ScriptableObject.CreateInstance<TraitData>();
+            starter.EditorSet("trait_thrifty", "짠돌이", "기본", 0);
+
+            var draft = new ResultData(
+                1,
+                false,
+                FailureReason.None,
+                new PlayerStats(0, 50, 50, 50, 50),
+                null,
+                0,
+                false);
+
+            var meta = new MetaProgressionManager();
+            var first = meta.ApplyRunResult(draft, new[] { starter }, null);
+            Assert.Contains("trait_thrifty", first.NewlyUnlockedTraits);
+
+            var second = meta.ApplyRunResult(draft, new[] { starter }, null);
+            Assert.IsFalse(second.NewlyUnlockedTraits.Contains("trait_thrifty"));
+            Assert.AreEqual(1, meta.Traits.UnlockedCount);
         }
 
         [Test]
