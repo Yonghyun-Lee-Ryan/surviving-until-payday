@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SurviveUntilPayday.Data
@@ -29,6 +30,10 @@ namespace SurviveUntilPayday.Data
         [SerializeField] private string requiredJobId = string.Empty;
         [SerializeField] private DayOfWeekConstraint dayOfWeekConstraint = DayOfWeekConstraint.Any;
 
+        [Header("회차 플래그 (Unit 20)")]
+        [SerializeField] private List<string> requiredFlags = new List<string>();
+        [SerializeField] private List<string> forbiddenFlags = new List<string>();
+
         public int MinHealth => minHealth;
         public int MaxHealth => maxHealth;
         public int MinStress => minStress;
@@ -43,6 +48,8 @@ namespace SurviveUntilPayday.Data
         public long MaxCash => maxCash;
         public string RequiredJobId => requiredJobId;
         public DayOfWeekConstraint DayOfWeekConstraint => dayOfWeekConstraint;
+        public IReadOnlyList<string> RequiredFlags => requiredFlags ??= new List<string>();
+        public IReadOnlyList<string> ForbiddenFlags => forbiddenFlags ??= new List<string>();
 
 #if UNITY_EDITOR
         public void EditorConfigure(
@@ -67,6 +74,12 @@ namespace SurviveUntilPayday.Data
             maxCompanyScore = newMaxCompanyScore;
             requiredJobId = newRequiredJobId ?? string.Empty;
             dayOfWeekConstraint = newDayOfWeekConstraint;
+        }
+
+        public void EditorSetFlags(IEnumerable<string> required, IEnumerable<string> forbidden)
+        {
+            requiredFlags = required != null ? new List<string>(required) : new List<string>();
+            forbiddenFlags = forbidden != null ? new List<string>(forbidden) : new List<string>();
         }
 #endif
 

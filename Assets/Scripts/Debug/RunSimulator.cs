@@ -21,13 +21,34 @@ namespace SurviveUntilPayday.DebugTools
 
     public sealed class SimulationSummary
     {
+        public string PolicyName { get; set; } = string.Empty;
         public int Iterations { get; set; }
+        public int BaseSeed { get; set; }
         public int SuccessCount { get; set; }
         public double AverageDaysSurvived { get; set; }
         public double AverageCash { get; set; }
+        public int Day1FailureCount { get; set; }
+        public int[] ReachCounts { get; } = new int[GameState.MaxDay + 1];
         public double SuccessRate => Iterations <= 0 ? 0 : SuccessCount / (double)Iterations;
         public Dictionary<FailureReason, int> FailureCounts { get; } = new Dictionary<FailureReason, int>();
         public Dictionary<string, int> EndingCounts { get; } = new Dictionary<string, int>();
+
+        public int ReachDay7Count => ReachCounts[7];
+        public int ReachDay15Count => ReachCounts[15];
+        public int ReachDay21Count => ReachCounts[21];
+        public int ReachDay30SuccessCount => SuccessCount;
+
+        public double ReachRate(int day)
+        {
+            if (day < GameState.MinDay || day > GameState.MaxDay || Iterations <= 0)
+            {
+                return 0;
+            }
+
+            return ReachCounts[day] / (double)Iterations;
+        }
+
+        public double Day1FailureRate => Iterations <= 0 ? 0 : Day1FailureCount / (double)Iterations;
 
         public int FailureCount
         {
@@ -43,15 +64,68 @@ namespace SurviveUntilPayday.DebugTools
             }
         }
 
+        public void RecordRun(ResultData result)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            if (result.IsSuccess)
+            {
+                SuccessCount++;
+            }
+            else
+            {
+                if (!FailureCounts.ContainsKey(result.FailureReason))
+                {
+                    FailureCounts[result.FailureReason] = 0;
+                }
+
+                FailureCounts[result.FailureReason]++;
+            }
+
+            if (!result.IsSuccess && result.DaysSurvived <= 1)
+            {
+                Day1FailureCount++;
+            }
+
+            var maxReach = result.IsSuccess
+                ? GameState.MaxDay
+                : Math.Min(result.DaysSurvived, GameState.MaxDay);
+            for (var day = GameState.MinDay; day <= maxReach; day++)
+            {
+                ReachCounts[day]++;
+            }
+
+            var endingId = result.Ending != null ? result.Ending.Id : "none";
+            if (!EndingCounts.ContainsKey(endingId))
+            {
+                EndingCounts[endingId] = 0;
+            }
+
+            EndingCounts[endingId]++;
+        }
+
         public override string ToString()
         {
-            var lines = new List<string>
+            var lines = new List<string>();
+            if (!string.IsNullOrEmpty(PolicyName))
             {
-                $"Iterations={Iterations}",
-                $"SuccessRate={SuccessRate:P1} ({SuccessCount}/{Iterations})",
-                $"AvgDays={AverageDaysSurvived:F2}",
-                $"AvgCash={AverageCash:F0}"
-            };
+                lines.Add($"Policy={PolicyName}");
+            }
+
+            lines.Add($"Seed={BaseSeed}");
+            lines.Add($"Iterations={Iterations}");
+            lines.Add($"SuccessRate={SuccessRate:P1} ({SuccessCount}/{Iterations})");
+            lines.Add($"AvgDays={AverageDaysSurvived:F2}");
+            lines.Add($"AvgCash={AverageCash:F0}");
+            lines.Add($"Day1FailRate={Day1FailureRate:P1} ({Day1FailureCount}/{Iterations})");
+            lines.Add(
+                $"ReachDay7={ReachRate(7):P1} ({ReachDay7Count}/{Iterations}), " +
+                $"ReachDay15={ReachRate(15):P1} ({ReachDay15Count}/{Iterations}), " +
+                $"ReachDay21={ReachRate(21):P1} ({ReachDay21Count}/{Iterations}), " +
+                $"ReachDay30Success={SuccessRate:P1} ({ReachDay30SuccessCount}/{Iterations})");
 
             var failures = FailureCount;
             foreach (var pair in FailureCounts)
@@ -82,7 +156,8 @@ namespace SurviveUntilPayday.DebugTools
             }
 
             Directory.CreateDirectory(directoryPath);
-            var fileName = $"{fileNamePrefix}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            var policySuffix = string.IsNullOrEmpty(PolicyName) ? string.Empty : $"_{PolicyName}";
+            var fileName = $"{fileNamePrefix}{policySuffix}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
             var path = Path.Combine(directoryPath, fileName);
             File.WriteAllText(path, ToString(), Encoding.UTF8);
             return path;
@@ -127,7 +202,12 @@ namespace SurviveUntilPayday.DebugTools
                 throw new ArgumentOutOfRangeException(nameof(iterations));
             }
 
-            var summary = new SimulationSummary { Iterations = iterations };
+            var summary = new SimulationSummary
+            {
+                Iterations = iterations,
+                BaseSeed = baseSeed,
+                PolicyName = policy.ToString()
+            };
             long totalDays = 0;
             long totalCash = 0;
 
@@ -137,28 +217,7 @@ namespace SurviveUntilPayday.DebugTools
                 var result = RunOnce(seed, policy);
                 totalDays += result.DaysSurvived;
                 totalCash += result.FinalStats.Cash;
-
-                if (result.IsSuccess)
-                {
-                    summary.SuccessCount++;
-                }
-                else
-                {
-                    if (!summary.FailureCounts.ContainsKey(result.FailureReason))
-                    {
-                        summary.FailureCounts[result.FailureReason] = 0;
-                    }
-
-                    summary.FailureCounts[result.FailureReason]++;
-                }
-
-                var endingId = result.Ending != null ? result.Ending.Id : "none";
-                if (!summary.EndingCounts.ContainsKey(endingId))
-                {
-                    summary.EndingCounts[endingId] = 0;
-                }
-
-                summary.EndingCounts[endingId]++;
+                summary.RecordRun(result);
             }
 
             summary.AverageDaysSurvived = totalDays / (double)iterations;
@@ -173,7 +232,7 @@ namespace SurviveUntilPayday.DebugTools
             run.StartRun(job, trait, seed);
             var selector = new EventSelector(catalog, fallbackEvent, random);
             var history = new RunHistory();
-            var resolver = new EffectResolver(run.State, random, history, run.Days);
+            var resolver = new EffectResolver(run.State, random, history, run.Days, trait);
 
             while (run.Status == RunStatus.InProgress)
             {

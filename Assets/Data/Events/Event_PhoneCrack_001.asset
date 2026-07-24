@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
   m_Name: Event_PhoneCrack_001
-  m_EditorClassIdentifier: Assembly-CSharp::SurviveUntilPayday.Data.EventData
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_phone_crack_001
   title: "\uD734\uB300\uC804\uD654 \uC561\uC815 \uD30C\uC190"
   description: "\uC8FC\uBA38\uB2C8\uC5D0\uC11C \uAEBC\uB0B8 \uD734\uB300\uC804\uD654
@@ -37,6 +37,8 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_phone_official
     text: "\uACF5\uC2DD \uC11C\uBE44\uC2A4\uC13C\uD130"
@@ -46,6 +48,8 @@ MonoBehaviour:
     - statType: 2
       value: -3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_phone_private
     text: "\uC0AC\uC124 \uC218\uB9AC\uC810"
     fixedEffects:
@@ -56,12 +60,19 @@ MonoBehaviour:
       resultMessage: "\uC815\uC0C1\uC801\uC73C\uB85C \uC218\uB9AC\uB418\uC5C8\uB2E4."
       probabilityWeight: 70
       effects: []
+      setFlags: []
+      clearFlags: []
+      queueEventId: 
     - outcomeId: phone_fail_again
       resultMessage: "\uBA70\uCE60 \uD6C4 \uB2E4\uC2DC \uACE0\uC7A5 \uB0AC\uB2E4."
       probabilityWeight: 20
       effects:
       - statType: 2
         value: 8
+      setFlags:
+      - phoneStillCracked
+      clearFlags: []
+      queueEventId: event_phone_rebreak_001
     - outcomeId: phone_data_loss
       resultMessage: "\uC218\uB9AC\uB294 \uB410\uC9C0\uB9CC \uB370\uC774\uD130\uAC00
         \uB0A0\uC544\uAC14\uB2E4."
@@ -71,6 +82,11 @@ MonoBehaviour:
         value: -10
       - statType: 2
         value: 5
+      setFlags: []
+      clearFlags: []
+      queueEventId: 
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_phone_ignore
     text: "\uADF8\uB0E5 \uC0AC\uC6A9\uD55C\uB2E4"
     fixedEffects:
@@ -79,3 +95,6 @@ MonoBehaviour:
     - statType: 3
       value: -5
     randomOutcomes: []
+    setFlags:
+    - phoneStillCracked
+    clearFlags: []

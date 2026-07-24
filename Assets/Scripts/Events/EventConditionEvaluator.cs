@@ -67,6 +67,40 @@ namespace SurviveUntilPayday.Events
                     return false;
             }
 
+            if (condition.RequiredFlags != null)
+            {
+                for (var i = 0; i < condition.RequiredFlags.Count; i++)
+                {
+                    var flag = condition.RequiredFlags[i];
+                    if (string.IsNullOrWhiteSpace(flag))
+                    {
+                        continue;
+                    }
+
+                    if (!state.HasFlag(flag))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            if (condition.ForbiddenFlags != null)
+            {
+                for (var i = 0; i < condition.ForbiddenFlags.Count; i++)
+                {
+                    var flag = condition.ForbiddenFlags[i];
+                    if (string.IsNullOrWhiteSpace(flag))
+                    {
+                        continue;
+                    }
+
+                    if (state.HasFlag(flag))
+                    {
+                        return false;
+                    }
+                }
+            }
+
             return true;
         }
 

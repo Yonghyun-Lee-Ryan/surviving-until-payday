@@ -11,6 +11,9 @@
 /[Uu]ser[Ss]ettings/
 *.log
 
+# 임시 다운로드 캐시
+/_tmp_assets/
+
 *.blend1
 *.blend1.meta
 

@@ -15,7 +15,7 @@ namespace SurviveUntilPayday.EditorTools
         private const string EventsFolder = "Assets/Data/Events";
         private const string TraitsFolder = "Assets/Data/Traits";
 
-        [MenuItem("Tools/Surviving Until Payday/Create Sample Data (Unit 2)")]
+        [MenuItem("Tools/Surviving Until Payday/Create Sample Data (Unit 2/17)")]
         public static void CreateSampleData()
         {
             EnsureFolder(JobsFolder);
@@ -24,9 +24,9 @@ namespace SurviveUntilPayday.EditorTools
 
             var job = CreateJuniorOfficeJob();
             var trait = CreateThriftyTrait();
-            CreateTrait("Trait_Healthy.asset", "trait_healthy", "체력왕", "건강 시작 보너스", 2);
-            CreateTrait("Trait_Positive.asset", "trait_positive", "긍정왕", "행복 감소 완화(후속 확장)", 3);
-            CreateTrait("Trait_OvertimePro.asset", "trait_overtime_pro", "야근전문가", "야근 스트레스 감소(후속 확장)", 4);
+            CreateHealthyTrait();
+            CreatePositiveTrait();
+            CreateOvertimeProTrait();
             var overtimeEvent = CreateOvertimeEvent();
             var phoneEvent = CreatePhoneCrackEvent();
 
@@ -105,7 +105,8 @@ namespace SurviveUntilPayday.EditorTools
             var so = new SerializedObject(job);
             so.FindProperty("id").stringValue = "job_junior_office";
             so.FindProperty("displayName").stringValue = "중소기업 신입사원";
-            so.FindProperty("description").stringValue = "MVP 기본 직업. 표준 난도의 직장 생활.";
+            so.FindProperty("description").stringValue =
+                "표준 난도의 직장 생활. 월급은 안정적이지만 생활비 부담도 만만치 않다.";
             so.FindProperty("salary").longValue = 2_800_000L;
             so.FindProperty("startingCash").longValue = 2_800_000L;
             so.FindProperty("startingHealth").intValue = 80;
@@ -119,12 +120,81 @@ namespace SurviveUntilPayday.EditorTools
 
         private static TraitData CreateThriftyTrait()
         {
-            return CreateTrait(
+            var trait = CreateTrait(
                 "Trait_Thrifty.asset",
                 "trait_thrifty",
                 "짠돌이",
-                "생활비 절약에 능하다. (효과 상세는 이후 단위에서 확장)",
+                "생활비 현금 감소를 5%완화하고, 행복 획득은 줄어든다. 시작 현금 보너스.",
                 0);
+            SetStartingModifiers(
+                trait,
+                new StatEffect(StatType.Cash, 150_000L),
+                new StatEffect(StatType.Happiness, -3));
+            trait.EditorSetRuntimeMultipliers(0.95f, 0.5f, 1f);
+            EditorUtility.SetDirty(trait);
+            return trait;
+        }
+
+        private static TraitData CreateHealthyTrait()
+        {
+            var trait = CreateTrait(
+                "Trait_Healthy.asset",
+                "trait_healthy",
+                "체력왕",
+                "건강 최대치가 높아 체력이 높게 시작한다.",
+                2);
+            SetStartingModifiers(trait, new StatEffect(StatType.Health, 20));
+            trait.EditorSetRuntimeMultipliers(1f, 1f, 1f);
+            EditorUtility.SetDirty(trait);
+            return trait;
+        }
+
+        private static TraitData CreatePositiveTrait()
+        {
+            var trait = CreateTrait(
+                "Trait_Positive.asset",
+                "trait_positive",
+                "긍정왕",
+                "긍정적인 마음으로 행복도가 높게 시작한다.",
+                3);
+            SetStartingModifiers(trait, new StatEffect(StatType.Happiness, 10));
+            trait.EditorSetRuntimeMultipliers(1f, 1f, 1f);
+            EditorUtility.SetDirty(trait);
+            return trait;
+        }
+
+        private static TraitData CreateOvertimeProTrait()
+        {
+            var trait = CreateTrait(
+                "Trait_OvertimePro.asset",
+                "trait_overtime_pro",
+                "야근전문가",
+                "야근(WORK)에서 스트레스 증가가 줄고, 시작 스트레스가 낮고 회사 평가가 높다.",
+                4);
+            SetStartingModifiers(
+                trait,
+                new StatEffect(StatType.Stress, -5),
+                new StatEffect(StatType.CompanyScore, 5));
+            trait.EditorSetRuntimeMultipliers(1f, 1f, 0.7f);
+            EditorUtility.SetDirty(trait);
+            return trait;
+        }
+
+        private static void SetStartingModifiers(TraitData trait, params StatEffect[] effects)
+        {
+            var so = new SerializedObject(trait);
+            var prop = so.FindProperty("startingStatModifiers");
+            prop.ClearArray();
+            for (var i = 0; i < effects.Length; i++)
+            {
+                prop.InsertArrayElementAtIndex(i);
+                var element = prop.GetArrayElementAtIndex(i);
+                element.FindPropertyRelative("statType").enumValueIndex = (int)effects[i].StatType;
+                element.FindPropertyRelative("value").longValue = effects[i].Value;
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(trait);
         }
 
         private static TraitData CreateTrait(

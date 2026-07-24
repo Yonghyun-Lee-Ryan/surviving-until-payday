@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SurviveUntilPayday.Data
 {
     /// <summary>
-    /// 특성 정의 데이터. 시작 능력치 보정만 정의하고, 전투/선택 로직은 이후 단위에서 처리한다.
+    /// 특성 정의 데이터. 시작 능력치 보정과 런타임 배율을 정의한다.
     /// </summary>
     [CreateAssetMenu(
         fileName = "Trait_",
@@ -18,11 +18,19 @@ namespace SurviveUntilPayday.Data
         [SerializeField] private int unlockLevel;
         [SerializeField] private List<StatEffect> startingStatModifiers = new List<StatEffect>();
 
+        [Header("Runtime Multipliers (1 = no change)")]
+        [SerializeField] [Range(0f, 2f)] private float cashLossMultiplier = 1f;
+        [SerializeField] [Range(0f, 2f)] private float happinessGainMultiplier = 1f;
+        [SerializeField] [Range(0f, 2f)] private float workStressGainMultiplier = 1f;
+
         public string Id => id;
         public string DisplayName => displayName;
         public string Description => description;
         public int UnlockLevel => unlockLevel;
         public IReadOnlyList<StatEffect> StartingStatModifiers => startingStatModifiers;
+        public float CashLossMultiplier => cashLossMultiplier;
+        public float HappinessGainMultiplier => happinessGainMultiplier;
+        public float WorkStressGainMultiplier => workStressGainMultiplier;
 
         /// <summary>
         /// 시작 스탯 복사본에만 적용한다. ScriptableObject 원본은 변경하지 않는다.
@@ -86,6 +94,10 @@ namespace SurviveUntilPayday.Data
                 errors.Add($"unlockLevel({unlockLevel})는 0 이상이어야 합니다.");
             }
 
+            ValidateMultiplier("cashLossMultiplier", cashLossMultiplier, errors);
+            ValidateMultiplier("happinessGainMultiplier", happinessGainMultiplier, errors);
+            ValidateMultiplier("workStressGainMultiplier", workStressGainMultiplier, errors);
+
             if (startingStatModifiers == null)
             {
                 errors.Add("startingStatModifiers가 null입니다.");
@@ -110,6 +122,14 @@ namespace SurviveUntilPayday.Data
             return errors;
         }
 
+        private static void ValidateMultiplier(string fieldName, float value, List<string> errors)
+        {
+            if (value < 0f || value > 2f)
+            {
+                errors.Add($"{fieldName}({value})는 0~2 범위여야 합니다.");
+            }
+        }
+
 #if UNITY_EDITOR
         public void EditorSet(string newId, string newDisplayName, string newDescription, int newUnlockLevel)
         {
@@ -117,6 +137,16 @@ namespace SurviveUntilPayday.Data
             displayName = newDisplayName;
             description = newDescription;
             unlockLevel = newUnlockLevel;
+        }
+
+        public void EditorSetRuntimeMultipliers(
+            float cashLoss,
+            float happinessGain,
+            float workStressGain)
+        {
+            cashLossMultiplier = cashLoss;
+            happinessGainMultiplier = happinessGain;
+            workStressGainMultiplier = workStressGain;
         }
 #endif
     }

@@ -62,7 +62,7 @@ namespace SurviveUntilPayday.Core
             }
 
             var successEnding = PickBest(ending =>
-                !ending.IsFailureEnding && EndingConditionMatcher.Matches(ending.Condition, state.Stats));
+                !ending.IsFailureEnding && EndingConditionMatcher.Matches(ending.Condition, state));
 
             return successEnding ?? fallbackSuccessEnding;
         }
@@ -93,6 +93,60 @@ namespace SurviveUntilPayday.Core
 
     public static class EndingConditionMatcher
     {
+        public static bool Matches(EndingCondition condition, GameState state)
+        {
+            if (state == null)
+            {
+                return false;
+            }
+
+            if (!Matches(condition, state.Stats))
+            {
+                return false;
+            }
+
+            if (condition == null)
+            {
+                return true;
+            }
+
+            if (condition.RequiredFlags != null)
+            {
+                for (var i = 0; i < condition.RequiredFlags.Count; i++)
+                {
+                    var flag = condition.RequiredFlags[i];
+                    if (string.IsNullOrWhiteSpace(flag))
+                    {
+                        continue;
+                    }
+
+                    if (!state.HasFlag(flag))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            if (condition.ForbiddenFlags != null)
+            {
+                for (var i = 0; i < condition.ForbiddenFlags.Count; i++)
+                {
+                    var flag = condition.ForbiddenFlags[i];
+                    if (string.IsNullOrWhiteSpace(flag))
+                    {
+                        continue;
+                    }
+
+                    if (state.HasFlag(flag))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         public static bool Matches(EndingCondition condition, PlayerStats stats)
         {
             if (stats == null)

@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_SecondHand_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_secondhand_001
+  title: "\uC911\uACE0\uAC70\uB798"
+  description: "\uC548 \uC4F0\uB294 \uBB3C\uAC74\uC744 \uC911\uACE0 \uAC70\uB798
+    \uC571\uC5D0 \uC62C\uB838\uB354\uB2C8 \uC5F0\uB77D\uC774 \uC654\uB2E4."
+  category: 5
+  minDay: 1
+  maxDay: 30
+  weight: 75
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 0
+  choices:
+  - choiceId: choice_secondhand_fair
+    text: "\uC801\uB2F9\uD55C \uAC00\uACA9\uC5D0 \uC548\uC804\uD558\uAC8C \uAC70\uB798\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: 30000
+    - statType: 3
+      value: 2
+    randomOutcomes: []
+  - choiceId: choice_secondhand_quick
+    text: "\uAC00\uACA9\uC744 \uB0AE\uCDB0 \uBE60\uB974\uAC8C \uCC98\uBD84\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: 15000
+    - statType: 2
+      value: -2
+    randomOutcomes: []
+  - choiceId: choice_secondhand_risky
+    text: "\uC9C1\uAC70\uB798 \uC57D\uC18D\uC744 \uC7A1\uACE0 \uBE44\uC2F8\uAC8C
+      \uD314\uC544\uBCF8\uB2E4"
+    fixedEffects:
+    - statType: 2
+      value: 2
+    randomOutcomes:
+    - outcomeId: secondhand_success
+      resultMessage: "\uBB34\uC0AC\uD788 \uBE44\uC2F8\uAC8C \uD314\uC558\uB2E4."
+      probabilityWeight: 65
+      effects:
+      - statType: 0
+        value: 60000
+      - statType: 3
+        value: 4
+    - outcomeId: secondhand_noshow
+      resultMessage: "\uC0C1\uB300\uBC29\uC774 \uB178\uC1FC\uB97C \uD574\uC11C \uC2DC\uAC04\uB9CC
+        \uBC84\uB838\uB2E4."
+      probabilityWeight: 35
+      effects:
+      - statType: 3
+        value: -5
+      - statType: 2
+        value: 5

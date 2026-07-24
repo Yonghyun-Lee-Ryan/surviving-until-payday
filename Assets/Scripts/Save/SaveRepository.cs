@@ -119,6 +119,8 @@ namespace SurviveUntilPayday.Save
             data.run ??= new RunSaveData();
             data.meta ??= new MetaSaveData();
             data.run.recentEventIds ??= new System.Collections.Generic.List<string>();
+            data.run.runFlags ??= new System.Collections.Generic.List<string>();
+            data.run.queuedEventIds ??= new System.Collections.Generic.List<string>();
             data.meta.unlockedEndingIds ??= new System.Collections.Generic.List<string>();
             data.meta.unlockedEventIds ??= new System.Collections.Generic.List<string>();
             data.meta.unlockedTraitIds ??= new System.Collections.Generic.List<string>();

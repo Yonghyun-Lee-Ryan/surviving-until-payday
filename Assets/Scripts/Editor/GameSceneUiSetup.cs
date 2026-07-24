@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using SurviveUntilPayday.Art;
 using SurviveUntilPayday.Data;
 using SurviveUntilPayday.UI;
 using UnityEditor;
@@ -42,11 +43,12 @@ namespace SurviveUntilPayday.EditorTools
             var eventPanel = BuildEventPanel(safeArea);
             var choicePanel = BuildChoicePanel(safeArea);
             var resultPopup = BuildResultPopup(safeArea);
+            var weeklyPopup = BuildWeeklySummaryPopup(safeArea);
 
             var presenterObject = new GameObject("GamePlayPresenter");
             Undo.RegisterCreatedObjectUndo(presenterObject, "Create GamePlayPresenter");
             var presenter = presenterObject.AddComponent<GamePlayPresenter>();
-            presenter.BindViews(hud, eventPanel, choicePanel, resultPopup);
+            presenter.BindViews(hud, eventPanel, choicePanel, resultPopup, weeklyPopup);
 
             AssignSampleData(presenter);
 
@@ -57,7 +59,7 @@ namespace SurviveUntilPayday.EditorTools
             Debug.Log(
                 "[GameSceneUiSetup] Game Scene UI ready.\n" +
                 "1) GamePlayPresenter에 Job/Events가 비어 있으면 Inspector에서 할당하세요.\n" +
-                "2) Bootstrap → MainMenu → 게임 시작으로 플레이하세요.\n" +
+                "2) Bootstrap → MainMenu → 새 게임으로 플레이하세요.\n" +
                 "3) Game 뷰를 1080x1920 Portrait로 맞추세요.");
         }
 
@@ -179,7 +181,18 @@ namespace SurviveUntilPayday.EditorTools
 
         private static void RelayoutChoiceButtons(RectTransform choicePanel)
         {
-            var offsets = new[] { 220f, 118f, 16f };
+            if (choicePanel == null)
+            {
+                return;
+            }
+
+            choicePanel.anchorMin = new Vector2(0f, 0f);
+            choicePanel.anchorMax = new Vector2(1f, 0f);
+            choicePanel.pivot = new Vector2(0.5f, 0f);
+            choicePanel.anchoredPosition = new Vector2(0f, 24f);
+            choicePanel.sizeDelta = new Vector2(-48f, 430f);
+
+            var offsets = new[] { 250f, 148f, 46f };
             for (var i = 0; i < 3; i++)
             {
                 var button = choicePanel.Find($"Choice_{i}") as RectTransform;
@@ -192,8 +205,11 @@ namespace SurviveUntilPayday.EditorTools
                 button.anchorMax = new Vector2(1f, 0f);
                 button.pivot = new Vector2(0.5f, 0f);
                 button.anchoredPosition = new Vector2(0f, offsets[i]);
-                button.sizeDelta = new Vector2(-40f, 92f);
+                button.sizeDelta = new Vector2(-40f, 88f);
             }
+
+            var choiceView = choicePanel.GetComponent<ChoicePanelView>();
+            choiceView?.EnsureRerollButton();
         }
 
         private static void CleanupTempControllers()
@@ -307,10 +323,10 @@ namespace SurviveUntilPayday.EditorTools
             Stretch(crisisText.rectTransform);
             crisisText.color = Color.white;
 
-            var health = CreateGauge(root.transform, "HealthGauge");
-            var stress = CreateGauge(root.transform, "StressGauge");
-            var happiness = CreateGauge(root.transform, "HappinessGauge");
-            var company = CreateGauge(root.transform, "CompanyGauge");
+            var health = CreateGauge(root.transform, "HealthGauge", "건강");
+            var stress = CreateGauge(root.transform, "StressGauge", "스트레스");
+            var happiness = CreateGauge(root.transform, "HappinessGauge", "행복도");
+            var company = CreateGauge(root.transform, "CompanyGauge", "회사 평가");
             PlaceGaugeInHud(health.GetComponent<RectTransform>(), 0);
             PlaceGaugeInHud(stress.GetComponent<RectTransform>(), 1);
             PlaceGaugeInHud(happiness.GetComponent<RectTransform>(), 2);
@@ -341,21 +357,28 @@ namespace SurviveUntilPayday.EditorTools
             gauge.anchorMin = new Vector2(minX, 0f);
             gauge.anchorMax = new Vector2(maxX, 0f);
             gauge.pivot = new Vector2(0.5f, 0f);
-            gauge.anchoredPosition = new Vector2(0f, 16f);
-            gauge.sizeDelta = new Vector2(-8f, 120f);
+            gauge.anchoredPosition = new Vector2(0f, 12f);
+            gauge.sizeDelta = new Vector2(-8f, 140f);
         }
 
-        private static GameObject CreateGauge(Transform parent, string name)
+        private static GameObject CreateGauge(Transform parent, string name, string displayName)
         {
             var root = CreatePanel(parent, name, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                Vector2.zero, new Vector2(210f, 110f), new Color(0.9f, 0.9f, 0.9f, 0.95f));
+                Vector2.zero, new Vector2(210f, 130f), new Color(0.9f, 0.9f, 0.9f, 0.95f));
 
-            var nameLabel = CreateText(root.transform, "Name", name, 22, TextAnchor.MiddleCenter,
-                new Vector2(0f, 36f), new Vector2(0f, 28f));
-            StretchHorizontal(nameLabel.rectTransform, 36f, 28f);
+            var nameLabel = CreateText(root.transform, "Name", displayName, 24, TextAnchor.MiddleCenter,
+                new Vector2(0f, 42f), new Vector2(0f, 32f));
+            StretchHorizontal(nameLabel.rectTransform, 42f, 32f);
+            nameLabel.font = Resources.Load<Font>("Fonts/NotoSansKR-Bold")
+                             ?? Resources.Load<Font>("Fonts/NotoSansKR-Regular")
+                             ?? nameLabel.font;
+            nameLabel.color = new Color(0.15f, 0.16f, 0.2f, 1f);
+
             var valueLabel = CreateText(root.transform, "Value", "0", 24, TextAnchor.MiddleCenter,
-                new Vector2(0f, -36f), new Vector2(0f, 28f));
-            StretchHorizontal(valueLabel.rectTransform, -36f, 28f);
+                new Vector2(0f, -42f), new Vector2(0f, 28f));
+            StretchHorizontal(valueLabel.rectTransform, -42f, 28f);
+            valueLabel.font = Resources.Load<Font>("Fonts/NotoSansKR-Regular") ?? valueLabel.font;
+            valueLabel.color = new Color(0.15f, 0.16f, 0.2f, 1f);
 
             var track = CreatePanel(root.transform, "Track", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                 new Vector2(0f, 0f), new Vector2(-24f, 18f), new Color(0.82f, 0.82f, 0.82f, 1f));
@@ -400,50 +423,57 @@ namespace SurviveUntilPayday.EditorTools
         private static EventPanelView BuildEventPanel(Transform parent)
         {
             var root = CreatePanel(parent, "EventPanel", new Vector2(0f, 0.5f), new Vector2(1f, 0.5f),
-                new Vector2(0f, 40f), new Vector2(-48f, 560f), new Color(0.93f, 0.94f, 0.96f, 1f));
+                new Vector2(0f, 70f), new Vector2(-32f, 620f), new Color(0.93f, 0.94f, 0.96f, 1f));
 
-            var illustration = CreatePanel(root.transform, "Illustration", new Vector2(0f, 1f), new Vector2(1f, 1f),
-                new Vector2(0f, -24f), new Vector2(-40f, 220f), new Color(0.78f, 0.82f, 0.86f, 1f));
-            illustration.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
-            var illustrationImage = illustration.GetComponent<Image>();
+            // 상황 이미지: 넓고 크게
+            var background = CreatePanel(root.transform, "Background", new Vector2(0f, 1f), new Vector2(1f, 1f),
+                new Vector2(0f, -8f), new Vector2(-16f, 360f), new Color(0.78f, 0.82f, 0.86f, 1f));
+            background.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
+            var backgroundImage = background.GetComponent<Image>();
+            backgroundImage.preserveAspect = true;
+            backgroundImage.raycastTarget = false;
 
-            var placeholder = CreateText(illustration.transform, "Placeholder", "사건 이미지 (Placeholder)", 30,
-                TextAnchor.MiddleCenter, Vector2.zero, new Vector2(0f, 80f));
-            Stretch(placeholder.rectTransform);
+            // 표정 슬롯은 생성하되 비활성(초상화 미사용)
+            var expression = CreatePanel(root.transform, "Expression", new Vector2(1f, 1f), new Vector2(1f, 1f),
+                new Vector2(-28f, -200f), new Vector2(150f, 150f), new Color(1f, 1f, 1f, 0f));
+            expression.SetActive(false);
+            var expressionImage = expression.GetComponent<Image>();
+            expressionImage.enabled = false;
 
-            var title = CreateText(root.transform, "Title", "사건 제목", 42, TextAnchor.MiddleCenter,
-                new Vector2(0f, -280f), new Vector2(-48f, 60f));
-            StretchHorizontal(title.rectTransform, -280f, 60f);
-            var description = CreateText(root.transform, "Description", "사건 설명", 28, TextAnchor.UpperCenter,
-                new Vector2(0f, -360f), new Vector2(-48f, 140f));
-            StretchHorizontal(description.rectTransform, -360f, 140f);
+            var title = CreateText(root.transform, "Title", "사건 제목", 38, TextAnchor.MiddleCenter,
+                new Vector2(0f, -385f), new Vector2(-32f, 48f));
+            StretchHorizontal(title.rectTransform, -385f, 48f);
+            var description = CreateText(root.transform, "Description", "사건 설명", 32, TextAnchor.UpperCenter,
+                new Vector2(0f, -450f), new Vector2(-32f, 140f));
+            StretchHorizontal(description.rectTransform, -450f, 140f);
             description.horizontalOverflow = HorizontalWrapMode.Wrap;
             description.verticalOverflow = VerticalWrapMode.Truncate;
 
             var view = root.AddComponent<EventPanelView>();
-            view.Bind(title, description, illustrationImage, placeholder);
+            view.Bind(title, description, backgroundImage, null, expressionImage, null);
             return view;
         }
 
         private static ChoicePanelView BuildChoicePanel(Transform parent)
         {
             var root = CreatePanel(parent, "ChoicePanel", new Vector2(0f, 0f), new Vector2(1f, 0f),
-                new Vector2(0f, 36f), new Vector2(-48f, 340f), new Color(1f, 1f, 1f, 0.01f));
+                new Vector2(0f, 24f), new Vector2(-48f, 430f), new Color(1f, 1f, 1f, 0.01f));
             root.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
             root.GetComponent<Image>().raycastTarget = false;
 
             var buttons = new Button[3];
             var labels = new Text[3];
-            var offsets = new[] { 220f, 118f, 16f };
+            // 하단부터: 선택지 3개, 위쪽에 광고 버튼 공간(약 80px) 확보
+            var offsets = new[] { 250f, 148f, 46f };
             for (var i = 0; i < 3; i++)
             {
                 var buttonObject = CreatePanel(root.transform, $"Choice_{i}", new Vector2(0f, 0f),
-                    new Vector2(1f, 0f), new Vector2(0f, offsets[i]), new Vector2(-40f, 92f),
+                    new Vector2(1f, 0f), new Vector2(0f, offsets[i]), new Vector2(-40f, 88f),
                     new Color(0.18f, 0.42f, 0.55f, 1f));
                 buttonObject.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
                 var button = buttonObject.AddComponent<Button>();
                 button.targetGraphic = buttonObject.GetComponent<Image>();
-                var label = CreateText(buttonObject.transform, "Label", $"선택지 {i + 1}", 32,
+                var label = CreateText(buttonObject.transform, "Label", $"선택지 {i + 1}", 30,
                     TextAnchor.MiddleCenter, Vector2.zero, new Vector2(0f, 80f));
                 Stretch(label.rectTransform);
                 label.color = Color.white;
@@ -453,6 +483,7 @@ namespace SurviveUntilPayday.EditorTools
 
             var view = root.AddComponent<ChoicePanelView>();
             view.Bind(buttons, labels);
+            view.EnsureRerollButton();
             return view;
         }
 
@@ -475,8 +506,8 @@ namespace SurviveUntilPayday.EditorTools
                 new Vector2(0f, -60f), new Vector2(740f, 160f));
             changes.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-            var nextButtonObject = CreatePanel(card.transform, "NextDayButton", new Vector2(0.5f, 0f),
-                new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(420f, 100f),
+            var nextButtonObject = CreatePanel(card.transform, "NextDayButton", new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f), new Vector2(0f, -180f), new Vector2(420f, 100f),
                 new Color(0.18f, 0.42f, 0.55f, 1f));
             var nextButton = nextButtonObject.AddComponent<Button>();
             nextButton.targetGraphic = nextButtonObject.GetComponent<Image>();
@@ -490,15 +521,82 @@ namespace SurviveUntilPayday.EditorTools
             return view;
         }
 
+        private static WeeklySummaryPopupView BuildWeeklySummaryPopup(Transform parent)
+        {
+            var root = CreatePanel(parent, "WeeklySummaryPopup", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(860f, 720f), new Color(0.12f, 0.14f, 0.18f, 0.72f));
+            Stretch(root.GetComponent<RectTransform>());
+            root.GetComponent<Image>().color = new Color(0.1f, 0.1f, 0.12f, 0.55f);
+
+            var card = CreatePanel(root.transform, "Card", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(820f, 560f), new Color(0.97f, 0.96f, 0.92f, 1f));
+
+            var title = CreateText(card.transform, "Title", "주간 결산", 44, TextAnchor.MiddleCenter,
+                new Vector2(0f, 200f), new Vector2(760f, 60f));
+            var body = CreateText(card.transform, "Body", "요약", 30, TextAnchor.UpperCenter,
+                new Vector2(0f, 70f), new Vector2(740f, 180f));
+            body.horizontalOverflow = HorizontalWrapMode.Wrap;
+            var warnings = CreateText(card.transform, "Warnings", "경고", 28, TextAnchor.UpperCenter,
+                new Vector2(0f, -90f), new Vector2(740f, 140f));
+            warnings.horizontalOverflow = HorizontalWrapMode.Wrap;
+            warnings.color = new Color(0.55f, 0.2f, 0.15f, 1f);
+
+            var continueObject = CreatePanel(card.transform, "ContinueButton", new Vector2(0.5f, 0f),
+                new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(420f, 100f),
+                new Color(0.25f, 0.45f, 0.35f, 1f));
+            var continueButton = continueObject.AddComponent<Button>();
+            continueButton.targetGraphic = continueObject.GetComponent<Image>();
+            var continueLabel = CreateText(continueObject.transform, "Label", "다음 주로", 36,
+                TextAnchor.MiddleCenter, Vector2.zero, new Vector2(400f, 80f));
+            continueLabel.color = Color.white;
+
+            var view = root.AddComponent<WeeklySummaryPopupView>();
+            view.Bind(root, title, body, warnings, continueButton, continueLabel);
+            root.SetActive(false);
+            return view;
+        }
+
+        [MenuItem("Tools/Surviving Until Payday/Setup Weekly Summary Popup (Unit 19)")]
+        public static void SetupWeeklySummaryPopupOnly()
+        {
+            if (!File.Exists(GameScenePath))
+            {
+                Debug.LogError("[GameSceneUiSetup] Game.unity missing.");
+                return;
+            }
+
+            var scene = EditorSceneManager.OpenScene(GameScenePath, OpenSceneMode.Single);
+            var presenter = Object.FindAnyObjectByType<GamePlayPresenter>();
+            var safeArea = GameObject.Find("SafeArea");
+            if (presenter == null || safeArea == null)
+            {
+                Debug.LogError("[GameSceneUiSetup] GamePlayPresenter/SafeArea missing. Run Unit 7 setup first.");
+                return;
+            }
+
+            var existing = safeArea.transform.Find("WeeklySummaryPopup");
+            if (existing != null)
+            {
+                Object.DestroyImmediate(existing.gameObject);
+            }
+
+            var weekly = BuildWeeklySummaryPopup(safeArea.transform);
+            var so = new SerializedObject(presenter);
+            so.FindProperty("weeklySummaryPopupView").objectReferenceValue = weekly;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(presenter);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("[GameSceneUiSetup] WeeklySummaryPopup wired (Unit 19).");
+        }
+
         private static void AssignSampleData(GamePlayPresenter presenter)
         {
             var job = AssetDatabase.LoadAssetAtPath<JobData>("Assets/Data/Jobs/Job_JuniorOffice.asset");
             var trait = AssetDatabase.LoadAssetAtPath<TraitData>("Assets/Data/Traits/Trait_Thrifty.asset");
-            var overtime = AssetDatabase.LoadAssetAtPath<EventData>("Assets/Data/Events/Event_Overtime_001.asset");
-            var phone = AssetDatabase.LoadAssetAtPath<EventData>("Assets/Data/Events/Event_PhoneCrack_001.asset");
             var rest = EnsureRestFallbackEvent();
 
-            if (job == null || overtime == null || rest == null)
+            if (job == null || rest == null)
             {
                 Debug.LogWarning(
                     "[GameSceneUiSetup] Sample data missing. Run 'Create Sample Data (Unit 2)' then re-run this setup.");
@@ -511,20 +609,29 @@ namespace SurviveUntilPayday.EditorTools
             so.FindProperty("fallbackEvent").objectReferenceValue = rest;
             so.FindProperty("randomSeed").intValue = 1;
 
+            var artCatalog = AssetDatabase.LoadAssetAtPath<ArtCatalog>("Assets/Data/Art/ArtCatalog.asset");
+            if (artCatalog != null && so.FindProperty("artCatalog") != null)
+            {
+                so.FindProperty("artCatalog").objectReferenceValue = artCatalog;
+            }
+
+            // 개발 단위 16: Assets/Data/Events 아래 모든 EventData를 카탈로그에 등록한다.
+            var events = new List<EventData>();
+            var eventGuids = AssetDatabase.FindAssets("t:EventData", new[] { "Assets/Data/Events" });
+            foreach (var guid in eventGuids)
+            {
+                var eventPath = AssetDatabase.GUIDToAssetPath(guid);
+                var eventAsset = AssetDatabase.LoadAssetAtPath<EventData>(eventPath);
+                if (eventAsset != null)
+                {
+                    events.Add(eventAsset);
+                }
+            }
+
+            events.Sort((a, b) => string.CompareOrdinal(a.Id, b.Id));
+
             var catalogProp = so.FindProperty("eventCatalog");
             catalogProp.ClearArray();
-            var events = new List<EventData>();
-            if (overtime != null)
-            {
-                events.Add(overtime);
-            }
-
-            if (phone != null)
-            {
-                events.Add(phone);
-            }
-
-            events.Add(rest);
             for (var i = 0; i < events.Count; i++)
             {
                 catalogProp.InsertArrayElementAtIndex(i);
@@ -542,8 +649,47 @@ namespace SurviveUntilPayday.EditorTools
                 allTraitsProp.GetArrayElementAtIndex(i).objectReferenceValue = traitAsset;
             }
 
+            WireEndingCatalog(presenter, so);
+
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(presenter);
+        }
+
+        private static void WireEndingCatalog(GamePlayPresenter presenter, SerializedObject so)
+        {
+            var guids = AssetDatabase.FindAssets("t:EndingData", new[] { "Assets/Data/Endings" });
+            var endings = new List<EndingData>();
+            EndingData fallback = null;
+            foreach (var guid in guids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var ending = AssetDatabase.LoadAssetAtPath<EndingData>(path);
+                if (ending == null)
+                {
+                    continue;
+                }
+
+                endings.Add(ending);
+                if (ending.Id == "ending_barely_survived")
+                {
+                    fallback = ending;
+                }
+            }
+
+            if (fallback == null && endings.Count > 0)
+            {
+                fallback = endings[0];
+            }
+
+            var catalogProp = so.FindProperty("endingCatalog");
+            catalogProp.ClearArray();
+            for (var i = 0; i < endings.Count; i++)
+            {
+                catalogProp.InsertArrayElementAtIndex(i);
+                catalogProp.GetArrayElementAtIndex(i).objectReferenceValue = endings[i];
+            }
+
+            so.FindProperty("fallbackSuccessEnding").objectReferenceValue = fallback;
         }
 
         private static EventData EnsureRestFallbackEvent()
@@ -664,7 +810,13 @@ namespace SurviveUntilPayday.EditorTools
 
         private static Font ResolveUiFont()
         {
-            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var font = Resources.Load<Font>("Fonts/NotoSansKR-Regular");
+            if (font != null)
+            {
+                return font;
+            }
+
+            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (font != null)
             {
                 return font;

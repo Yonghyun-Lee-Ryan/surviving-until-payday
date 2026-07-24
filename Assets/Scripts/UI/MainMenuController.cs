@@ -1,11 +1,14 @@
+using System.Collections.Generic;
+using SurviveUntilPayday.Audio;
 using SurviveUntilPayday.Core;
+using SurviveUntilPayday.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace SurviveUntilPayday.UI
 {
     /// <summary>
-    /// MainMenu: 새 게임 / 이어하기 / 도감 해금률 / 설정.
+    /// MainMenu: 새 게임 / 이어하기 / 도감 해금률 / 설정 / 회차 시작(직업·특성).
     /// </summary>
     public sealed class MainMenuController : MonoBehaviour
     {
@@ -14,8 +17,11 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private Button settingsButton;
         [SerializeField] private CodexPanelView codexPanel;
         [SerializeField] private SettingsPanelView settingsPanel;
+        [SerializeField] private RunStartPanelView runStartPanel;
+        [SerializeField] private JobData defaultJob;
+        [SerializeField] private List<TraitData> traitCatalog = new List<TraitData>();
         [SerializeField] private int totalEndingCount = 9;
-        [SerializeField] private int totalEventCount = 3;
+        [SerializeField] private int totalEventCount = 20;
         [SerializeField] private int totalTraitCount = 4;
         [SerializeField] private int totalAchievementCount = 5;
 
@@ -45,10 +51,12 @@ namespace SurviveUntilPayday.UI
 
         private void Start()
         {
+            EnsureDefaultCatalog();
             RefreshContinueButton();
             RefreshCodex();
             SubscribeUnlockNotifications();
             ShowLastRunUnlockToast();
+            AppRoot.EnsureCreated().Audio?.SetBgm(BgmId.Main);
         }
 
         private void OnDestroy()
@@ -86,6 +94,26 @@ namespace SurviveUntilPayday.UI
         {
             settingsButton = settings;
             settingsPanel = panel;
+        }
+
+        public void BindRunStart(RunStartPanelView panel, JobData job, List<TraitData> traits)
+        {
+            runStartPanel = panel;
+            defaultJob = job;
+            traitCatalog = traits ?? new List<TraitData>();
+        }
+
+        private void EnsureDefaultCatalog()
+        {
+            if (defaultJob == null)
+            {
+                defaultJob = Resources.Load<JobData>("Jobs/Job_JuniorOffice");
+            }
+
+            if (traitCatalog == null)
+            {
+                traitCatalog = new List<TraitData>();
+            }
         }
 
         private void RefreshContinueButton()
@@ -204,6 +232,7 @@ namespace SurviveUntilPayday.UI
         private void OnStartGameClicked()
         {
             var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
+            appRoot.Audio?.PlaySfx(SfxId.Click);
             if (appRoot.SceneLoader == null)
             {
                 Debug.LogError("[MainMenuController] SceneLoader is unavailable. Was Bootstrap skipped?");
@@ -211,13 +240,91 @@ namespace SurviveUntilPayday.UI
             }
 
             appRoot.Settings?.TryVibrate();
-            appRoot.Session.StartMode = GameStartMode.NewRun;
+            OpenRunStartPanel();
+        }
+
+        private void OpenRunStartPanel()
+        {
+            EnsureDefaultCatalog();
+            if (defaultJob == null)
+            {
+                Debug.LogError("[MainMenuController] defaultJob is not assigned. Starting without selection UI.");
+                StartNewRun(null);
+                return;
+            }
+
+            if (runStartPanel == null)
+            {
+                Debug.LogWarning("[MainMenuController] runStartPanel missing. Starting with no trait.");
+                StartNewRun(null);
+                return;
+            }
+
+            var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
+            var unlocked = CollectUnlockedTraits(appRoot.Session?.Meta);
+            runStartPanel.Show(defaultJob, unlocked, StartNewRun, () => { });
+        }
+
+        private List<TraitData> CollectUnlockedTraits(MetaProgressionManager meta)
+        {
+            var unlocked = new List<TraitData>();
+            if (traitCatalog == null)
+            {
+                return unlocked;
+            }
+
+            for (var i = 0; i < traitCatalog.Count; i++)
+            {
+                var trait = traitCatalog[i];
+                if (trait == null)
+                {
+                    continue;
+                }
+
+                if (meta == null || meta.IsTraitUnlocked(trait))
+                {
+                    unlocked.Add(trait);
+                }
+            }
+
+            return unlocked;
+        }
+
+        private void StartNewRun(TraitData selectedTrait)
+        {
+            var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
+            if (appRoot.SceneLoader == null)
+            {
+                Debug.LogError("[MainMenuController] SceneLoader is unavailable. Was Bootstrap skipped?");
+                return;
+            }
+
+            EnsureDefaultCatalog();
+            appRoot.Session.SetPendingNewRun(defaultJob, selectedTrait);
+
+            var analytics = appRoot.Analytics;
+            if (analytics != null)
+            {
+                if (defaultJob != null)
+                {
+                    analytics.JobSelected(defaultJob.Id);
+                }
+
+                analytics.TraitSelected(selectedTrait != null ? selectedTrait.Id : string.Empty);
+            }
+
+            if (runStartPanel != null)
+            {
+                runStartPanel.Hide();
+            }
+
             appRoot.SceneLoader.LoadGame();
         }
 
         private void OnContinueClicked()
         {
             var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
+            appRoot.Audio?.PlaySfx(SfxId.Click);
             if (appRoot.SceneLoader == null)
             {
                 Debug.LogError("[MainMenuController] SceneLoader is unavailable. Was Bootstrap skipped?");
@@ -232,12 +339,14 @@ namespace SurviveUntilPayday.UI
             }
 
             appRoot.Settings?.TryVibrate();
+            appRoot.Session.ClearPendingRunSelection();
             appRoot.Session.StartMode = GameStartMode.ContinueRun;
             appRoot.SceneLoader.LoadGame();
         }
 
         private void OnSettingsClicked()
         {
+            AppRoot.EnsureCreated().Audio?.PlaySfx(SfxId.Click);
             if (settingsPanel != null)
             {
                 settingsPanel.Toggle();

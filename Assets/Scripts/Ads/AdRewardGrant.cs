@@ -39,7 +39,7 @@ namespace SurviveUntilPayday.Ads
                     return new AdRewardGrant(
                         placement,
                         choiceReroll: true,
-                        description: "선택지 새로고침");
+                        description: "다른 사건 보기");
                 case RewardedAdPlacement.RetryOutcome:
                     return new AdRewardGrant(
                         placement,

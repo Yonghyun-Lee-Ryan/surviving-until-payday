@@ -81,6 +81,9 @@ namespace SurviveUntilPayday.Settings
 
         public AppSettingsData Current => data;
 
+        /// <summary>사운드 ON/OFF·볼륨이 바뀔 때 (enabled, volume).</summary>
+        public event Action<bool, float> AudioSettingsChanged;
+
         public bool SoundEnabled
         {
             get => data.soundEnabled;
@@ -159,6 +162,7 @@ namespace SurviveUntilPayday.Settings
         private void ApplyAudio()
         {
             AudioListener.volume = data.soundEnabled ? Mathf.Clamp01(data.soundVolume) : 0f;
+            AudioSettingsChanged?.Invoke(data.soundEnabled, data.soundVolume);
         }
 
         private void Persist()

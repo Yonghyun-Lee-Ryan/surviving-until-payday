@@ -14,6 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.TraitData
   id: trait_overtime_pro
   displayName: "\uC57C\uADFC\uC804\uBB38\uAC00"
-  description: "\uC57C\uADFC \uC2A4\uD2B8\uB808\uC2A4 \uAC10\uC18C(\uD6C4\uC18D \uD655\uC7A5)"
+  description: "\uC57C\uADFC(WORK)\uC5D0\uC11C \uC2A4\uD2B8\uB808\uC2A4 \uC99D\uAC00\uAC00
+    \uC904\uACE0, \uC2DC\uC791 \uC2A4\uD2B8\uB808\uC2A4\uAC00 \uB0AE\uACE0 \uD68C\uC0AC
+    \uD3C9\uAC00\uAC00 \uB192\uB2E4."
   unlockLevel: 4
-  startingStatModifiers: []
+  startingStatModifiers:
+  - statType: 2
+    value: -5
+  - statType: 4
+    value: 5
+  cashLossMultiplier: 1
+  happinessGainMultiplier: 1
+  workStressGainMultiplier: 0.7

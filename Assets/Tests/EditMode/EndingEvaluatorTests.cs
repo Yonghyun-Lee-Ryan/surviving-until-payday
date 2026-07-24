@@ -45,6 +45,67 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void EndingEvaluator_OneBigShot_WhenCashAndHappinessMet()
+        {
+            var oneBigShot = CreateSuccessEnding("one_big_shot", "인생은 한방", 75, null);
+            oneBigShot.Condition.EditorSetCash(true, 500_000L, false, 0);
+            oneBigShot.Condition.EditorSetHappiness(true, 70, false, 0);
+            var happyConsumer = CreateSuccessEnding("happy", "행복한 소비왕", 80, null);
+            happyConsumer.Condition.EditorSetHappiness(true, 80, false, 0);
+            var barely = CreateSuccessEnding("barely", "겨우", 1, null);
+
+            var evaluator = new EndingEvaluator(new[] { barely, happyConsumer, oneBigShot }, barely);
+            var state = CreateState(cash: 600_000L, health: 50, stress: 50, happiness: 85, company: 50);
+
+            Assert.AreEqual("happy", evaluator.Evaluate(state, true, FailureReason.None).Id);
+        }
+
+        [Test]
+        public void EndingEvaluator_OneBigShot_WhenOnlyPartialConditionsMet()
+        {
+            var oneBigShot = CreateSuccessEnding("one_big_shot", "인생은 한방", 75, null);
+            oneBigShot.Condition.EditorSetCash(true, 500_000L, false, 0);
+            oneBigShot.Condition.EditorSetHappiness(true, 70, false, 0);
+            var barely = CreateSuccessEnding("barely", "겨우", 1, null);
+
+            var evaluator = new EndingEvaluator(new[] { barely, oneBigShot }, barely);
+            var state = CreateState(cash: 600_000L, health: 50, stress: 50, happiness: 75, company: 50);
+
+            Assert.AreEqual("one_big_shot", evaluator.Evaluate(state, true, FailureReason.None).Id);
+        }
+
+        [Test]
+        public void EndingEvaluator_OneBigShot_BeatsBarelyButNotCashKing()
+        {
+            var cashKing = CreateSuccessEnding("cash", "통장 잔고의 제왕", 100, 1_000_000L);
+            var oneBigShot = CreateSuccessEnding("one_big_shot", "인생은 한방", 75, null);
+            oneBigShot.Condition.EditorSetCash(true, 500_000L, false, 0);
+            oneBigShot.Condition.EditorSetHappiness(true, 70, false, 0);
+            var barely = CreateSuccessEnding("barely", "겨우", 1, null);
+
+            var evaluator = new EndingEvaluator(new[] { barely, oneBigShot, cashKing }, barely);
+            var state = CreateState(cash: 1_200_000L, health: 50, stress: 50, happiness: 75, company: 50);
+
+            Assert.AreEqual("cash", evaluator.Evaluate(state, true, FailureReason.None).Id);
+        }
+
+        [Test]
+        public void EndingConditionMatcher_RequiresAllConfiguredStats()
+        {
+            var condition = new EndingCondition();
+            condition.EditorSetCash(true, 500_000L, false, 0);
+            condition.EditorSetHappiness(true, 70, false, 0);
+
+            var richButUnhappy = new PlayerStats(600_000L, 50, 50, 60, 50);
+            var happyButPoor = new PlayerStats(400_000L, 50, 50, 80, 50);
+            var both = new PlayerStats(600_000L, 50, 50, 75, 50);
+
+            Assert.IsFalse(EndingConditionMatcher.Matches(condition, richButUnhappy));
+            Assert.IsFalse(EndingConditionMatcher.Matches(condition, happyButPoor));
+            Assert.IsTrue(EndingConditionMatcher.Matches(condition, both));
+        }
+
+        [Test]
         public void EndingEvaluator_FailureEnding_ByReason()
         {
             var bankruptcy = CreateFailureEnding("broke", "파산", FailureReason.Bankruptcy, 200);

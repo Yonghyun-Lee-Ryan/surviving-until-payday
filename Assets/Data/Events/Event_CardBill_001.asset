@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_CardBill_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_card_bill_001
+  title: "\uCE74\uB4DC\uAC12 \uACB0\uC81C\uC77C"
+  description: "\uC774\uBC88 \uB2EC \uCE74\uB4DC \uB300\uAE08 \uACB0\uC81C\uC77C\uC774
+    \uB3CC\uC544\uC654\uB2E4."
+  category: 0
+  minDay: 1
+  maxDay: 30
+  weight: 100
+  isFixedEvent: 1
+  fixedDay: 15
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 0
+  choices:
+  - choiceId: choice_card_full
+    text: "\uC804\uC561 \uACB0\uC81C\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -170000
+    - statType: 2
+      value: -3
+    - statType: 3
+      value: 1
+    randomOutcomes: []
+  - choiceId: choice_card_partial
+    text: "\uC77C\uBD80\uB9CC \uACB0\uC81C\uD558\uACE0 \uB098\uBA38\uC9C0\uB294 \uC774\uC6D4\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -85000
+    - statType: 2
+      value: 4
+    randomOutcomes: []
+    setFlags:
+    - owesDebt
+    clearFlags: []
+  - choiceId: choice_card_minimum
+    text: "\uB9AC\uBCFC\uBE59\uC73C\uB85C \uCD5C\uC18C \uAE08\uC561\uB9CC \uACB0\uC81C\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -35000
+    - statType: 2
+      value: 8
+    randomOutcomes: []
+    setFlags:
+    - owesDebt
+    clearFlags: []

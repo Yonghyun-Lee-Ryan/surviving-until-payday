@@ -14,11 +14,15 @@ namespace SurviveUntilPayday.Data
         [SerializeField] [TextArea(1, 3)] private string text;
         [SerializeField] private List<StatEffect> fixedEffects = new List<StatEffect>();
         [SerializeField] private List<RandomOutcome> randomOutcomes = new List<RandomOutcome>();
+        [SerializeField] private List<string> setFlags = new List<string>();
+        [SerializeField] private List<string> clearFlags = new List<string>();
 
         public string ChoiceId => choiceId;
         public string Text => text;
         public IReadOnlyList<StatEffect> FixedEffects => fixedEffects;
         public IReadOnlyList<RandomOutcome> RandomOutcomes => randomOutcomes;
+        public IReadOnlyList<string> SetFlags => setFlags ??= new List<string>();
+        public IReadOnlyList<string> ClearFlags => clearFlags ??= new List<string>();
 
         public EventChoiceData()
         {
@@ -28,12 +32,16 @@ namespace SurviveUntilPayday.Data
             string choiceId,
             string text,
             List<StatEffect> fixedEffects = null,
-            List<RandomOutcome> randomOutcomes = null)
+            List<RandomOutcome> randomOutcomes = null,
+            List<string> setFlags = null,
+            List<string> clearFlags = null)
         {
             this.choiceId = choiceId;
             this.text = text;
             this.fixedEffects = fixedEffects ?? new List<StatEffect>();
             this.randomOutcomes = randomOutcomes ?? new List<RandomOutcome>();
+            this.setFlags = setFlags ?? new List<string>();
+            this.clearFlags = clearFlags ?? new List<string>();
         }
 
         public List<string> Validate(string context)

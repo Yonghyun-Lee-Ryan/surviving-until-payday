@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_Wedding_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_wedding_001
+  title: "\uCE5C\uAD6C\uC758 \uACB0\uD63C\uC2DD"
+  description: "\uC624\uB79C \uCE5C\uAD6C\uAC00 \uACB0\uD63C\uD55C\uB2E4\uB294 \uC18C\uC2DD\uC744
+    \uC804\uD574\uC654\uB2E4. \uCD95\uC758\uAE08\uC744 \uC5BC\uB9C8\uB098 \uC900\uBE44\uD574\uC57C
+    \uD560\uAE4C?"
+  category: 4
+  minDay: 5
+  maxDay: 28
+  weight: 80
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 2
+  choices:
+  - choiceId: choice_wedding_generous
+    text: "\uB109\uB109\uD558\uAC8C \uCD95\uC758\uAE08\uC744 \uB0B8\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -150000
+    - statType: 3
+      value: 8
+    - statType: 2
+      value: -3
+    randomOutcomes: []
+  - choiceId: choice_wedding_moderate
+    text: "\uC801\uB2F9\uD55C \uAE08\uC561\uB9CC \uB0B8\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -70000
+    - statType: 3
+      value: 3
+    randomOutcomes: []
+  - choiceId: choice_wedding_skip
+    text: "\uBC14\uBE60\uC11C \uCC38\uC11D\uD558\uC9C0 \uBABB\uD558\uACE0 \uCD95\uC758\uAE08\uB9CC
+      \uBCF4\uB0B8\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -50000
+    - statType: 3
+      value: -5
+    - statType: 2
+      value: 4
+    randomOutcomes: []

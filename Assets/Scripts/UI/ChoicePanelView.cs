@@ -93,17 +93,19 @@ namespace SurviveUntilPayday.UI
         {
             if (rerollAdButton != null)
             {
+                LayoutRerollButton();
                 return;
             }
 
             var go = new GameObject("RerollAdButton", typeof(RectTransform));
             go.transform.SetParent(transform, false);
             var rect = go.GetComponent<RectTransform>();
+            // 패널 안쪽 상단 — 선택지와 겹치지 않게
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.anchoredPosition = new Vector2(0f, 8f);
-            rect.sizeDelta = new Vector2(-40f, 56f);
+            rect.anchoredPosition = new Vector2(0f, -8f);
+            rect.sizeDelta = new Vector2(-40f, 64f);
             var image = go.AddComponent<Image>();
             image.color = new Color(0.35f, 0.28f, 0.45f, 1f);
             rerollAdButton = go.AddComponent<Button>();
@@ -117,14 +119,34 @@ namespace SurviveUntilPayday.UI
             labelRect.offsetMin = Vector2.zero;
             labelRect.offsetMax = Vector2.zero;
             rerollAdLabel = labelGo.AddComponent<Text>();
-            rerollAdLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                                 ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            rerollAdLabel.font = UiFont.Regular;
             rerollAdLabel.fontSize = 26;
             rerollAdLabel.alignment = TextAnchor.MiddleCenter;
             rerollAdLabel.color = Color.white;
-            rerollAdLabel.text = "광고: 선택지 새로고침";
+            rerollAdLabel.text = "광고: 다른 사건 보기";
             WireReroll();
             go.SetActive(false);
+        }
+
+        private void LayoutRerollButton()
+        {
+            if (rerollAdButton == null)
+            {
+                return;
+            }
+
+            var rect = rerollAdButton.GetComponent<RectTransform>();
+            if (rect == null)
+            {
+                return;
+            }
+
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -8f);
+            rect.sizeDelta = new Vector2(-40f, 64f);
+            rect.SetAsLastSibling();
         }
 
         private void WireButtons()

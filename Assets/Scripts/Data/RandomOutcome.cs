@@ -14,11 +14,17 @@ namespace SurviveUntilPayday.Data
         [SerializeField] private string resultMessage;
         [SerializeField] [Min(0)] private int probabilityWeight = 100;
         [SerializeField] private List<StatEffect> effects = new List<StatEffect>();
+        [SerializeField] private List<string> setFlags = new List<string>();
+        [SerializeField] private List<string> clearFlags = new List<string>();
+        [SerializeField] private string queueEventId = string.Empty;
 
         public string OutcomeId => outcomeId;
         public string ResultMessage => resultMessage;
         public int ProbabilityWeight => probabilityWeight;
         public IReadOnlyList<StatEffect> Effects => effects;
+        public IReadOnlyList<string> SetFlags => setFlags ??= new List<string>();
+        public IReadOnlyList<string> ClearFlags => clearFlags ??= new List<string>();
+        public string QueueEventId => queueEventId;
 
         public RandomOutcome()
         {
@@ -29,6 +35,25 @@ namespace SurviveUntilPayday.Data
             string resultMessage,
             int probabilityWeight,
             params StatEffect[] effects)
+            : this(
+                outcomeId,
+                resultMessage,
+                probabilityWeight,
+                (IEnumerable<StatEffect>)effects,
+                null,
+                null,
+                null)
+        {
+        }
+
+        public RandomOutcome(
+            string outcomeId,
+            string resultMessage,
+            int probabilityWeight,
+            IEnumerable<StatEffect> effects,
+            IEnumerable<string> setFlags,
+            IEnumerable<string> clearFlags,
+            string queueEventId)
         {
             this.outcomeId = outcomeId;
             this.resultMessage = resultMessage;
@@ -36,6 +61,9 @@ namespace SurviveUntilPayday.Data
             this.effects = effects != null
                 ? new List<StatEffect>(effects)
                 : new List<StatEffect>();
+            this.setFlags = setFlags != null ? new List<string>(setFlags) : new List<string>();
+            this.clearFlags = clearFlags != null ? new List<string>(clearFlags) : new List<string>();
+            this.queueEventId = queueEventId ?? string.Empty;
         }
 
         public List<string> Validate(string context)

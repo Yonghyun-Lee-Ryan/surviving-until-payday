@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b32c85218faf7214396a3d963fcf36fa, type: 3}
+  m_Name: ArtCatalog
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Art.ArtCatalog
+  backgrounds:
+  - {fileID: 21300000, guid: 9051b09204f97bd4fa2d2f10da14898a, type: 3}
+  - {fileID: 21300000, guid: 52fc692843a5e574ebfcb127e2ebc372, type: 3}
+  - {fileID: 21300000, guid: f4c34f5f04d378e4f9d41f6d8c7a10e7, type: 3}
+  - {fileID: 21300000, guid: f38c3d0a6c34f1149b157439c36c4ed1, type: 3}
+  - {fileID: 21300000, guid: 049ee4c6e4645bd4b8e9e13ce44f6c36, type: 3}
+  - {fileID: 21300000, guid: 0b07a35e025896241aaab32a450e786c, type: 3}
+  - {fileID: 21300000, guid: 1d92dc05a471a2f49bc4dacf19dda88d, type: 3}
+  - {fileID: 21300000, guid: bdfe1a495efadc344a77743e854fc648, type: 3}
+  expressions:
+  - {fileID: 21300000, guid: 6f7b76014a41dd44bb098dccdfbac018, type: 3}
+  - {fileID: 21300000, guid: fc25ff97c560e5244a9cd47c0bac92bb, type: 3}
+  - {fileID: 21300000, guid: c9387f42ac446e049ba88ff1fc845e14, type: 3}
+  - {fileID: 21300000, guid: b4ee12211f9a06b42b4fbb030f3a5c69, type: 3}
+  - {fileID: 21300000, guid: e845837a5bbff504c84668ffbaab0eb1, type: 3}
+  - {fileID: 21300000, guid: 9dac315cd34705045ab6c75fdebaa75e, type: 3}

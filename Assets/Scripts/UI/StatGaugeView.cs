@@ -34,10 +34,24 @@ namespace SurviveUntilPayday.UI
 
         public void SetName(string displayName)
         {
+            if (nameLabel == null)
+            {
+                nameLabel = transform.Find("Name")?.GetComponent<Text>();
+            }
+
             if (nameLabel != null)
             {
-                nameLabel.text = displayName;
+                nameLabel.text = displayName ?? string.Empty;
+                UiFont.Apply(nameLabel, bold: true);
+                nameLabel.gameObject.SetActive(true);
+                nameLabel.enabled = true;
+                nameLabel.transform.SetAsLastSibling();
             }
+        }
+
+        public void BindNameLabel(Text name)
+        {
+            nameLabel = name;
         }
 
 #if UNITY_EDITOR
@@ -101,6 +115,7 @@ namespace SurviveUntilPayday.UI
             if (valueLabel != null)
             {
                 valueLabel.text = displayedValue.ToString();
+                UiFont.Apply(valueLabel);
             }
 
             var amount = maxValue <= 0 ? 0f : displayedValue / (float)maxValue;

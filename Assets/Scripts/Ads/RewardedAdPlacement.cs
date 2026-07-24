@@ -5,7 +5,7 @@ namespace SurviveUntilPayday.Ads
     /// </summary>
     public enum RewardedAdPlacement
     {
-        /// <summary>사건 선택 전 선택지 새로고침. 회차당 2회.</summary>
+        /// <summary>사건 선택 전 같은 날 다른 사건으로 교체. 회차당 2회.</summary>
         ChoiceReroll = 0,
 
         /// <summary>위험 선택 실패 후 결과 재시도. 회차당 1회.</summary>

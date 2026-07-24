@@ -61,6 +61,26 @@ namespace SurviveUntilPayday.Analytics
                 });
         }
 
+        public void JobSelected(string jobId)
+        {
+            Log(
+                AnalyticsEventNames.JobSelected,
+                new Dictionary<string, object>
+                {
+                    [AnalyticsParams.JobId] = SanitizeId(jobId)
+                });
+        }
+
+        public void TraitSelected(string traitId)
+        {
+            Log(
+                AnalyticsEventNames.TraitSelected,
+                new Dictionary<string, object>
+                {
+                    [AnalyticsParams.TraitId] = SanitizeId(traitId)
+                });
+        }
+
         public void DayStarted(int day, long cash)
         {
             Log(

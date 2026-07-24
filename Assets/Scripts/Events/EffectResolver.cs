@@ -16,6 +16,7 @@ namespace SurviveUntilPayday.Events
         private readonly IRandomService random;
         private readonly RunHistory history;
         private readonly DayManager dayManager;
+        private readonly TraitData activeTrait;
 
         private EventData activeEvent;
         private ChoicePhase phase = ChoicePhase.NoActiveEvent;
@@ -25,12 +26,14 @@ namespace SurviveUntilPayday.Events
             GameState state,
             IRandomService random,
             RunHistory history,
-            DayManager dayManager)
+            DayManager dayManager,
+            TraitData activeTrait = null)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
             this.random = random ?? throw new ArgumentNullException(nameof(random));
             this.history = history ?? throw new ArgumentNullException(nameof(history));
             this.dayManager = dayManager ?? throw new ArgumentNullException(nameof(dayManager));
+            this.activeTrait = activeTrait;
         }
 
         public ChoicePhase Phase => phase;
@@ -133,6 +136,18 @@ namespace SurviveUntilPayday.Events
                         }
                     }
                 }
+            }
+
+            effectsToApply = TraitRuntimeModifier.Apply(activeTrait, activeEvent.Category, effectsToApply);
+            effectsToApply = ApplyDifficultyToCashLosses(effectsToApply);
+
+            ApplyFlagMutations(choice.SetFlags, choice.ClearFlags, null);
+            if (selectedOutcome != null)
+            {
+                ApplyFlagMutations(
+                    selectedOutcome.SetFlags,
+                    selectedOutcome.ClearFlags,
+                    selectedOutcome.QueueEventId);
             }
 
             var allChanges = effectsToApply.Count > 0
@@ -239,6 +254,73 @@ namespace SurviveUntilPayday.Events
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Unit 19: 난도 계수는 현금 손실에만 적용한다. (DifficultyScaler 문서 참고)
+        /// </summary>
+        private List<StatEffect> ApplyDifficultyToCashLosses(List<StatEffect> effects)
+        {
+            if (effects == null || effects.Count == 0 || dayManager == null)
+            {
+                return effects;
+            }
+
+            var multiplier = dayManager.DifficultyMultiplier;
+            if (Math.Abs(multiplier - 1f) < 0.0001f)
+            {
+                return effects;
+            }
+
+            var scaled = new List<StatEffect>(effects.Count);
+            for (var i = 0; i < effects.Count; i++)
+            {
+                var effect = effects[i];
+                if (effect == null)
+                {
+                    continue;
+                }
+
+                if (effect.StatType == StatType.Cash && effect.Value < 0L)
+                {
+                    scaled.Add(new StatEffect(
+                        StatType.Cash,
+                        DifficultyScaler.ScaleCashDelta(effect.Value, multiplier)));
+                }
+                else
+                {
+                    scaled.Add(effect);
+                }
+            }
+
+            return scaled;
+        }
+
+        private void ApplyFlagMutations(
+            IReadOnlyList<string> setFlags,
+            IReadOnlyList<string> clearFlags,
+            string queueEventId)
+        {
+            if (clearFlags != null)
+            {
+                for (var i = 0; i < clearFlags.Count; i++)
+                {
+                    state.ClearFlag(clearFlags[i]);
+                }
+            }
+
+            if (setFlags != null)
+            {
+                for (var i = 0; i < setFlags.Count; i++)
+                {
+                    state.SetFlag(setFlags[i]);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(queueEventId))
+            {
+                state.EnqueueFollowUp(queueEventId);
+            }
         }
 
         private static string BuildResultMessage(EventChoiceData choice, RandomOutcome outcome)

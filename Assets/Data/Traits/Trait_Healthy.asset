@@ -14,6 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.TraitData
   id: trait_healthy
   displayName: "\uCCB4\uB825\uC655"
-  description: "\uAC74\uAC15 \uC2DC\uC791 \uBCF4\uB108\uC2A4"
+  description: "\uAC74\uAC15 \uCD5C\uB300\uCE58\uAC00 \uB192\uC544 \uCCB4\uB825\uC774
+    \uB192\uAC8C \uC2DC\uC791\uD55C\uB2E4."
   unlockLevel: 2
-  startingStatModifiers: []
+  startingStatModifiers:
+  - statType: 1
+    value: 20
+  cashLossMultiplier: 1
+  happinessGainMultiplier: 1
+  workStressGainMultiplier: 1

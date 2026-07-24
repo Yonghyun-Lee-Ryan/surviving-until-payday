@@ -1,5 +1,6 @@
 using SurviveUntilPayday.Ads;
 using SurviveUntilPayday.Analytics;
+using SurviveUntilPayday.Audio;
 using SurviveUntilPayday.Save;
 using SurviveUntilPayday.Services;
 using SurviveUntilPayday.Settings;
@@ -42,6 +43,8 @@ namespace SurviveUntilPayday.Core
         public ICrashReporter CrashReporter { get; private set; }
 
         public AppSettingsService Settings { get; private set; }
+
+        public IAudioService Audio { get; private set; }
 
         public IAdsConsentService AdsConsent { get; private set; }
 
@@ -146,6 +149,24 @@ namespace SurviveUntilPayday.Core
             {
                 Settings = new AppSettingsService();
             }
+
+            if (Audio == null)
+            {
+                var existingAudio = GetComponentInChildren<UnityAudioService>(true);
+                if (existingAudio != null)
+                {
+                    existingAudio.TryLoadPlaceholdersFromResources();
+                    Audio = existingAudio;
+                }
+                else
+                {
+                    Audio = UnityAudioService.Create(transform);
+                }
+            }
+
+            Settings.AudioSettingsChanged -= OnAudioSettingsChanged;
+            Settings.AudioSettingsChanged += OnAudioSettingsChanged;
+            OnAudioSettingsChanged(Settings.SoundEnabled, Settings.SoundVolume);
 
             if (AdsConsent == null)
             {
@@ -265,6 +286,11 @@ namespace SurviveUntilPayday.Core
 
         private void OnDestroy()
         {
+            if (Settings != null)
+            {
+                Settings.AudioSettingsChanged -= OnAudioSettingsChanged;
+            }
+
             if (Instance == this)
             {
                 EndSessionTracking();
@@ -314,6 +340,11 @@ namespace SurviveUntilPayday.Core
             AdQuota?.BeginRun();
             PersistSession(includeActiveRun: false);
             Debug.Log("[AppRoot] All save data reset.");
+        }
+
+        private void OnAudioSettingsChanged(bool enabled, float volume)
+        {
+            Audio?.ApplySettings(enabled, volume);
         }
     }
 }

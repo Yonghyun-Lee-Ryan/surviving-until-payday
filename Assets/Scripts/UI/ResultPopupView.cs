@@ -72,6 +72,54 @@ namespace SurviveUntilPayday.UI
             {
                 nextDayButton.interactable = true;
             }
+
+            LayoutNextDayInLowerGap();
+        }
+
+        /// <summary>
+        /// 「다음 날」버튼을 변경사항 텍스트 하단과 카드 하단 사이 중앙에 둔다.
+        /// </summary>
+        private void LayoutNextDayInLowerGap()
+        {
+            if (nextDayButton == null || changesLabel == null)
+            {
+                return;
+            }
+
+            var buttonRect = nextDayButton.GetComponent<RectTransform>();
+            var changesRect = changesLabel.rectTransform;
+            var card = changesRect != null ? changesRect.parent as RectTransform : null;
+            if (buttonRect == null || changesRect == null || card == null)
+            {
+                return;
+            }
+
+            changesLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
+            changesLabel.verticalOverflow = VerticalWrapMode.Overflow;
+            Canvas.ForceUpdateCanvases();
+
+            var textWidth = changesRect.sizeDelta.x > 10f ? changesRect.sizeDelta.x : 740f;
+            var textHeight = Mathf.Max(changesLabel.preferredHeight, 48f);
+            changesRect.sizeDelta = new Vector2(textWidth, textHeight);
+
+            Canvas.ForceUpdateCanvases();
+
+            var changesCorners = new Vector3[4];
+            var cardCorners = new Vector3[4];
+            changesRect.GetWorldCorners(changesCorners);
+            card.GetWorldCorners(cardCorners);
+
+            // corners[0] = bottom-left
+            var midWorldY = (changesCorners[0].y + cardCorners[0].y) * 0.5f;
+            var midLocal = card.InverseTransformPoint(new Vector3(card.position.x, midWorldY, card.position.z));
+
+            buttonRect.SetParent(card, false);
+            buttonRect.anchorMin = new Vector2(0.5f, 0.5f);
+            buttonRect.anchorMax = new Vector2(0.5f, 0.5f);
+            buttonRect.pivot = new Vector2(0.5f, 0.5f);
+            buttonRect.sizeDelta = new Vector2(420f, 100f);
+            buttonRect.anchoredPosition = new Vector2(0f, midLocal.y);
+            buttonRect.SetAsLastSibling();
         }
 
         public void Hide()
@@ -274,8 +322,7 @@ namespace SurviveUntilPayday.UI
             labelRect.offsetMin = Vector2.zero;
             labelRect.offsetMax = Vector2.zero;
             label = labelGo.AddComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                         ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            label.font = UiFont.Regular;
             label.fontSize = 24;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;

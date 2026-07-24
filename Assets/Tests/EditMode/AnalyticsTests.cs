@@ -69,6 +69,24 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void GameAnalytics_JobAndTraitSelected_EmitExpectedEvents()
+        {
+            var debug = new DebugAnalyticsService();
+            var analytics = new GameAnalytics(debug, new ManualAdClock { UtcSeconds = 1 });
+
+            analytics.JobSelected("job_junior_office");
+            analytics.TraitSelected("trait_thrifty");
+            analytics.TraitSelected(string.Empty);
+
+            Assert.AreEqual(3, debug.EventCount);
+            Assert.AreEqual(AnalyticsEventNames.JobSelected, debug.History[0].Name);
+            Assert.AreEqual("job_junior_office", debug.History[0].Parameters[AnalyticsParams.JobId]);
+            Assert.AreEqual(AnalyticsEventNames.TraitSelected, debug.History[1].Name);
+            Assert.AreEqual("trait_thrifty", debug.History[1].Parameters[AnalyticsParams.TraitId]);
+            Assert.AreEqual(string.Empty, debug.History[2].Parameters[AnalyticsParams.TraitId]);
+        }
+
+        [Test]
         public void GameAnalytics_Session_TracksDuration()
         {
             var debug = new DebugAnalyticsService();

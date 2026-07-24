@@ -60,9 +60,20 @@ namespace SurviveUntilPayday.Core
             return IsWeeklySummaryDay(CurrentDay);
         }
 
+        /// <summary>28~29일: 월급 직전 위기 연출 구간.</summary>
+        public bool IsLateCrisisDay()
+        {
+            return IsLateCrisisDay(CurrentDay);
+        }
+
         public static bool IsWeeklySummaryDay(int day)
         {
             return day == 7 || day == 14 || day == 21;
+        }
+
+        public static bool IsLateCrisisDay(int day)
+        {
+            return day == 28 || day == 29;
         }
 
         public static int GetWeekNumber(int day)

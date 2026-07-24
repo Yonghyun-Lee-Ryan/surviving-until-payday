@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_StockIntro_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_stock_intro_001
+  title: "\uC8FC\uC2DD \uC785\uBB38"
+  description: "\uB3D9\uB8CC\uAC00 \uC694\uC998 \uB728\uB294 \uC8FC\uC2DD\uC744 \uCD94\uCC9C\uD588\uB2E4."
+  category: 5
+  minDay: 7
+  maxDay: 26
+  weight: 70
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
+  choices:
+  - choiceId: choice_stock_small
+    text: "\uC18C\uC561\uB9CC \uC548\uC804\uD558\uAC8C \uD22C\uC790\uD574\uBCF8\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -50000
+    randomOutcomes:
+    - outcomeId: stock_small_up
+      resultMessage: "\uC57D\uAC04 \uC62C\uB77C \uC18C\uC18C\uD558\uAC8C \uBC8C\uC5C8\uB2E4."
+      probabilityWeight: 60
+      effects:
+      - statType: 0
+        value: 20000
+      setFlags: []
+      clearFlags: []
+      queueEventId: 
+    - outcomeId: stock_small_down
+      resultMessage: "\uC57D\uAC04 \uB0B4\uB824 \uC544\uC27D\uAC8C \uC783\uC5C8\uB2E4."
+      probabilityWeight: 40
+      effects:
+      - statType: 0
+        value: -10000
+      - statType: 2
+        value: 2
+      setFlags: []
+      clearFlags: []
+      queueEventId: event_stock_swing_001
+    setFlags:
+    - hasBoughtStock
+    clearFlags: []
+  - choiceId: choice_stock_watch
+    text: "\uD22C\uC790\uD558\uC9C0 \uC54A\uACE0 \uC9C0\uCF1C\uBCF8\uB2E4"
+    fixedEffects:
+    - statType: 3
+      value: -2
+    - statType: 2
+      value: -1
+    randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  - choiceId: choice_stock_allin
+    text: "\uAC00\uC9C4 \uB3C8\uC744 \uD06C\uAC8C \uB123\uB294\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -200000
+    randomOutcomes:
+    - outcomeId: stock_allin_up
+      resultMessage: "\uAE09\uB4F1\uD574\uC11C \uD06C\uAC8C \uBC8C\uC5C8\uB2E4."
+      probabilityWeight: 50
+      effects:
+      - statType: 0
+        value: 400000
+      setFlags:
+      - stockBigWin
+      clearFlags: []
+      queueEventId: 
+    - outcomeId: stock_allin_down
+      resultMessage: "\uAE09\uB77D\uD574\uC11C \uD06C\uAC8C \uC783\uC5C8\uB2E4."
+      probabilityWeight: 50
+      effects:
+      - statType: 0
+        value: -100000
+      - statType: 2
+        value: 15
+      setFlags: []
+      clearFlags: []
+      queueEventId: event_stock_swing_001
+    setFlags:
+    - hasBoughtStock
+    clearFlags: []

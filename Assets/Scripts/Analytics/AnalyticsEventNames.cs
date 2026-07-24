@@ -13,6 +13,8 @@ namespace SurviveUntilPayday.Analytics
 
         public const string SessionEnded = "session_ended";
         public const string RunStarted = "run_started";
+        public const string JobSelected = "job_selected";
+        public const string TraitSelected = "trait_selected";
         public const string DayStarted = "day_started";
         public const string EventShown = "event_shown";
         public const string ChoiceSelected = "choice_selected";

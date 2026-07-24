@@ -50,8 +50,8 @@ namespace SurviveUntilPayday.EditorTools
                 go.transform.SetParent(safeArea.transform, false);
                 var rect = go.GetComponent<RectTransform>();
                 rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-                rect.anchoredPosition = new Vector2(0f, -360f);
-                rect.sizeDelta = new Vector2(520f, 110f);
+                rect.anchoredPosition = new Vector2(0f, -260f);
+                rect.sizeDelta = new Vector2(520f, 100f);
                 var image = go.AddComponent<Image>();
                 image.color = new Color(0.25f, 0.5f, 0.4f, 1f);
                 continueButton = go.AddComponent<Button>();

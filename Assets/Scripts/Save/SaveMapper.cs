@@ -41,6 +41,22 @@ namespace SurviveUntilPayday.Save
                 }
             }
 
+            if (state.RunFlags != null)
+            {
+                foreach (var flag in state.RunFlags)
+                {
+                    run.runFlags.Add(flag);
+                }
+            }
+
+            if (state.QueuedFollowUpEventIds != null)
+            {
+                foreach (var queued in state.QueuedFollowUpEventIds)
+                {
+                    run.queuedEventIds.Add(queued);
+                }
+            }
+
             return run;
         }
 
@@ -60,6 +76,8 @@ namespace SurviveUntilPayday.Save
             state.Stats.Stress = run.stress;
             state.Stats.Happiness = run.happiness;
             state.Stats.CompanyScore = run.companyScore;
+            state.LoadRunFlags(run.runFlags);
+            state.LoadFollowUpQueue(run.queuedEventIds);
             return state;
         }
 

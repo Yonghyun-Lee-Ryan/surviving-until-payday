@@ -20,6 +20,8 @@ namespace SurviveUntilPayday.Data
         [SerializeField] private long salary;
         [SerializeField] private PlayerStats stats = new PlayerStats();
         [SerializeField] private int randomSeed;
+        [SerializeField] private List<string> runFlags = new List<string>();
+        [SerializeField] private List<string> queuedFollowUpEventIds = new List<string>();
 
         public int CurrentDay
         {
@@ -52,6 +54,11 @@ namespace SurviveUntilPayday.Data
             get => randomSeed;
             set => randomSeed = value;
         }
+
+        public IReadOnlyList<string> RunFlags => runFlags ??= new List<string>();
+
+        public IReadOnlyList<string> QueuedFollowUpEventIds =>
+            queuedFollowUpEventIds ??= new List<string>();
 
         /// <summary>
         /// 능력치가 적용된 뒤 발행한다. UI는 이 이벤트를 구독한다.
@@ -105,11 +112,114 @@ namespace SurviveUntilPayday.Data
             salary = created.salary;
             randomSeed = created.randomSeed;
             Stats.CopyFrom(created.Stats);
+            ClearRunFlags();
+            ClearFollowUpQueue();
+        }
+
+        public bool HasFlag(string flagId)
+        {
+            if (string.IsNullOrWhiteSpace(flagId) || runFlags == null)
+            {
+                return false;
+            }
+
+            return runFlags.Contains(flagId);
+        }
+
+        public void SetFlag(string flagId)
+        {
+            if (string.IsNullOrWhiteSpace(flagId))
+            {
+                return;
+            }
+
+            runFlags ??= new List<string>();
+            if (!runFlags.Contains(flagId))
+            {
+                runFlags.Add(flagId);
+            }
+        }
+
+        public void ClearFlag(string flagId)
+        {
+            if (string.IsNullOrWhiteSpace(flagId) || runFlags == null)
+            {
+                return;
+            }
+
+            runFlags.Remove(flagId);
+        }
+
+        public void ClearRunFlags()
+        {
+            runFlags ??= new List<string>();
+            runFlags.Clear();
+        }
+
+        public void LoadRunFlags(IEnumerable<string> flags)
+        {
+            ClearRunFlags();
+            if (flags == null)
+            {
+                return;
+            }
+
+            foreach (var flag in flags)
+            {
+                SetFlag(flag);
+            }
+        }
+
+        public void EnqueueFollowUp(string eventId)
+        {
+            if (string.IsNullOrWhiteSpace(eventId))
+            {
+                return;
+            }
+
+            queuedFollowUpEventIds ??= new List<string>();
+            if (!queuedFollowUpEventIds.Contains(eventId))
+            {
+                queuedFollowUpEventIds.Add(eventId);
+            }
+        }
+
+        public bool TryDequeueFollowUp(out string eventId)
+        {
+            eventId = null;
+            if (queuedFollowUpEventIds == null || queuedFollowUpEventIds.Count == 0)
+            {
+                return false;
+            }
+
+            eventId = queuedFollowUpEventIds[0];
+            queuedFollowUpEventIds.RemoveAt(0);
+            return !string.IsNullOrEmpty(eventId);
+        }
+
+        public void ClearFollowUpQueue()
+        {
+            queuedFollowUpEventIds ??= new List<string>();
+            queuedFollowUpEventIds.Clear();
+        }
+
+        public void LoadFollowUpQueue(IEnumerable<string> eventIds)
+        {
+            ClearFollowUpQueue();
+            if (eventIds == null)
+            {
+                return;
+            }
+
+            foreach (var id in eventIds)
+            {
+                EnqueueFollowUp(id);
+            }
         }
 
         public GameState Clone()
         {
-            return new GameState
+            var clone = new GameState
             {
                 currentDay = currentDay,
                 jobId = jobId,
@@ -118,6 +228,9 @@ namespace SurviveUntilPayday.Data
                 randomSeed = randomSeed,
                 stats = Stats.Clone()
             };
+            clone.LoadRunFlags(runFlags);
+            clone.LoadFollowUpQueue(queuedFollowUpEventIds);
+            return clone;
         }
 
         public GameStateSnapshot CreateSnapshot()

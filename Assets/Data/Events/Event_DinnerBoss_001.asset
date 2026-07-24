@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_DinnerBoss_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_dinner_boss_001
+  title: "\uC0C1\uC0AC\uC758 \uD68C\uC2DD \uC81C\uC548"
+  description: "\uD1F4\uADFC \uBB34\uB835, \uD300\uC7A5\uC774 \uC624\uB298 \uC800\uB141
+    \uD68C\uC2DD\uC744 \uC81C\uC548\uD588\uB2E4."
+  category: 1
+  minDay: 2
+  maxDay: 29
+  weight: 90
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 1
+  choices:
+  - choiceId: choice_dinner_join
+    text: "\uCC38\uC11D\uD574\uC11C \uBD84\uC704\uAE30\uB97C \uB9DE\uCD98\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -10000
+    - statType: 2
+      value: 6
+    - statType: 1
+      value: -2
+    - statType: 4
+      value: 8
+    randomOutcomes: []
+  - choiceId: choice_dinner_short
+    text: "\uC9E7\uAC8C \uCC38\uC11D\uD558\uACE0 \uBA3C\uC800 \uC77C\uC5B4\uB09C\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -5000
+    - statType: 2
+      value: 2
+    - statType: 4
+      value: 3
+    randomOutcomes: []
+  - choiceId: choice_dinner_decline
+    text: "\uC120\uC57D\uC744 \uD551\uACC4\uB85C \uAC70\uC808\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 4
+      value: -10
+    - statType: 3
+      value: 4
+    - statType: 2
+      value: -3
+    randomOutcomes: []

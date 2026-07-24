@@ -108,6 +108,12 @@ namespace SurviveUntilPayday.Events
 
             var day = state.CurrentDay;
 
+            if (TrySelectQueuedFollowUp(state, isWeekend, out var queued))
+            {
+                Remember(queued);
+                return queued;
+            }
+
             var fixedCandidates = CollectFixedCandidates(day, state, isWeekend);
             if (fixedCandidates.Count > 0)
             {
@@ -132,6 +138,72 @@ namespace SurviveUntilPayday.Events
             }
 
             return Select(state, dayManager.IsWeekend);
+        }
+
+        /// <summary>
+        /// 광고「다른 사건 보기」용. 고정 일자 사건만 있는 날에도 일반 풀에서 다른 사건을 고른다.
+        /// 대안이 없으면 null.
+        /// </summary>
+        public EventData SelectRerollAlternative(
+            GameState state,
+            DayManager dayManager,
+            string excludeEventId)
+        {
+            if (state == null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+
+            if (dayManager == null)
+            {
+                throw new ArgumentNullException(nameof(dayManager));
+            }
+
+            var isWeekend = dayManager.IsWeekend;
+            var day = state.CurrentDay;
+
+            var randomPool = CollectRandomCandidates(day, state, isWeekend);
+            var alternatives = ExcludeEvent(randomPool, excludeEventId);
+            if (alternatives.Count > 0)
+            {
+                return SelectAndRemember(alternatives, preferAvoidLast: false);
+            }
+
+            // 일반 풀이 비면 같은 날 고정 후보 중 다른 것(드묾)을 시도
+            var fixedPool = CollectFixedCandidates(day, state, isWeekend);
+            alternatives = ExcludeEvent(fixedPool, excludeEventId);
+            if (alternatives.Count > 0)
+            {
+                return SelectAndRemember(alternatives, preferAvoidLast: false);
+            }
+
+            return null;
+        }
+
+        private static List<WeightedCandidate> ExcludeEvent(
+            List<WeightedCandidate> source,
+            string excludeEventId)
+        {
+            if (source == null || source.Count == 0)
+            {
+                return new List<WeightedCandidate>();
+            }
+
+            if (string.IsNullOrEmpty(excludeEventId))
+            {
+                return source;
+            }
+
+            var filtered = new List<WeightedCandidate>(source.Count);
+            for (var i = 0; i < source.Count; i++)
+            {
+                if (!string.Equals(source[i].Event.Id, excludeEventId, StringComparison.Ordinal))
+                {
+                    filtered.Add(source[i]);
+                }
+            }
+
+            return filtered;
         }
 
         public List<EventData> GetEligibleEvents(GameState state, bool isWeekend)
@@ -161,6 +233,89 @@ namespace SurviveUntilPayday.Events
             }
 
             return result;
+        }
+
+        private bool TrySelectQueuedFollowUp(GameState state, bool isWeekend, out EventData eventData)
+        {
+            eventData = null;
+            while (state.TryDequeueFollowUp(out var queuedId))
+            {
+                var found = FindById(queuedId);
+                if (found == null)
+                {
+                    Debug.LogWarning($"[EventSelector] Queued follow-up '{queuedId}' not in catalog. Skipping.");
+                    continue;
+                }
+
+                // 후속 사건은 큐에 들어왔으면 우선 강제. 플래그 금지만 존중한다.
+                if (found.Conditions != null
+                    && found.Conditions.ForbiddenFlags != null)
+                {
+                    var blocked = false;
+                    for (var i = 0; i < found.Conditions.ForbiddenFlags.Count; i++)
+                    {
+                        var flag = found.Conditions.ForbiddenFlags[i];
+                        if (!string.IsNullOrWhiteSpace(flag) && state.HasFlag(flag))
+                        {
+                            blocked = true;
+                            break;
+                        }
+                    }
+
+                    if (blocked)
+                    {
+                        continue;
+                    }
+                }
+
+                if (found.Conditions != null
+                    && found.Conditions.RequiredFlags != null)
+                {
+                    var missing = false;
+                    for (var i = 0; i < found.Conditions.RequiredFlags.Count; i++)
+                    {
+                        var flag = found.Conditions.RequiredFlags[i];
+                        if (!string.IsNullOrWhiteSpace(flag) && !state.HasFlag(flag))
+                        {
+                            missing = true;
+                            break;
+                        }
+                    }
+
+                    if (missing)
+                    {
+                        continue;
+                    }
+                }
+
+                eventData = found;
+                return true;
+            }
+
+            return false;
+        }
+
+        private EventData FindById(string eventId)
+        {
+            if (string.IsNullOrEmpty(eventId))
+            {
+                return null;
+            }
+
+            for (var i = 0; i < catalog.Count; i++)
+            {
+                if (catalog[i] != null && catalog[i].Id == eventId)
+                {
+                    return catalog[i];
+                }
+            }
+
+            if (fallbackEvent != null && fallbackEvent.Id == eventId)
+            {
+                return fallbackEvent;
+            }
+
+            return null;
         }
 
         private List<WeightedCandidate> CollectFixedCandidates(int day, GameState state, bool isWeekend)

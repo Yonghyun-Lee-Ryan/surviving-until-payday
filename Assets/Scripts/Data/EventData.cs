@@ -26,6 +26,12 @@ namespace SurviveUntilPayday.Data
         [SerializeField] private EventCondition conditions = new EventCondition();
         [SerializeField] private List<EventChoiceData> choices = new List<EventChoiceData>();
 
+        [Header("Art (Unit 21)")]
+        [SerializeField] private bool overrideBackground;
+        [SerializeField] private BackgroundId backgroundId = BackgroundId.Office;
+        [SerializeField] private bool overrideExpression;
+        [SerializeField] private ExpressionId expressionId = ExpressionId.Default;
+
         public string Id => id;
         public string Title => title;
         public string Description => description;
@@ -37,6 +43,20 @@ namespace SurviveUntilPayday.Data
         public int FixedDay => fixedDay;
         public EventCondition Conditions => conditions;
         public IReadOnlyList<EventChoiceData> Choices => choices;
+        public bool OverrideBackground => overrideBackground;
+        public BackgroundId BackgroundId => backgroundId;
+        public bool OverrideExpression => overrideExpression;
+        public ExpressionId ExpressionId => expressionId;
+
+        public BackgroundId ResolveBackground()
+        {
+            return overrideBackground ? backgroundId : ArtCategoryDefaults.BackgroundFor(category);
+        }
+
+        public ExpressionId ResolveEntryExpression()
+        {
+            return overrideExpression ? expressionId : ExpressionId.Default;
+        }
 
         private void OnValidate()
         {
@@ -153,6 +173,14 @@ namespace SurviveUntilPayday.Data
         {
             isFixedEvent = isFixed;
             fixedDay = day;
+        }
+
+        public void EditorSetArt(bool useBackground, BackgroundId background, bool useExpression, ExpressionId expression)
+        {
+            overrideBackground = useBackground;
+            backgroundId = background;
+            overrideExpression = useExpression;
+            expressionId = expression;
         }
 #endif
     }

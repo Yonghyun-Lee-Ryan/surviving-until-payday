@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using SurviveUntilPayday.Data;
 using SurviveUntilPayday.DebugTools;
 using UnityEditor;
@@ -73,6 +74,11 @@ namespace SurviveUntilPayday.EditorTools
                     iterations = 1000;
                     Run();
                 }
+
+                if (GUILayout.Button("Balance Pass (4 policies × 1,000)", GUILayout.Height(28f)))
+                {
+                    RunBalancePass();
+                }
             }
 
             if (GUILayout.Button("Load Sample Assets"))
@@ -90,6 +96,23 @@ namespace SurviveUntilPayday.EditorTools
         private bool CanRun()
         {
             return iterations > 0 && job != null && fallbackEvent != null;
+        }
+
+        private void RunBalancePass()
+        {
+            try
+            {
+                var path = BalancePassRunner.RunAndSaveReport(
+                    BalancePassRunner.DefaultIterations,
+                    baseSeed);
+                lastReport = File.ReadAllText(path);
+                Debug.Log("[RunSimulator] Balance Pass 완료.\n" + lastReport);
+                Repaint();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("[RunSimulator] Balance Pass 실패: " + ex.Message);
+            }
         }
 
         private void Run()

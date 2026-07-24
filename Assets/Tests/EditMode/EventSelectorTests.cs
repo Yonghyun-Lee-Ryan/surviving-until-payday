@@ -86,6 +86,25 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void SelectRerollAlternative_SkipsFixedDayEvent_AndPicksOther()
+        {
+            var normal = CreateEvent("normal", 1, 30, 1000);
+            var fixedRent = CreateEvent("rent", 1, 30, 1);
+            fixedRent.EditorSetFixed(true, 1);
+
+            var fallback = CreateRestFallback();
+            var selector = new EventSelector(new[] { normal, fixedRent }, fallback, new SeededRandomService(11));
+            var state = CreateState(day: 1);
+            var days = new DayManager(state);
+
+            Assert.AreEqual("rent", selector.Select(state, days).Id);
+
+            var rerolled = selector.SelectRerollAlternative(state, days, excludeEventId: "rent");
+            Assert.IsNotNull(rerolled);
+            Assert.AreEqual("normal", rerolled.Id);
+        }
+
+        [Test]
         public void Select_SameSeed_ProducesSameSequence()
         {
             var catalog = new[]

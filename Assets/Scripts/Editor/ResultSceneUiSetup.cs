@@ -84,25 +84,25 @@ namespace SurviveUntilPayday.EditorTools
                 Object.DestroyImmediate(safeArea.GetChild(i).gameObject);
             }
 
-            var title = CreateText(safeArea, "Title", "월급날 생존!", 52, new Vector2(0f, 760f));
-            var endingTitle = CreateText(safeArea, "EndingTitle", "엔딩", 44, new Vector2(0f, 620f));
-            var endingDesc = CreateText(safeArea, "EndingDesc", "설명", 30, new Vector2(0f, 480f));
-            endingDesc.rectTransform.sizeDelta = new Vector2(900f, 160f);
-            var days = CreateText(safeArea, "Days", "생존 일수", 34, new Vector2(0f, 300f));
-            var cash = CreateText(safeArea, "Cash", "현금", 34, new Vector2(0f, 230f));
-            var stats = CreateText(safeArea, "Stats", "능력치", 30, new Vector2(0f, 120f));
-            stats.rectTransform.sizeDelta = new Vector2(900f, 100f);
-            var xp = CreateText(safeArea, "XP", "경험치", 32, new Vector2(0f, 0f));
+            var title = CreateText(safeArea, "Title", "월급날 생존!", 52, new Vector2(0f, 720f));
+            var endingTitle = CreateText(safeArea, "EndingTitle", "엔딩", 44, new Vector2(0f, 580f));
+            var endingDesc = CreateText(safeArea, "EndingDesc", "설명", 30, new Vector2(0f, 430f));
+            endingDesc.rectTransform.sizeDelta = new Vector2(900f, 140f);
+            var days = CreateText(safeArea, "Days", "생존 일수", 34, new Vector2(0f, 280f));
+            var cash = CreateText(safeArea, "Cash", "현금", 34, new Vector2(0f, 210f));
+            var stats = CreateText(safeArea, "Stats", "능력치", 30, new Vector2(0f, 110f));
+            stats.rectTransform.sizeDelta = new Vector2(900f, 90f);
+            var xp = CreateText(safeArea, "XP", "경험치", 32, new Vector2(0f, -10f));
             var unlock = CreateText(safeArea, "Unlock", "도감", 28, new Vector2(0f, -80f));
 
-            var doubleXpObject = CreatePanel(safeArea, "DoubleXpAdButton", new Vector2(0f, -160f), new Vector2(480f, 90f),
+            var doubleXpObject = CreatePanel(safeArea, "DoubleXpAdButton", new Vector2(0f, -200f), new Vector2(480f, 90f),
                 new Color(0.45f, 0.32f, 0.18f));
             var doubleXpButton = doubleXpObject.AddComponent<Button>();
             doubleXpButton.targetGraphic = doubleXpObject.GetComponent<Image>();
             var doubleXpLabel = CreateText(doubleXpObject.transform, "Label", "광고로 경험치 2배", 30, Vector2.zero);
             doubleXpLabel.color = Color.white;
 
-            var buttonObject = CreatePanel(safeArea, "BackButton", new Vector2(0f, -280f), new Vector2(480f, 110f),
+            var buttonObject = CreatePanel(safeArea, "BackButton", new Vector2(0f, -330f), new Vector2(480f, 110f),
                 new Color(0.18f, 0.42f, 0.55f));
             var button = buttonObject.AddComponent<Button>();
             button.targetGraphic = buttonObject.GetComponent<Image>();

@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_StockSwing_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_stock_swing_001
+  title: "\uC8FC\uC2DD \uAE09\uB4F1\uB77D"
+  description: "\uC608\uC804\uC5D0 \uC0BC \uC885\uBAA9\uC774 \uC694\uB3D9\uCE5C\uB2E4."
+  category: 5
+  minDay: 8
+  maxDay: 28
+  weight: 120
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 0
+    requiredFlags:
+    - hasBoughtStock
+    forbiddenFlags: []
+  choices:
+  - choiceId: choice_stock_swing_hold
+    text: "\uADF8\uB0E5 \uB4E4\uACE0 \uAC04\uB2E4"
+    fixedEffects:
+    - statType: 2
+      value: 6
+    - statType: 3
+      value: -4
+    randomOutcomes: []
+    setFlags: []
+    clearFlags:
+    - hasBoughtStock
+  - choiceId: choice_stock_swing_sell
+    text: "\uC218\uC775 \uC2E4\uD604\uD558\uACE0 \uD310\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: 90000
+    - statType: 2
+      value: -4
+    - statType: 3
+      value: 6
+    randomOutcomes: []
+    setFlags:
+    - stockBigWin
+    clearFlags:
+    - hasBoughtStock
+  - choiceId: choice_stock_swing_cut
+    text: "\uC190\uC808\uD558\uACE0 \uD310\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -35000
+    - statType: 2
+      value: 10
+    randomOutcomes: []
+    setFlags: []
+    clearFlags:
+    - hasBoughtStock

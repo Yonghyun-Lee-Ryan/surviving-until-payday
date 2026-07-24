@@ -38,7 +38,7 @@ namespace SurviveUntilPayday.EditorTools
                 Object.DestroyImmediate(existing.gameObject);
             }
 
-            var panel = CreatePanel(safeArea.transform, "CodexPanel", new Vector2(0f, -520f), new Vector2(920f, 280f),
+            var panel = CreatePanel(safeArea.transform, "CodexPanel", new Vector2(0f, -620f), new Vector2(920f, 260f),
                 new Color(0.92f, 0.93f, 0.94f, 0.95f));
             var level = CreateText(panel.transform, "Level", "Lv.1", 36, new Vector2(0f, 100f));
             var xp = CreateText(panel.transform, "XP", "인생 경험치 0", 28, new Vector2(0f, 55f));
@@ -54,7 +54,7 @@ namespace SurviveUntilPayday.EditorTools
             var so = new SerializedObject(controller);
             so.FindProperty("codexPanel").objectReferenceValue = codex;
             so.FindProperty("totalEndingCount").intValue = 9;
-            so.FindProperty("totalEventCount").intValue = 3;
+            so.FindProperty("totalEventCount").intValue = 20;
             so.FindProperty("totalTraitCount").intValue = 4;
             so.FindProperty("totalAchievementCount").intValue = 5;
             so.ApplyModifiedPropertiesWithoutUndo();

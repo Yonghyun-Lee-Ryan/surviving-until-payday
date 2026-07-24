@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_Sleep_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_sleep_001
+  title: "\uC218\uBA74 \uBD80\uC871"
+  description: "\uC694 \uBA70\uCE60 \uC7A0\uC744 \uC81C\uB300\uB85C \uBABB \uC790\uC11C
+    \uB208\uC774 \uBED1\uBED1\uD558\uB2E4."
+  category: 2
+  minDay: 1
+  maxDay: 30
+  weight: 95
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 0
+  choices:
+  - choiceId: choice_sleep_early
+    text: "\uC77C\uCC0D \uC7A0\uC790\uB9AC\uC5D0 \uB4E0\uB2E4"
+    fixedEffects:
+    - statType: 1
+      value: 6
+    - statType: 2
+      value: -4
+    - statType: 3
+      value: 1
+    randomOutcomes: []
+  - choiceId: choice_sleep_coffee
+    text: "\uCEE4\uD53C\uB85C \uBC84\uD2F4\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -3000
+    - statType: 2
+      value: 3
+    - statType: 1
+      value: -2
+    randomOutcomes: []
+  - choiceId: choice_sleep_allnight
+    text: "\uBC24\uC0C8 \uD558\uACE0 \uC2F6\uC740 \uAC78 \uD558\uBA70 \uBC84\uD2F4\uB2E4"
+    fixedEffects:
+    - statType: 1
+      value: -8
+    - statType: 3
+      value: 5
+    - statType: 2
+      value: -2
+    randomOutcomes: []

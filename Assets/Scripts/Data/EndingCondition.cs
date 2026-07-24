@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SurviveUntilPayday.Data
@@ -34,6 +35,10 @@ namespace SurviveUntilPayday.Data
         [SerializeField] private bool requireMaxCompanyScore;
         [SerializeField] private int maxCompanyScore;
 
+        [Header("회차 플래그 (Unit 20)")]
+        [SerializeField] private List<string> requiredFlags = new List<string>();
+        [SerializeField] private List<string> forbiddenFlags = new List<string>();
+
         public bool RequireMinCash => requireMinCash;
         public long MinCash => minCash;
         public bool RequireMaxCash => requireMaxCash;
@@ -54,6 +59,8 @@ namespace SurviveUntilPayday.Data
         public int MinCompanyScore => minCompanyScore;
         public bool RequireMaxCompanyScore => requireMaxCompanyScore;
         public int MaxCompanyScore => maxCompanyScore;
+        public IReadOnlyList<string> RequiredFlags => requiredFlags ??= new List<string>();
+        public IReadOnlyList<string> ForbiddenFlags => forbiddenFlags ??= new List<string>();
 
 #if UNITY_EDITOR
         public void EditorSetCash(bool useMin, long min, bool useMax, long max)
@@ -94,6 +101,12 @@ namespace SurviveUntilPayday.Data
             minCompanyScore = min;
             requireMaxCompanyScore = useMax;
             maxCompanyScore = max;
+        }
+
+        public void EditorSetFlags(IEnumerable<string> required, IEnumerable<string> forbidden = null)
+        {
+            requiredFlags = required != null ? new List<string>(required) : new List<string>();
+            forbiddenFlags = forbidden != null ? new List<string>(forbidden) : new List<string>();
         }
 #endif
 

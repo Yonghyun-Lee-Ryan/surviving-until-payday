@@ -77,6 +77,14 @@ namespace SurviveUntilPayday.Tests
             Assert.AreEqual(2, DayManager.GetWeekNumber(14));
             Assert.AreEqual(3, DayManager.GetWeekNumber(21));
         }
+
+        [Test]
+        public void LateCrisisDays_Are_28_29()
+        {
+            Assert.IsTrue(DayManager.IsLateCrisisDay(28));
+            Assert.IsTrue(DayManager.IsLateCrisisDay(29));
+            Assert.IsFalse(DayManager.IsLateCrisisDay(30));
+        }
     }
 
     public sealed class RunManagerTests

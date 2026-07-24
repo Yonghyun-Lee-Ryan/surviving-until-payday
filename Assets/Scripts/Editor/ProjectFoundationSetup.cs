@@ -52,7 +52,7 @@ namespace SurviveUntilPayday.EditorTools
             var mainMenuPath = CreateUiScene(
                 SceneNames.MainMenu,
                 "월급날까지 살아남기",
-                "게임 시작",
+                "새 게임",
                 typeof(MainMenuController),
                 "startGameButton");
             var gamePath = CreateUiScene(
@@ -78,7 +78,7 @@ namespace SurviveUntilPayday.EditorTools
             Debug.Log(
                 "[ProjectFoundationSetup] Complete.\n" +
                 "1) Play Mode로 Bootstrap → MainMenu 이동을 확인하세요.\n" +
-                "2) 게임 시작 → Game, 임시 종료 → Result를 확인하세요.");
+                "2) 새 게임 → Game, 임시 종료 → Result를 확인하세요.");
         }
 
         private static void EnsureFolders()
@@ -282,7 +282,13 @@ namespace SurviveUntilPayday.EditorTools
 
         private static Font ResolveUiFont()
         {
-            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var font = Resources.Load<Font>("Fonts/NotoSansKR-Regular");
+            if (font != null)
+            {
+                return font;
+            }
+
+            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (font != null)
             {
                 return font;

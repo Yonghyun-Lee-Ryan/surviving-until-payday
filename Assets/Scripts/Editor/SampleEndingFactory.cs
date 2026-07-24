@@ -13,7 +13,7 @@ namespace SurviveUntilPayday.EditorTools
     {
         private const string Folder = "Assets/Data/Endings";
 
-        [MenuItem("Tools/Surviving Until Payday/Create Sample Endings (Unit 8)")]
+        [MenuItem("Tools/Surviving Until Payday/Create Sample Endings (Unit 8/20)")]
         public static void CreateSampleEndings()
         {
             EnsureFolder(Folder);
@@ -30,6 +30,8 @@ namespace SurviveUntilPayday.EditorTools
                 CreateHealthyWorker(),
                 CreatePromotionCandidate(),
                 CreateHappyConsumer(),
+                CreateOneBigShot(),
+                CreateCardJuggle(),
                 CreateBarelySurvived(),
                 CreateFailure(
                     "Ending_Bankruptcy.asset",
@@ -63,7 +65,7 @@ namespace SurviveUntilPayday.EditorTools
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Selection.activeObject = catalog[4];
+            Selection.activeObject = catalog[5];
             Debug.Log($"[SampleEndingFactory] Created/updated {catalog.Count} endings in {Folder}");
         }
 
@@ -112,6 +114,43 @@ namespace SurviveUntilPayday.EditorTools
                 "행복한 소비왕",
                 "힘들 때도 행복만큼은 챙겼다.",
                 80,
+                false,
+                FailureReason.None,
+                condition);
+            EditorUtility.SetDirty(ending);
+            return ending;
+        }
+
+        private static EndingData CreateOneBigShot()
+        {
+            var ending = LoadOrCreate($"{Folder}/Ending_OneBigShot.asset");
+            var condition = new EndingCondition();
+            condition.EditorSetCash(true, 500_000L, false, 0);
+            condition.EditorSetHappiness(true, 70, false, 0);
+            condition.EditorSetFlags(new[] { RunFlags.StockBigWin });
+            ending.EditorSet(
+                "ending_one_big_shot",
+                "인생은 한방",
+                "큰 승부에서 이겼다. 이번 달은 운이 따랐다.",
+                75,
+                false,
+                FailureReason.None,
+                condition);
+            EditorUtility.SetDirty(ending);
+            return ending;
+        }
+
+        private static EndingData CreateCardJuggle()
+        {
+            var ending = LoadOrCreate($"{Folder}/Ending_CardJuggle.asset");
+            var condition = new EndingCondition();
+            condition.EditorSetHappiness(true, 40, false, 0);
+            condition.EditorSetFlags(new[] { RunFlags.OwesDebt });
+            ending.EditorSet(
+                "ending_card_juggle",
+                "카드 돌려막기",
+                "비싼 대출을 카드로 돌려막으며 겨우 월급날까지 더더더 버텼다.",
+                70,
                 false,
                 FailureReason.None,
                 condition);

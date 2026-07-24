@@ -5,7 +5,7 @@ namespace SurviveUntilPayday.Save
 {
     public static class SaveVersion
     {
-        public const int Current = 2;
+        public const int Current = 3;
     }
 
     [Serializable]
@@ -34,6 +34,8 @@ namespace SurviveUntilPayday.Save
         public List<string> recentEventIds = new List<string>();
         public string lastSelectedEventId = string.Empty;
         public string pendingEventId = string.Empty;
+        public List<string> runFlags = new List<string>();
+        public List<string> queuedEventIds = new List<string>();
     }
 
     [Serializable]

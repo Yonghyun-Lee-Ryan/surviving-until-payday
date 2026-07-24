@@ -77,6 +77,31 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void Run_PopulatesReachRates_AfterSmallBatch()
+        {
+            var job = ScriptableObject.CreateInstance<JobData>();
+            var rest = CreateRestEvent("rest");
+            var ending = CreateSuccessEnding("barely");
+            var simulator = new RunSimulator(
+                job,
+                null,
+                new List<EventData> { rest },
+                rest,
+                new List<EndingData> { ending },
+                ending);
+
+            var summary = simulator.Run(iterations: 5, baseSeed: 99, SimulatorChoicePolicy.Safe);
+
+            Assert.AreEqual(5, summary.Iterations);
+            Assert.AreEqual("Safe", summary.PolicyName);
+            Assert.AreEqual(99, summary.BaseSeed);
+            Assert.Greater(summary.ReachDay7Count, 0);
+            Assert.AreEqual(summary.ReachDay7Count, summary.ReachCounts[7]);
+            StringAssert.Contains("ReachDay7=", summary.ToString());
+            StringAssert.Contains("Day1FailRate=", summary.ToString());
+        }
+
+        [Test]
         public void SimulationSummary_ToString_IncludesFailureRatios()
         {
             var summary = new SimulationSummary { Iterations = 10, SuccessCount = 7 };

@@ -27,6 +27,8 @@ namespace SurviveUntilPayday.UI
             if (dayLabel != null)
             {
                 dayLabel.text = text;
+                UiFont.Apply(dayLabel, bold: true);
+                dayLabel.transform.SetAsLastSibling();
             }
         }
 
@@ -35,7 +37,15 @@ namespace SurviveUntilPayday.UI
             if (cashLabel != null)
             {
                 cashLabel.text = KoreanWonFormatter.Format(cash);
+                UiFont.Apply(cashLabel, bold: true);
+                cashLabel.transform.SetAsLastSibling();
             }
+        }
+
+        private void OnEnable()
+        {
+            // 다른 패널에 가려지지 않도록 HUD를 앞으로
+            transform.SetAsLastSibling();
         }
 
         public void SetCrisis(bool active, string message)
@@ -69,6 +79,26 @@ namespace SurviveUntilPayday.UI
             cashLabel = cash;
             crisisBanner = crisisRoot;
             crisisBannerLabel = crisisText;
+        }
+
+        /// <summary>자식에서 Day/Cash 라벨을 다시 찾아 바인딩하고 맨 앞으로 올린다.</summary>
+        public void RefreshTopLabelBindings()
+        {
+            var day = transform.Find("DayLabel")?.GetComponent<Text>();
+            var cash = transform.Find("CashLabel")?.GetComponent<Text>();
+            if (day != null)
+            {
+                dayLabel = day;
+            }
+
+            if (cash != null)
+            {
+                cashLabel = cash;
+            }
+
+            transform.SetAsLastSibling();
+            dayLabel?.transform.SetAsLastSibling();
+            cashLabel?.transform.SetAsLastSibling();
         }
     }
 }

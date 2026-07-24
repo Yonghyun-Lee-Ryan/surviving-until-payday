@@ -1,4 +1,5 @@
 using SurviveUntilPayday.Ads;
+using SurviveUntilPayday.Audio;
 using SurviveUntilPayday.Core;
 using UnityEngine;
 using UnityEngine.UI;
@@ -52,6 +53,9 @@ namespace SurviveUntilPayday.UI
 
         private void Start()
         {
+            var audio = AppRoot.EnsureCreated().Audio;
+            audio?.SetBgm(BgmId.Result);
+
             var session = AppRoot.Instance != null ? AppRoot.Instance.Session : null;
             var result = session?.LastResult;
             if (result == null)
@@ -61,6 +65,7 @@ namespace SurviveUntilPayday.UI
                 return;
             }
 
+            audio?.PlaySfx(result.IsSuccess ? SfxId.Success : SfxId.Fail);
             NotifyRunCompletedOnce();
             ShowResult(result, session.Meta.Endings.UnlockedCount);
             RefreshDoubleXpButton(session);
@@ -210,6 +215,8 @@ namespace SurviveUntilPayday.UI
             {
                 return;
             }
+
+            AppRoot.EnsureCreated().Audio?.PlaySfx(SfxId.Click);
 
             if (AppRoot.Instance == null || AppRoot.Instance.SceneLoader == null)
             {

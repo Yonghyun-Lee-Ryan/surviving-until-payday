@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using SurviveUntilPayday.Ads;
+using SurviveUntilPayday.Art;
+using SurviveUntilPayday.Audio;
 using SurviveUntilPayday.Core;
 using SurviveUntilPayday.Data;
 using SurviveUntilPayday.DebugTools;
@@ -25,6 +28,8 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private EventPanelView eventPanelView;
         [SerializeField] private ChoicePanelView choicePanelView;
         [SerializeField] private ResultPopupView resultPopupView;
+        [SerializeField] private WeeklySummaryPopupView weeklySummaryPopupView;
+        [SerializeField] private ArtCatalog artCatalog;
 
         [Header("Run Data")]
         [SerializeField] private JobData startingJob;
@@ -44,6 +49,9 @@ namespace SurviveUntilPayday.UI
         private SeededRandomService randomService;
         private bool choiceLocked;
         private bool advancing;
+        private bool waitingWeeklyContinue;
+        private bool waitingSalaryConfirm;
+        private WeeklySummaryInfo lastWeeklySummary;
         private string pendingEventId;
         private readonly HashSet<string> discoveredEventIdsThisRun = new HashSet<string>();
 
@@ -70,6 +78,11 @@ namespace SurviveUntilPayday.UI
                 resultPopupView.SideJobAdClicked += OnSideJobAdClicked;
                 resultPopupView.LoanAdClicked += OnLoanAdClicked;
             }
+
+            if (weeklySummaryPopupView != null)
+            {
+                weeklySummaryPopupView.ContinueClicked += OnWeeklySummaryContinue;
+            }
         }
 
         private void OnDisable()
@@ -88,6 +101,11 @@ namespace SurviveUntilPayday.UI
                 resultPopupView.LoanAdClicked -= OnLoanAdClicked;
             }
 
+            if (weeklySummaryPopupView != null)
+            {
+                weeklySummaryPopupView.ContinueClicked -= OnWeeklySummaryContinue;
+            }
+
             if (runManager != null
                 && runManager.Status == RunStatus.InProgress
                 && AppRoot.Instance != null)
@@ -104,6 +122,10 @@ namespace SurviveUntilPayday.UI
             {
                 return;
             }
+
+            GameplayLayoutApplier.Apply(hudView, eventPanelView, choicePanelView);
+            // 폰트 로드 직후 한 프레임 뒤에도 HUD를 재적용 (씬 Arial 덮어쓰기 보장)
+            StartCoroutine(ReapplyHudNextFrame());
 
             if (startingJob == null)
             {
@@ -128,16 +150,29 @@ namespace SurviveUntilPayday.UI
             }
         }
 
+        private IEnumerator ReapplyHudNextFrame()
+        {
+            yield return null;
+            GameplayLayoutApplier.Apply(hudView, eventPanelView, choicePanelView);
+            ConfigureGaugeThresholds();
+            if (runManager?.State != null)
+            {
+                RefreshHudInstant();
+            }
+        }
+
         public void BindViews(
             GameHudView hud,
             EventPanelView eventPanel,
             ChoicePanelView choicePanel,
-            ResultPopupView resultPopup)
+            ResultPopupView resultPopup,
+            WeeklySummaryPopupView weeklyPopup = null)
         {
             hudView = hud;
             eventPanelView = eventPanel;
             choicePanelView = choicePanel;
             resultPopupView = resultPopup;
+            weeklySummaryPopupView = weeklyPopup;
         }
 
         public void BindRunData(JobData job, TraitData trait, List<EventData> catalog, EventData fallback, int seed)
@@ -168,17 +203,20 @@ namespace SurviveUntilPayday.UI
                 AppRoot.Instance.Session.DoubleExperienceClaimedForLastResult = false;
             }
 
+            ResolveNewRunJobAndTrait(out var job, out var trait);
+
             randomService = new SeededRandomService(randomSeed);
             runHistory = new RunHistory();
             runManager = new RunManager();
-            runManager.StartRun(startingJob, startingTrait, randomSeed);
+            runManager.StartRun(job, trait, randomSeed);
 
             eventSelector = new EventSelector(eventCatalog, fallbackEvent, randomService);
             effectResolver = new EffectResolver(
                 runManager.State,
                 randomService,
                 runHistory,
-                runManager.Days);
+                runManager.Days,
+                trait);
 
             EnsureSessionEndings();
             SubscribeStateEvents();
@@ -205,13 +243,16 @@ namespace SurviveUntilPayday.UI
             runManager = new RunManager();
             runManager.StartRunWithState(Save.SaveMapper.ToGameState(runSave));
 
+            var activeTrait = ResolveTraitById(runManager.State?.TraitId);
+
             eventSelector = new EventSelector(eventCatalog, fallbackEvent, randomService);
             eventSelector.RestoreHistory(runSave.recentEventIds, runSave.lastSelectedEventId);
             effectResolver = new EffectResolver(
                 runManager.State,
                 randomService,
                 runHistory,
-                runManager.Days);
+                runManager.Days,
+                activeTrait);
 
             EnsureSessionEndings();
             SubscribeStateEvents();
@@ -220,6 +261,53 @@ namespace SurviveUntilPayday.UI
             RefreshHudInstant();
             TrackRunStarted(continued: true);
             PresentSavedEventOrSelect(runSave.pendingEventId);
+        }
+
+        private void ResolveNewRunJobAndTrait(out JobData job, out TraitData trait)
+        {
+            job = startingJob;
+            trait = startingTrait;
+
+            var session = AppRoot.Instance?.Session;
+            if (session == null || !session.UsePendingRunSelection)
+            {
+                return;
+            }
+
+            if (session.PendingJob != null)
+            {
+                job = session.PendingJob;
+            }
+
+            // 명시적으로 null(특성 없음)도 허용한다.
+            trait = session.PendingTrait;
+            session.ClearPendingRunSelection();
+        }
+
+        private TraitData ResolveTraitById(string traitId)
+        {
+            if (string.IsNullOrWhiteSpace(traitId))
+            {
+                return null;
+            }
+
+            if (startingTrait != null && startingTrait.Id == traitId)
+            {
+                return startingTrait;
+            }
+
+            if (allTraits != null)
+            {
+                for (var i = 0; i < allTraits.Count; i++)
+                {
+                    if (allTraits[i] != null && allTraits[i].Id == traitId)
+                    {
+                        return allTraits[i];
+                    }
+                }
+            }
+
+            return null;
         }
 
         private void EnsureSessionEndings()
@@ -246,6 +334,7 @@ namespace SurviveUntilPayday.UI
             runManager.RunSucceeded += OnRunSucceeded;
             runManager.RunFailed += OnRunFailed;
             runManager.DayStarted += OnDayStarted;
+            runManager.WeeklySummary += OnWeeklySummary;
         }
 
         private void UnsubscribeStateEvents()
@@ -258,6 +347,7 @@ namespace SurviveUntilPayday.UI
             runManager.RunSucceeded -= OnRunSucceeded;
             runManager.RunFailed -= OnRunFailed;
             runManager.DayStarted -= OnDayStarted;
+            runManager.WeeklySummary -= OnWeeklySummary;
         }
 
         private void ConfigureGaugeThresholds()
@@ -325,7 +415,7 @@ namespace SurviveUntilPayday.UI
             }
 
             effectResolver.BeginEvent(selected, replaceActiveChoice);
-            eventPanelView.Show(selected.Title, selected.Description, null);
+            ApplyEventArt(selected, ExpressionId.Default, useEntryExpression: true);
 
             var texts = new string[3];
             for (var i = 0; i < 3; i++)
@@ -339,6 +429,7 @@ namespace SurviveUntilPayday.UI
             choicePanelView.SetInteractable(true);
             resultPopupView.Hide();
             RefreshHudInstant();
+            RefreshPlayBgm();
             RefreshChoiceAdButtons();
 
             var analytics = AppRoot.Instance?.Analytics;
@@ -375,6 +466,8 @@ namespace SurviveUntilPayday.UI
                 return;
             }
 
+            AppRoot.Instance?.Audio?.PlaySfx(SfxId.Click);
+
             choiceLocked = true;
             choicePanelView.SetInteractable(false);
             choicePanelView.SetRerollVisible(false, false);
@@ -403,14 +496,68 @@ namespace SurviveUntilPayday.UI
 
         private IEnumerator ShowResultRoutine(ChoiceResult result)
         {
+            GameAudioRules.PlayChoiceResultSfx(AppRoot.Instance?.Audio, result);
             yield return AnimateStatsTo(result.StatsAfter);
+
+            var entryExpression = effectResolver?.ActiveEvent != null
+                ? effectResolver.ActiveEvent.ResolveEntryExpression()
+                : ExpressionId.Default;
+            var resultExpression = ExpressionResolver.FromChoiceResult(result, entryExpression);
+            ApplyExpressionOnly(resultExpression);
 
             var changes = BuildChangesText(result);
             var nextLabel = runManager.Days.IsFinalDay ? "결과 보기" : "다음 날";
             resultPopupView.Show("선택 결과", result.Message, changes, nextLabel);
             RefreshCrisis(result.StatsAfter);
+            RefreshPlayBgm();
             hudView.SetCash(result.StatsAfter.Cash);
             RefreshResultAdButtons(result);
+        }
+
+        private void ApplyEventArt(EventData selected, ExpressionId fallbackExpression, bool useEntryExpression)
+        {
+            if (eventPanelView == null || selected == null)
+            {
+                return;
+            }
+
+            var backgroundId = selected.ResolveBackground();
+            var expressionId = useEntryExpression
+                ? selected.ResolveEntryExpression()
+                : fallbackExpression;
+            var catalog = ResolveArtCatalog();
+            var bgSprite = catalog != null ? catalog.GetBackground(backgroundId) : null;
+            var faceSprite = catalog != null ? catalog.GetExpression(expressionId) : null;
+            eventPanelView.Show(
+                selected.Title,
+                selected.Description,
+                backgroundId,
+                bgSprite,
+                expressionId,
+                faceSprite);
+        }
+
+        private void ApplyExpressionOnly(ExpressionId expressionId)
+        {
+            if (eventPanelView == null)
+            {
+                return;
+            }
+
+            var catalog = ResolveArtCatalog();
+            var sprite = catalog != null ? catalog.GetExpression(expressionId) : null;
+            eventPanelView.SetExpression(expressionId, sprite, shake: true);
+        }
+
+        private ArtCatalog ResolveArtCatalog()
+        {
+            if (artCatalog != null)
+            {
+                return artCatalog;
+            }
+
+            artCatalog = Resources.Load<ArtCatalog>("Art/ArtCatalog");
+            return artCatalog;
         }
 
         private void RefreshChoiceAdButtons()
@@ -421,16 +568,16 @@ namespace SurviveUntilPayday.UI
             }
 
             var rewarded = AppRoot.Instance?.RewardedAds;
-            var can = rewarded != null
-                      && !choiceLocked
-                      && effectResolver != null
-                      && effectResolver.CanSelectChoice
-                      && rewarded.CanRequest(RewardedAdPlacement.ChoiceReroll, out _);
             var remaining = AppRoot.Instance?.AdQuota?.GetRemaining(RewardedAdPlacement.ChoiceReroll) ?? 0;
+            var canSelect = !choiceLocked
+                            && effectResolver != null
+                            && effectResolver.CanSelectChoice;
+            // 쿼터가 남으면 눌러 광고를 요청한다(미준비는 Request 쪽에서 처리).
+            var canClick = rewarded != null && remaining > 0 && canSelect;
             choicePanelView.SetRerollVisible(
-                visible: remaining > 0 || can,
-                interactable: can,
-                label: $"광고: 선택지 새로고침 ({remaining})");
+                visible: remaining > 0 && canSelect,
+                interactable: canClick,
+                label: $"광고: 다른 사건 보기 ({remaining})");
         }
 
         private void RefreshResultAdButtons(ChoiceResult result)
@@ -474,7 +621,8 @@ namespace SurviveUntilPayday.UI
         }
 
         /// <summary>
-        /// 광고 선택지 새로고침: 같은 날 다른 사건으로 교체한다(의도적 BeginEvent 교체).
+        /// 광고「다른 사건 보기」: 같은 날 다른 사건으로 교체한다.
+        /// 고정 일자 사건(월세 등)만 있어도 일반 풀에서 대안을 고른다.
         /// </summary>
         private void RerollTodaysEvent()
         {
@@ -485,25 +633,28 @@ namespace SurviveUntilPayday.UI
 
             choiceLocked = false;
             var previousId = pendingEventId;
-            EventData selected = null;
-            for (var attempt = 0; attempt < 8; attempt++)
-            {
-                var candidate = eventSelector.Select(runManager.State, runManager.Days);
-                if (candidate == null)
-                {
-                    continue;
-                }
+            var selected = eventSelector.SelectRerollAlternative(
+                runManager.State,
+                runManager.Days,
+                previousId);
 
-                selected = candidate;
-                if (string.IsNullOrEmpty(previousId) || candidate.Id != previousId)
+            if (selected == null)
+            {
+                // 대안이 없으면 폴백이라도 현재와 다를 때만 적용
+                if (fallbackEvent != null
+                    && (string.IsNullOrEmpty(previousId) || fallbackEvent.Id != previousId))
                 {
-                    break;
+                    selected = fallbackEvent;
                 }
             }
 
             if (selected == null)
             {
-                selected = fallbackEvent;
+                Debug.LogWarning(
+                    "[GamePlayPresenter] 다른 사건 대안이 없어 현재 사건을 유지합니다.",
+                    this);
+                RefreshChoiceAdButtons();
+                return;
             }
 
             ShowEvent(selected, replaceActiveChoice: true);
@@ -611,6 +762,12 @@ namespace SurviveUntilPayday.UI
 
         private void OnNextDayClicked()
         {
+            if (waitingSalaryConfirm)
+            {
+                waitingSalaryConfirm = false;
+                return;
+            }
+
             if (advancing || effectResolver == null || runManager == null)
             {
                 return;
@@ -633,15 +790,61 @@ namespace SurviveUntilPayday.UI
                 return;
             }
 
-            if (advance.RunFailed || advance.RunSucceeded)
+            if (advance.RunFailed)
             {
-                // Scene 이동은 이벤트 핸들러에서 처리
+                return;
+            }
+
+            if (advance.RunSucceeded)
+            {
+                // OnRunSucceeded 코루틴에서 월급 연출 후 Result로 이동
                 return;
             }
 
             resultPopupView.Hide();
+
+            if (advance.WeeklySummaryTriggered && lastWeeklySummary != null)
+            {
+                ShowWeeklySummaryPopup(lastWeeklySummary);
+                advancing = false;
+                return;
+            }
+
             PresentTodaysEvent();
-            // PresentTodaysEvent 내부에서 자동 저장
+        }
+
+        private void OnWeeklySummary(WeeklySummaryInfo info)
+        {
+            lastWeeklySummary = info;
+        }
+
+        private void ShowWeeklySummaryPopup(WeeklySummaryInfo info)
+        {
+            if (weeklySummaryPopupView == null)
+            {
+                Debug.LogWarning("[GamePlayPresenter] weeklySummaryPopupView missing. Skipping weekly UI.");
+                PresentTodaysEvent();
+                return;
+            }
+
+            waitingWeeklyContinue = true;
+            weeklySummaryPopupView.Show(
+                WeeklySummaryFormatter.BuildTitle(info),
+                WeeklySummaryFormatter.BuildBody(info),
+                WeeklySummaryFormatter.BuildWarnings(info),
+                "다음 주로");
+        }
+
+        private void OnWeeklySummaryContinue()
+        {
+            if (!waitingWeeklyContinue)
+            {
+                return;
+            }
+
+            waitingWeeklyContinue = false;
+            weeklySummaryPopupView?.Hide();
+            PresentTodaysEvent();
         }
 
         private void OnDayStarted(GameState state, int day)
@@ -658,10 +861,52 @@ namespace SurviveUntilPayday.UI
             }
 
             RefreshHudInstant();
+            RefreshPlayBgm();
         }
 
         private void OnRunSucceeded(GameState state)
         {
+            StartCoroutine(ShowSalaryThenResultRoutine(state));
+        }
+
+        private IEnumerator ShowSalaryThenResultRoutine(GameState state)
+        {
+            advancing = true;
+            resultPopupView?.Hide();
+            weeklySummaryPopupView?.Hide();
+
+            if (state != null)
+            {
+                var before = state.Stats.Cash;
+                var salary = Math.Max(0L, state.Salary);
+                if (salary > 0L)
+                {
+                    state.ApplyEffect(new StatEffect(StatType.Cash, salary));
+                    AppRoot.Instance?.Audio?.PlaySfx(SfxId.Payday);
+                }
+
+                var after = state.Stats.Cash;
+                RefreshHudInstant();
+
+                if (resultPopupView != null)
+                {
+                    resultPopupView.Show(
+                        "월급 입금",
+                        $"월급날입니다.\n{KoreanWonFormatter.Format(salary)}이 통장에 들어왔습니다.",
+                        $"현금 {KoreanWonFormatter.Format(before)} → {KoreanWonFormatter.Format(after)}",
+                        "결과 보기");
+                    resultPopupView.SetAdButtons(false, false, false, false, false, false);
+                    waitingSalaryConfirm = true;
+                    resultPopupView.SetNextDayInteractable(true);
+                    while (waitingSalaryConfirm)
+                    {
+                        yield return null;
+                    }
+
+                    resultPopupView.Hide();
+                }
+            }
+
             var analytics = AppRoot.Instance?.Analytics;
             analytics?.RunCompleted(
                 state != null ? state.CurrentDay : 0,
@@ -759,6 +1004,11 @@ namespace SurviveUntilPayday.UI
         private void RefreshCrisis(PlayerStats stats)
         {
             var messages = new List<string>();
+            if (runManager?.Days != null && runManager.Days.IsLateCrisisDay())
+            {
+                messages.Add("월급날 직전 · 위기 구간");
+            }
+
             if (stats.Health <= HealthWarning)
             {
                 messages.Add("건강 위험");
@@ -775,6 +1025,17 @@ namespace SurviveUntilPayday.UI
             }
 
             hudView.SetCrisis(messages.Count > 0, string.Join(" · ", messages));
+        }
+
+        private void RefreshPlayBgm()
+        {
+            var audio = AppRoot.Instance?.Audio;
+            if (audio == null || runManager?.State == null)
+            {
+                return;
+            }
+
+            audio.SetBgm(GameAudioRules.ResolvePlayBgm(runManager.State, runManager.Days));
         }
 
         private static string BuildChangesText(ChoiceResult result)
@@ -862,6 +1123,13 @@ namespace SurviveUntilPayday.UI
                 ok = false;
             }
 
+            if (weeklySummaryPopupView == null)
+            {
+                Debug.LogWarning(
+                    "[GamePlayPresenter] weeklySummaryPopupView is not assigned. Run Tools > Setup Weekly Summary Popup (Unit 19).",
+                    this);
+            }
+
             return ok;
         }
 
@@ -936,7 +1204,8 @@ namespace SurviveUntilPayday.UI
                 state,
                 randomService,
                 runHistory ?? new RunHistory(),
-                runManager.Days);
+                runManager.Days,
+                ResolveTraitById(state.TraitId));
             choiceLocked = false;
             advancing = false;
             resultPopupView?.Hide();
