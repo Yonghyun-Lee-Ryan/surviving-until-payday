@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_Overtime_001
+  m_EditorClassIdentifier: Assembly-CSharp::SurviveUntilPayday.Data.EventData
+  id: event_overtime_001
+  title: "\uAC11\uC791\uC2A4\uB7EC\uC6B4 \uC57C\uADFC"
+  description: "\uD1F4\uADFC 10\uBD84 \uC804, \uD300\uC7A5\uC774 \uC624\uB298 \uC548\uC5D0
+    \uB05D\uB0B4\uC57C \uD558\uB294 \uC5C5\uBB34\uB97C \uC804\uB2EC\uD588\uB2E4."
+  category: 1
+  minDay: 2
+  maxDay: 27
+  weight: 100
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 95
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 0
+  choices:
+  - choiceId: choice_overtime_do
+    text: "\uC57C\uADFC\uD558\uACE0 \uB05D\uB0B8\uB2E4"
+    fixedEffects:
+    - statType: 1
+      value: -5
+    - statType: 2
+      value: 12
+    - statType: 3
+      value: -5
+    - statType: 4
+      value: 10
+    randomOutcomes: []
+  - choiceId: choice_overtime_delay
+    text: "\uB0B4\uC77C \uD558\uACA0\uB2E4\uACE0 \uB9D0\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 2
+      value: 4
+    - statType: 3
+      value: 2
+    - statType: 4
+      value: -8
+    randomOutcomes: []
+  - choiceId: choice_overtime_help
+    text: "\uB3D9\uB8CC\uC5D0\uAC8C \uB3C4\uC6C0\uC744 \uC694\uCCAD\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -15000
+    - statType: 1
+      value: -2
+    - statType: 2
+      value: 3
+    - statType: 3
+      value: 1
+    - statType: 4
+      value: 3
+    randomOutcomes: []

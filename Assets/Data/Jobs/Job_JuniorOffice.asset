@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4cc6c5de40d0344ba6ba0ee625ffac1, type: 3}
+  m_Name: Job_JuniorOffice
+  m_EditorClassIdentifier: Assembly-CSharp::SurviveUntilPayday.Data.JobData
+  id: job_junior_office
+  displayName: "\uC911\uC18C\uAE30\uC5C5 \uC2E0\uC785\uC0AC\uC6D0"
+  description: "MVP \uAE30\uBCF8 \uC9C1\uC5C5. \uD45C\uC900 \uB09C\uB3C4\uC758 \uC9C1\uC7A5
+    \uC0DD\uD65C."
+  salary: 2800000
+  startingCash: 2800000
+  startingHealth: 80
+  startingStress: 20
+  startingHappiness: 50
+  startingCompanyScore: 50
