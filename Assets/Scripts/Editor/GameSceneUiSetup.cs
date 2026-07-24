@@ -61,6 +61,141 @@ namespace SurviveUntilPayday.EditorTools
                 "3) Game 뷰를 1080x1920 Portrait로 맞추세요.");
         }
 
+        [MenuItem("Tools/Surviving Until Payday/Fix Game Scene UI Layout & Gauges")]
+        public static void FixExistingLayoutAndGauges()
+        {
+            if (!File.Exists(GameScenePath))
+            {
+                Debug.LogError("[GameSceneUiSetup] Game.unity not found.");
+                return;
+            }
+
+            var scene = EditorSceneManager.OpenScene(GameScenePath, OpenSceneMode.Single);
+            var canvas = Object.FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError("[GameSceneUiSetup] Canvas not found.");
+                return;
+            }
+
+            var scaler = canvas.GetComponent<CanvasScaler>();
+            if (scaler != null)
+            {
+                CanvasSetupUtility.ApplyPortraitCanvasScaler(scaler);
+            }
+
+            var safeArea = EnsureSafeArea(canvas.transform);
+            var hud = safeArea.Find("HUD")?.GetComponent<RectTransform>();
+            if (hud != null)
+            {
+                ApplyTopBar(hud, -12f, -48f, 300f);
+                RelayoutHudChildren(hud);
+            }
+
+            var eventPanel = safeArea.Find("EventPanel")?.GetComponent<RectTransform>();
+            if (eventPanel != null)
+            {
+                eventPanel.anchorMin = new Vector2(0f, 0.5f);
+                eventPanel.anchorMax = new Vector2(1f, 0.5f);
+                eventPanel.pivot = new Vector2(0.5f, 0.5f);
+                eventPanel.anchoredPosition = new Vector2(0f, 40f);
+                eventPanel.sizeDelta = new Vector2(-48f, 560f);
+            }
+
+            var choicePanel = safeArea.Find("ChoicePanel")?.GetComponent<RectTransform>();
+            if (choicePanel != null)
+            {
+                ApplyBottomBar(choicePanel, 36f, -48f, 340f);
+                RelayoutChoiceButtons(choicePanel);
+            }
+
+            foreach (var gauge in Object.FindObjectsByType<StatGaugeView>(FindObjectsInactive.Include))
+            {
+                EditorUtility.SetDirty(gauge);
+            }
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log(
+                "[GameSceneUiSetup] Layout/gauge fix saved.\n" +
+                "Play Mode에서 선택 후 게이지 가로 비율이 줄어드는지 확인하세요.");
+        }
+
+        private static void ApplyTopBar(RectTransform rect, float topInset, float horizontalSizeDelta, float height)
+        {
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, topInset);
+            rect.sizeDelta = new Vector2(horizontalSizeDelta, height);
+        }
+
+        private static void ApplyBottomBar(RectTransform rect, float bottomInset, float horizontalSizeDelta, float height)
+        {
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = new Vector2(0f, bottomInset);
+            rect.sizeDelta = new Vector2(horizontalSizeDelta, height);
+        }
+
+        private static void RelayoutHudChildren(RectTransform hud)
+        {
+            var day = hud.Find("DayLabel") as RectTransform;
+            if (day != null)
+            {
+                day.anchorMin = new Vector2(0f, 1f);
+                day.anchorMax = new Vector2(0.5f, 1f);
+                day.pivot = new Vector2(0f, 1f);
+                day.anchoredPosition = new Vector2(24f, -16f);
+                day.sizeDelta = new Vector2(-12f, 48f);
+            }
+
+            var cash = hud.Find("CashLabel") as RectTransform;
+            if (cash != null)
+            {
+                cash.anchorMin = new Vector2(0.5f, 1f);
+                cash.anchorMax = new Vector2(1f, 1f);
+                cash.pivot = new Vector2(1f, 1f);
+                cash.anchoredPosition = new Vector2(-24f, -16f);
+                cash.sizeDelta = new Vector2(-12f, 48f);
+            }
+
+            var crisis = hud.Find("CrisisBanner") as RectTransform;
+            if (crisis != null)
+            {
+                crisis.anchorMin = new Vector2(0f, 1f);
+                crisis.anchorMax = new Vector2(1f, 1f);
+                crisis.pivot = new Vector2(0.5f, 1f);
+                crisis.anchoredPosition = new Vector2(0f, -72f);
+                crisis.sizeDelta = new Vector2(-40f, 40f);
+            }
+
+            PlaceGaugeInHud(hud.Find("HealthGauge") as RectTransform, 0);
+            PlaceGaugeInHud(hud.Find("StressGauge") as RectTransform, 1);
+            PlaceGaugeInHud(hud.Find("HappinessGauge") as RectTransform, 2);
+            PlaceGaugeInHud(hud.Find("CompanyGauge") as RectTransform, 3);
+        }
+
+        private static void RelayoutChoiceButtons(RectTransform choicePanel)
+        {
+            var offsets = new[] { 220f, 118f, 16f };
+            for (var i = 0; i < 3; i++)
+            {
+                var button = choicePanel.Find($"Choice_{i}") as RectTransform;
+                if (button == null)
+                {
+                    continue;
+                }
+
+                button.anchorMin = new Vector2(0f, 0f);
+                button.anchorMax = new Vector2(1f, 0f);
+                button.pivot = new Vector2(0.5f, 0f);
+                button.anchoredPosition = new Vector2(0f, offsets[i]);
+                button.sizeDelta = new Vector2(-40f, 92f);
+            }
+        }
+
         private static void CleanupTempControllers()
         {
             foreach (var old in Object.FindObjectsByType<GameSceneController>(FindObjectsInactive.Include))
@@ -140,25 +275,46 @@ namespace SurviveUntilPayday.EditorTools
 
         private static GameHudView BuildHud(Transform parent)
         {
-            var root = CreatePanel(parent, "HUD", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(0f, -20f), new Vector2(1000f, 420f), new Color(0.96f, 0.96f, 0.94f, 0.95f));
+            // 상단 피벗 + 좌우 stretch로 SafeArea 밖으로 나가지 않게 한다.
+            var root = CreatePanel(parent, "HUD", new Vector2(0f, 1f), new Vector2(1f, 1f),
+                new Vector2(0f, -12f), new Vector2(-48f, 300f), new Color(0.96f, 0.96f, 0.94f, 0.95f));
+            root.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
 
-            var day = CreateText(root.transform, "DayLabel", "1일 (월)", 40, TextAnchor.MiddleLeft,
-                new Vector2(-220f, 160f), new Vector2(480f, 60f));
-            var cash = CreateText(root.transform, "CashLabel", "0원", 40, TextAnchor.MiddleRight,
-                new Vector2(220f, 160f), new Vector2(480f, 60f));
+            var day = CreateText(root.transform, "DayLabel", "1일 (월)", 36, TextAnchor.MiddleLeft,
+                new Vector2(-220f, -40f), new Vector2(440f, 48f));
+            var dayRect = day.rectTransform;
+            dayRect.anchorMin = new Vector2(0f, 1f);
+            dayRect.anchorMax = new Vector2(0.5f, 1f);
+            dayRect.pivot = new Vector2(0f, 1f);
+            dayRect.anchoredPosition = new Vector2(24f, -16f);
+            dayRect.sizeDelta = new Vector2(-12f, 48f);
 
-            var crisis = CreatePanel(root.transform, "CrisisBanner", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(0f, 95f), new Vector2(920f, 48f), new Color(0.85f, 0.3f, 0.25f, 0.9f));
+            var cash = CreateText(root.transform, "CashLabel", "0원", 36, TextAnchor.MiddleRight,
+                new Vector2(220f, -40f), new Vector2(440f, 48f));
+            var cashRect = cash.rectTransform;
+            cashRect.anchorMin = new Vector2(0.5f, 1f);
+            cashRect.anchorMax = new Vector2(1f, 1f);
+            cashRect.pivot = new Vector2(1f, 1f);
+            cashRect.anchoredPosition = new Vector2(-24f, -16f);
+            cashRect.sizeDelta = new Vector2(-12f, 48f);
+
+            var crisis = CreatePanel(root.transform, "CrisisBanner", new Vector2(0f, 1f), new Vector2(1f, 1f),
+                new Vector2(0f, -72f), new Vector2(-40f, 40f), new Color(0.85f, 0.3f, 0.25f, 0.9f));
+            crisis.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
             crisis.SetActive(false);
-            var crisisText = CreateText(crisis.transform, "CrisisLabel", "", 28, TextAnchor.MiddleCenter,
-                Vector2.zero, new Vector2(880f, 40f));
+            var crisisText = CreateText(crisis.transform, "CrisisLabel", "", 26, TextAnchor.MiddleCenter,
+                Vector2.zero, new Vector2(0f, 36f));
+            Stretch(crisisText.rectTransform);
             crisisText.color = Color.white;
 
-            var health = CreateGauge(root.transform, "HealthGauge", new Vector2(-345f, -20f));
-            var stress = CreateGauge(root.transform, "StressGauge", new Vector2(-115f, -20f));
-            var happiness = CreateGauge(root.transform, "HappinessGauge", new Vector2(115f, -20f));
-            var company = CreateGauge(root.transform, "CompanyGauge", new Vector2(345f, -20f));
+            var health = CreateGauge(root.transform, "HealthGauge");
+            var stress = CreateGauge(root.transform, "StressGauge");
+            var happiness = CreateGauge(root.transform, "HappinessGauge");
+            var company = CreateGauge(root.transform, "CompanyGauge");
+            PlaceGaugeInHud(health.GetComponent<RectTransform>(), 0);
+            PlaceGaugeInHud(stress.GetComponent<RectTransform>(), 1);
+            PlaceGaugeInHud(happiness.GetComponent<RectTransform>(), 2);
+            PlaceGaugeInHud(company.GetComponent<RectTransform>(), 3);
 
             var hud = root.AddComponent<GameHudView>();
             hud.BindLabels(day, cash, crisis, crisisText);
@@ -170,30 +326,56 @@ namespace SurviveUntilPayday.EditorTools
             return hud;
         }
 
-        private static GameObject CreateGauge(Transform parent, string name, Vector2 anchoredPos)
+        private static void PlaceGaugeInHud(RectTransform gauge, int index)
+        {
+            if (gauge == null)
+            {
+                return;
+            }
+
+            const int count = 4;
+            const float pad = 0.02f;
+            var slot = (1f - pad * 2f) / count;
+            var minX = pad + slot * index;
+            var maxX = pad + slot * (index + 1);
+            gauge.anchorMin = new Vector2(minX, 0f);
+            gauge.anchorMax = new Vector2(maxX, 0f);
+            gauge.pivot = new Vector2(0.5f, 0f);
+            gauge.anchoredPosition = new Vector2(0f, 16f);
+            gauge.sizeDelta = new Vector2(-8f, 120f);
+        }
+
+        private static GameObject CreateGauge(Transform parent, string name)
         {
             var root = CreatePanel(parent, name, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                anchoredPos, new Vector2(210f, 110f), new Color(0.9f, 0.9f, 0.9f, 0.95f));
+                Vector2.zero, new Vector2(210f, 110f), new Color(0.9f, 0.9f, 0.9f, 0.95f));
 
-            var nameLabel = CreateText(root.transform, "Name", name, 24, TextAnchor.MiddleCenter,
-                new Vector2(0f, 32f), new Vector2(190f, 30f));
-            var valueLabel = CreateText(root.transform, "Value", "0", 28, TextAnchor.MiddleCenter,
-                new Vector2(0f, -30f), new Vector2(190f, 30f));
+            var nameLabel = CreateText(root.transform, "Name", name, 22, TextAnchor.MiddleCenter,
+                new Vector2(0f, 36f), new Vector2(0f, 28f));
+            StretchHorizontal(nameLabel.rectTransform, 36f, 28f);
+            var valueLabel = CreateText(root.transform, "Value", "0", 24, TextAnchor.MiddleCenter,
+                new Vector2(0f, -36f), new Vector2(0f, 28f));
+            StretchHorizontal(valueLabel.rectTransform, -36f, 28f);
 
             var track = CreatePanel(root.transform, "Track", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(0f, 0f), new Vector2(180f, 18f), new Color(0.82f, 0.82f, 0.82f, 1f));
+                new Vector2(0f, 0f), new Vector2(-24f, 18f), new Color(0.82f, 0.82f, 0.82f, 1f));
+            var trackRect = track.GetComponent<RectTransform>();
+            trackRect.anchorMin = new Vector2(0f, 0.5f);
+            trackRect.anchorMax = new Vector2(1f, 0.5f);
+            trackRect.sizeDelta = new Vector2(-24f, 18f);
+
             var fillObject = new GameObject("Fill", typeof(RectTransform));
             fillObject.transform.SetParent(track.transform, false);
             var fillRect = fillObject.GetComponent<RectTransform>();
             fillRect.anchorMin = new Vector2(0f, 0f);
-            fillRect.anchorMax = new Vector2(1f, 1f);
+            fillRect.anchorMax = new Vector2(0.5f, 1f);
+            fillRect.pivot = new Vector2(0f, 0.5f);
             fillRect.offsetMin = Vector2.zero;
             fillRect.offsetMax = Vector2.zero;
+            fillRect.sizeDelta = Vector2.zero;
             var fill = fillObject.AddComponent<Image>();
             fill.color = new Color(0.25f, 0.55f, 0.45f);
-            fill.type = Image.Type.Filled;
-            fill.fillMethod = Image.FillMethod.Horizontal;
-            fill.fillOrigin = (int)Image.OriginHorizontal.Left;
+            fill.type = Image.Type.Simple;
             fill.fillAmount = 0.5f;
 
             var gauge = root.AddComponent<StatGaugeView>();
@@ -206,22 +388,35 @@ namespace SurviveUntilPayday.EditorTools
             return root;
         }
 
+        private static void StretchHorizontal(RectTransform rect, float anchoredY, float height)
+        {
+            rect.anchorMin = new Vector2(0f, 0.5f);
+            rect.anchorMax = new Vector2(1f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(0f, anchoredY);
+            rect.sizeDelta = new Vector2(-12f, height);
+        }
+
         private static EventPanelView BuildEventPanel(Transform parent)
         {
-            var root = CreatePanel(parent, "EventPanel", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(0f, 80f), new Vector2(960f, 620f), new Color(0.93f, 0.94f, 0.96f, 1f));
+            var root = CreatePanel(parent, "EventPanel", new Vector2(0f, 0.5f), new Vector2(1f, 0.5f),
+                new Vector2(0f, 40f), new Vector2(-48f, 560f), new Color(0.93f, 0.94f, 0.96f, 1f));
 
-            var illustration = CreatePanel(root.transform, "Illustration", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(0f, -150f), new Vector2(880f, 260f), new Color(0.78f, 0.82f, 0.86f, 1f));
+            var illustration = CreatePanel(root.transform, "Illustration", new Vector2(0f, 1f), new Vector2(1f, 1f),
+                new Vector2(0f, -24f), new Vector2(-40f, 220f), new Color(0.78f, 0.82f, 0.86f, 1f));
+            illustration.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
             var illustrationImage = illustration.GetComponent<Image>();
 
-            var placeholder = CreateText(illustration.transform, "Placeholder", "사건 이미지 (Placeholder)", 32,
-                TextAnchor.MiddleCenter, Vector2.zero, new Vector2(800f, 80f));
+            var placeholder = CreateText(illustration.transform, "Placeholder", "사건 이미지 (Placeholder)", 30,
+                TextAnchor.MiddleCenter, Vector2.zero, new Vector2(0f, 80f));
+            Stretch(placeholder.rectTransform);
 
-            var title = CreateText(root.transform, "Title", "사건 제목", 48, TextAnchor.MiddleCenter,
-                new Vector2(0f, -320f), new Vector2(900f, 70f));
-            var description = CreateText(root.transform, "Description", "사건 설명", 30, TextAnchor.UpperCenter,
-                new Vector2(0f, -430f), new Vector2(900f, 160f));
+            var title = CreateText(root.transform, "Title", "사건 제목", 42, TextAnchor.MiddleCenter,
+                new Vector2(0f, -280f), new Vector2(-48f, 60f));
+            StretchHorizontal(title.rectTransform, -280f, 60f);
+            var description = CreateText(root.transform, "Description", "사건 설명", 28, TextAnchor.UpperCenter,
+                new Vector2(0f, -360f), new Vector2(-48f, 140f));
+            StretchHorizontal(description.rectTransform, -360f, 140f);
             description.horizontalOverflow = HorizontalWrapMode.Wrap;
             description.verticalOverflow = VerticalWrapMode.Truncate;
 
@@ -232,22 +427,25 @@ namespace SurviveUntilPayday.EditorTools
 
         private static ChoicePanelView BuildChoicePanel(Transform parent)
         {
-            var root = CreatePanel(parent, "ChoicePanel", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                new Vector2(0f, 220f), new Vector2(980f, 360f), new Color(1f, 1f, 1f, 0.01f));
+            var root = CreatePanel(parent, "ChoicePanel", new Vector2(0f, 0f), new Vector2(1f, 0f),
+                new Vector2(0f, 36f), new Vector2(-48f, 340f), new Color(1f, 1f, 1f, 0.01f));
+            root.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
             root.GetComponent<Image>().raycastTarget = false;
 
             var buttons = new Button[3];
             var labels = new Text[3];
-            var offsets = new[] { 110f, 0f, -110f };
+            var offsets = new[] { 220f, 118f, 16f };
             for (var i = 0; i < 3; i++)
             {
-                var buttonObject = CreatePanel(root.transform, $"Choice_{i}", new Vector2(0.5f, 0.5f),
-                    new Vector2(0.5f, 0.5f), new Vector2(0f, offsets[i]), new Vector2(900f, 96f),
+                var buttonObject = CreatePanel(root.transform, $"Choice_{i}", new Vector2(0f, 0f),
+                    new Vector2(1f, 0f), new Vector2(0f, offsets[i]), new Vector2(-40f, 92f),
                     new Color(0.18f, 0.42f, 0.55f, 1f));
+                buttonObject.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
                 var button = buttonObject.AddComponent<Button>();
                 button.targetGraphic = buttonObject.GetComponent<Image>();
-                var label = CreateText(buttonObject.transform, "Label", $"선택지 {i + 1}", 34,
-                    TextAnchor.MiddleCenter, Vector2.zero, new Vector2(860f, 80f));
+                var label = CreateText(buttonObject.transform, "Label", $"선택지 {i + 1}", 32,
+                    TextAnchor.MiddleCenter, Vector2.zero, new Vector2(0f, 80f));
+                Stretch(label.rectTransform);
                 label.color = Color.white;
                 buttons[i] = button;
                 labels[i] = label;

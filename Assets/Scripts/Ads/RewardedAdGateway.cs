@@ -10,12 +10,17 @@ namespace SurviveUntilPayday.Ads
     {
         private readonly IAdService adService;
         private readonly AdQuotaTracker quota;
+        private readonly IAdTelemetry telemetry;
         private bool requestInFlight;
 
-        public RewardedAdGateway(IAdService adService, AdQuotaTracker quota)
+        public RewardedAdGateway(
+            IAdService adService,
+            AdQuotaTracker quota,
+            IAdTelemetry telemetry = null)
         {
             this.adService = adService ?? throw new ArgumentNullException(nameof(adService));
             this.quota = quota ?? throw new ArgumentNullException(nameof(quota));
+            this.telemetry = telemetry;
         }
 
         public AdQuotaTracker Quota => quota;
@@ -64,7 +69,10 @@ namespace SurviveUntilPayday.Ads
                 return;
             }
 
+            telemetry?.OnRewardedOffered(placement);
             requestInFlight = true;
+            telemetry?.OnRewardedStarted(placement);
+
             try
             {
                 adService.ShowRewardedAd(placement, showResult =>
@@ -75,6 +83,7 @@ namespace SurviveUntilPayday.Ads
                     {
                         quota.ConsumeOnSuccess(placement);
                         reward = AdRewardGrant.ForPlacement(placement);
+                        telemetry?.OnRewardedCompleted(placement);
                     }
                     else
                     {

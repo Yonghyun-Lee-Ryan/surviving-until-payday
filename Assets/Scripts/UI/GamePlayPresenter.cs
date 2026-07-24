@@ -176,6 +176,7 @@ namespace SurviveUntilPayday.UI
             ConfigureGaugeThresholds();
             resultPopupView.Hide();
             RefreshHudInstant();
+            TrackRunStarted(continued: false);
             PresentTodaysEvent();
             SaveActiveRun();
         }
@@ -208,6 +209,7 @@ namespace SurviveUntilPayday.UI
             ConfigureGaugeThresholds();
             resultPopupView.Hide();
             RefreshHudInstant();
+            TrackRunStarted(continued: true);
             PresentSavedEventOrSelect(runSave.pendingEventId);
         }
 
@@ -328,6 +330,12 @@ namespace SurviveUntilPayday.UI
             choicePanelView.SetInteractable(true);
             resultPopupView.Hide();
             RefreshHudInstant();
+
+            var analytics = AppRoot.Instance?.Analytics;
+            if (analytics != null && selected != null && runManager?.State != null)
+            {
+                analytics.EventShown(selected.Id, runManager.State.CurrentDay);
+            }
         }
 
         private void SaveActiveRun()
@@ -366,6 +374,16 @@ namespace SurviveUntilPayday.UI
                 choiceLocked = false;
                 choicePanelView.SetInteractable(true);
                 return;
+            }
+
+            var analytics = AppRoot.Instance?.Analytics;
+            if (analytics != null && runManager?.State != null)
+            {
+                analytics.ChoiceSelected(
+                    result.EventId,
+                    choiceIndex,
+                    runManager.State.CurrentDay,
+                    result.StatsAfter != null ? result.StatsAfter.Cash : runManager.State.Stats.Cash);
             }
 
             StartCoroutine(ShowResultRoutine(result));
@@ -438,6 +456,11 @@ namespace SurviveUntilPayday.UI
 
         private void OnRunSucceeded(GameState state)
         {
+            var analytics = AppRoot.Instance?.Analytics;
+            analytics?.RunCompleted(
+                state != null ? state.CurrentDay : 0,
+                state != null ? state.Stats.Cash : 0L,
+                isSuccess: true);
             PublishResult(state, isSuccess: true, FailureReason.None);
             LoadResultScene();
         }
@@ -445,6 +468,13 @@ namespace SurviveUntilPayday.UI
         private void OnRunFailed(GameState state, FailureReason reason)
         {
             Debug.Log($"[GamePlayPresenter] Run failed: {reason}");
+            var analytics = AppRoot.Instance?.Analytics;
+            if (analytics != null && state != null)
+            {
+                analytics.RunFailed(reason, state.CurrentDay, state.Stats.Cash);
+                analytics.RunCompleted(state.CurrentDay, state.Stats.Cash, isSuccess: false);
+            }
+
             PublishResult(state, isSuccess: false, reason);
             LoadResultScene();
         }
@@ -627,6 +657,22 @@ namespace SurviveUntilPayday.UI
             }
 
             return ok;
+        }
+
+        private void TrackRunStarted(bool continued)
+        {
+            var analytics = AppRoot.Instance?.Analytics;
+            if (analytics == null || runManager?.State == null)
+            {
+                return;
+            }
+
+            analytics.RunStarted(
+                runManager.State.JobId,
+                runManager.State.TraitId,
+                runManager.State.RandomSeed,
+                runManager.State.CurrentDay,
+                continued);
         }
 
         public GameState DebugGetState()

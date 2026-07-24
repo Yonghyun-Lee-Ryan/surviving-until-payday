@@ -5,13 +5,15 @@ using UnityEngine.UI;
 namespace SurviveUntilPayday.UI
 {
     /// <summary>
-    /// MainMenu: 새 게임 / 이어하기 / 도감 해금률.
+    /// MainMenu: 새 게임 / 이어하기 / 도감 해금률 / 설정.
     /// </summary>
     public sealed class MainMenuController : MonoBehaviour
     {
         [SerializeField] private Button startGameButton;
         [SerializeField] private Button continueButton;
+        [SerializeField] private Button settingsButton;
         [SerializeField] private CodexPanelView codexPanel;
+        [SerializeField] private SettingsPanelView settingsPanel;
         [SerializeField] private int totalEndingCount = 9;
         [SerializeField] private int totalEventCount = 3;
         [SerializeField] private int totalTraitCount = 4;
@@ -32,6 +34,11 @@ namespace SurviveUntilPayday.UI
             {
                 continueButton.onClick.AddListener(OnContinueClicked);
             }
+
+            if (settingsButton != null)
+            {
+                settingsButton.onClick.AddListener(OnSettingsClicked);
+            }
         }
 
         private void Start()
@@ -51,6 +58,11 @@ namespace SurviveUntilPayday.UI
             {
                 continueButton.onClick.RemoveListener(OnContinueClicked);
             }
+
+            if (settingsButton != null)
+            {
+                settingsButton.onClick.RemoveListener(OnSettingsClicked);
+            }
         }
 
         public void Bind(Button startButton, Button continueGameButton, CodexPanelView codex)
@@ -58,6 +70,12 @@ namespace SurviveUntilPayday.UI
             startGameButton = startButton;
             continueButton = continueGameButton;
             codexPanel = codex;
+        }
+
+        public void BindSettings(Button settings, SettingsPanelView panel)
+        {
+            settingsButton = settings;
+            settingsPanel = panel;
         }
 
         private void RefreshContinueButton()
@@ -95,6 +113,7 @@ namespace SurviveUntilPayday.UI
                 return;
             }
 
+            appRoot.Settings?.TryVibrate();
             appRoot.Session.StartMode = GameStartMode.NewRun;
             appRoot.SceneLoader.LoadGame();
         }
@@ -115,8 +134,17 @@ namespace SurviveUntilPayday.UI
                 return;
             }
 
+            appRoot.Settings?.TryVibrate();
             appRoot.Session.StartMode = GameStartMode.ContinueRun;
             appRoot.SceneLoader.LoadGame();
+        }
+
+        private void OnSettingsClicked()
+        {
+            if (settingsPanel != null)
+            {
+                settingsPanel.Toggle();
+            }
         }
     }
 }

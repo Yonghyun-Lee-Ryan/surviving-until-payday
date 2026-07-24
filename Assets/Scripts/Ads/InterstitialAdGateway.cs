@@ -13,7 +13,7 @@ namespace SurviveUntilPayday.Ads
 
         private readonly IAdService adService;
         private readonly AdQuotaTracker quota;
-        private readonly int showEveryNRuns;
+        private int showEveryNRuns;
 
         private int completedRunCount;
         private bool removeInterstitials;
@@ -25,15 +25,22 @@ namespace SurviveUntilPayday.Ads
         {
             this.adService = adService ?? throw new ArgumentNullException(nameof(adService));
             this.quota = quota ?? throw new ArgumentNullException(nameof(quota));
-            if (showEveryNRuns < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(showEveryNRuns));
-            }
-
-            this.showEveryNRuns = showEveryNRuns;
+            SetShowEveryNRuns(showEveryNRuns);
         }
 
         public int CompletedRunCount => completedRunCount;
+
+        public int ShowEveryNRuns => showEveryNRuns;
+
+        public void SetShowEveryNRuns(int value)
+        {
+            if (value < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value));
+            }
+
+            showEveryNRuns = value;
+        }
 
         public void SetRemoveInterstitials(bool remove)
         {

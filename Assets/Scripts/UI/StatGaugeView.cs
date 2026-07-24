@@ -40,6 +40,16 @@ namespace SurviveUntilPayday.UI
             }
         }
 
+#if UNITY_EDITOR
+        public void EditorBind(Text name, Text value, Image fill, Image background)
+        {
+            nameLabel = name;
+            valueLabel = value;
+            fillImage = fill;
+            backgroundImage = background;
+        }
+#endif
+
         public void SetValueInstant(int value)
         {
             if (animationRoutine != null)
@@ -93,9 +103,12 @@ namespace SurviveUntilPayday.UI
                 valueLabel.text = displayedValue.ToString();
             }
 
+            var amount = maxValue <= 0 ? 0f : displayedValue / (float)maxValue;
             if (fillImage != null)
             {
-                fillImage.fillAmount = maxValue <= 0 ? 0f : displayedValue / (float)maxValue;
+                // 스프라이트 없는 Image는 Filled+fillAmount가 시각적으로 먹지 않으므로
+                // RectTransform 가로 비율로 게이지를 줄인다.
+                ApplyFillAmount(fillImage, amount);
                 fillImage.color = IsWarning(displayedValue) ? warningFillColor : normalFillColor;
             }
 
@@ -103,6 +116,22 @@ namespace SurviveUntilPayday.UI
             {
                 backgroundImage.color = IsWarning(displayedValue) ? warningBackgroundColor : normalBackgroundColor;
             }
+        }
+
+        private static void ApplyFillAmount(Image fill, float amount)
+        {
+            amount = Mathf.Clamp01(amount);
+            fill.type = Image.Type.Simple;
+            fill.fillAmount = amount;
+
+            var rect = fill.rectTransform;
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(amount, 1f);
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
         }
 
         private bool IsWarning(int value)
