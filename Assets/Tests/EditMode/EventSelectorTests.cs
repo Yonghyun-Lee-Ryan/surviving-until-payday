@@ -69,6 +69,33 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void Select_CivilPrepEvent_NotSelectedForFreelancerJob()
+        {
+            var civilOnly = CreateEvent("event_civil_study_plan_001", 1, 30, 1000);
+            civilOnly.Conditions.EditorConfigure(newRequiredJobId: "job_civil_prep");
+
+            var shared = CreateEvent("event_shared", 1, 30, 1);
+            var fallback = CreateRestFallback();
+            var selector = new EventSelector(
+                new[] { civilOnly, shared },
+                fallback,
+                new SeededRandomService(11),
+                recentHistorySize: 0,
+                recentWeightMultiplier: 1f);
+
+            var state = CreateState(day: 5);
+            state.JobId = "job_freelancer";
+
+            for (var i = 0; i < 30; i++)
+            {
+                Assert.AreEqual("event_shared", selector.Select(state, false).Id);
+            }
+
+            state.JobId = "job_civil_prep";
+            Assert.AreEqual("event_civil_study_plan_001", selector.Select(state, false).Id);
+        }
+
+        [Test]
         public void Select_FixedEvent_HasPriorityOnMatchingDay()
         {
             var normal = CreateEvent("normal", 1, 30, 1000);

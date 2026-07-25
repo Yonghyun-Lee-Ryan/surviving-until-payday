@@ -125,6 +125,24 @@ namespace SurviveUntilPayday.EditorTools
                 scroll);
 
             var job = AssetDatabase.LoadAssetAtPath<JobData>("Assets/Data/Jobs/Job_JuniorOffice.asset");
+            var civil = AssetDatabase.LoadAssetAtPath<JobData>("Assets/Data/Jobs/Job_CivilPrep.asset");
+            var freelancer = AssetDatabase.LoadAssetAtPath<JobData>("Assets/Data/Jobs/Job_Freelancer.asset");
+            var jobs = new List<JobData>();
+            if (job != null)
+            {
+                jobs.Add(job);
+            }
+
+            if (civil != null)
+            {
+                jobs.Add(civil);
+            }
+
+            if (freelancer != null)
+            {
+                jobs.Add(freelancer);
+            }
+
             var traits = new List<TraitData>
             {
                 AssetDatabase.LoadAssetAtPath<TraitData>("Assets/Data/Traits/Trait_Thrifty.asset"),
@@ -136,6 +154,15 @@ namespace SurviveUntilPayday.EditorTools
             var so = new SerializedObject(controller);
             so.FindProperty("runStartPanel").objectReferenceValue = view;
             so.FindProperty("defaultJob").objectReferenceValue = job;
+            so.FindProperty("totalEventCount").intValue = 40;
+            var jobCatalogProp = so.FindProperty("jobCatalog");
+            jobCatalogProp.ClearArray();
+            for (var i = 0; i < jobs.Count; i++)
+            {
+                jobCatalogProp.InsertArrayElementAtIndex(i);
+                jobCatalogProp.GetArrayElementAtIndex(i).objectReferenceValue = jobs[i];
+            }
+
             var catalogProp = so.FindProperty("traitCatalog");
             catalogProp.ClearArray();
             for (var i = 0; i < traits.Count; i++)
@@ -149,7 +176,7 @@ namespace SurviveUntilPayday.EditorTools
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
 
-            Debug.Log("[MainMenuRunStartSetup] RunStartPanel 중앙 스크롤 레이아웃 적용 완료.");
+            Debug.Log("[MainMenuRunStartSetup] RunStartPanel + jobCatalog(3) 적용 완료.");
         }
 
         private static Text CreateTopText(

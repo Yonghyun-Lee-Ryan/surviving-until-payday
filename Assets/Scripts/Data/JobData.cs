@@ -15,6 +15,7 @@ namespace SurviveUntilPayday.Data
         [SerializeField] private string id = "job_junior_office";
         [SerializeField] private string displayName = "중소기업 신입사원";
         [SerializeField] [TextArea(2, 4)] private string description;
+        [SerializeField] private int unlockLevel;
         [SerializeField] private long salary = 2_800_000L;
         [SerializeField] private long startingCash = 2_800_000L;
         [SerializeField] private int startingHealth = 80;
@@ -25,6 +26,7 @@ namespace SurviveUntilPayday.Data
         public string Id => id;
         public string DisplayName => displayName;
         public string Description => description;
+        public int UnlockLevel => unlockLevel;
         public long Salary => salary;
         public long StartingCash => startingCash;
         public int StartingHealth => startingHealth;
@@ -64,6 +66,11 @@ namespace SurviveUntilPayday.Data
                 errors.Add("displayName이 비어 있습니다.");
             }
 
+            if (unlockLevel < 0)
+            {
+                errors.Add($"unlockLevel({unlockLevel})는 0 이상이어야 합니다.");
+            }
+
             if (salary < 0)
             {
                 errors.Add($"salary({salary})는 0 이상이어야 합니다.");
@@ -89,5 +96,31 @@ namespace SurviveUntilPayday.Data
                 errors.Add($"{fieldName}({value})는 {StatLimits.MinGauge}~{StatLimits.MaxGauge} 범위여야 합니다.");
             }
         }
+
+#if UNITY_EDITOR
+        public void EditorSet(
+            string newId,
+            string newDisplayName,
+            string newDescription,
+            int newUnlockLevel,
+            long newSalary,
+            long newStartingCash,
+            int health,
+            int stress,
+            int happiness,
+            int companyScore)
+        {
+            id = newId;
+            displayName = newDisplayName;
+            description = newDescription;
+            unlockLevel = newUnlockLevel;
+            salary = newSalary;
+            startingCash = newStartingCash;
+            startingHealth = health;
+            startingStress = stress;
+            startingHappiness = happiness;
+            startingCompanyScore = companyScore;
+        }
+#endif
     }
 }

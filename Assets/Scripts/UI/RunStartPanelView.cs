@@ -25,10 +25,13 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private Button confirmButton;
         [SerializeField] private Button cancelButton;
         [SerializeField] private Text selectedTraitLabel;
+        [SerializeField] private Transform jobButtonRoot;
 
         private readonly List<Button> traitButtons = new List<Button>();
+        private readonly List<Button> jobButtons = new List<Button>();
         private TraitData selectedTrait;
-        private Action<TraitData> onConfirm;
+        private JobData selectedJob;
+        private Action<JobData, TraitData> onConfirm;
         private Action onCancel;
         private bool isShowing;
 
@@ -66,6 +69,7 @@ namespace SurviveUntilPayday.UI
             }
 
             ClearTraitButtons();
+            ClearJobButtons();
         }
 
         public void Bind(
@@ -78,7 +82,8 @@ namespace SurviveUntilPayday.UI
             Button confirm,
             Button cancel,
             Text selectedTrait,
-            ScrollRect scroll = null)
+            ScrollRect scroll = null,
+            Transform jobRoot = null)
         {
             root = panelRoot;
             jobTitleLabel = jobTitle;
@@ -90,14 +95,16 @@ namespace SurviveUntilPayday.UI
             cancelButton = cancel;
             selectedTraitLabel = selectedTrait;
             traitScroll = scroll;
+            jobButtonRoot = jobRoot;
         }
 
         public bool IsVisible => root != null && root.activeSelf;
 
         public void Show(
-            JobData job,
+            IReadOnlyList<JobData> unlockedJobs,
+            JobData preferredJob,
             IReadOnlyList<TraitData> unlockedTraits,
-            Action<TraitData> confirm,
+            Action<JobData, TraitData> confirm,
             Action cancel)
         {
             onConfirm = confirm;
@@ -105,19 +112,8 @@ namespace SurviveUntilPayday.UI
             selectedTrait = null;
             isShowing = true;
 
-            if (jobTitleLabel != null)
-            {
-                jobTitleLabel.text = job != null ? job.DisplayName : "직업 미정";
-                UiFont.Apply(jobTitleLabel, bold: true);
-            }
-
-            if (jobDescriptionLabel != null)
-            {
-                jobDescriptionLabel.text = job != null
-                    ? $"{job.Description}\n월급 {job.Salary:N0}원 · 시작 현금 {job.StartingCash:N0}원"
-                    : string.Empty;
-                UiFont.Apply(jobDescriptionLabel);
-            }
+            selectedJob = ResolveInitialJob(unlockedJobs, preferredJob);
+            RefreshJobLabels();
 
             var unlockedCount = unlockedTraits?.Count ?? 0;
             if (traitHintLabel != null)
@@ -138,16 +134,78 @@ namespace SurviveUntilPayday.UI
             }
 
             ApplyCenteredLayout();
+            EnsureJobButtonRoot();
             EnsureScrollInfrastructure();
+            RebuildJobButtons(unlockedJobs);
             RebuildTraitButtons(unlockedTraits);
             RefreshSelectionLabel();
             HighlightSelection(null);
+            HighlightJobSelection(selectedJob);
             if (traitScroll != null)
             {
                 traitScroll.verticalNormalizedPosition = 1f;
             }
 
             Canvas.ForceUpdateCanvases();
+        }
+
+        /// <summary>하위 호환: 직업 1개만 넘기는 기존 호출.</summary>
+        public void Show(
+            JobData job,
+            IReadOnlyList<TraitData> unlockedTraits,
+            Action<TraitData> confirm,
+            Action cancel)
+        {
+            Show(
+                job != null ? new[] { job } : Array.Empty<JobData>(),
+                job,
+                unlockedTraits,
+                (selected, trait) => confirm?.Invoke(trait),
+                cancel);
+        }
+
+        private static JobData ResolveInitialJob(IReadOnlyList<JobData> unlockedJobs, JobData preferred)
+        {
+            if (preferred != null && unlockedJobs != null)
+            {
+                for (var i = 0; i < unlockedJobs.Count; i++)
+                {
+                    if (unlockedJobs[i] == preferred)
+                    {
+                        return preferred;
+                    }
+                }
+            }
+
+            if (unlockedJobs != null)
+            {
+                for (var i = 0; i < unlockedJobs.Count; i++)
+                {
+                    if (unlockedJobs[i] != null)
+                    {
+                        return unlockedJobs[i];
+                    }
+                }
+            }
+
+            return preferred;
+        }
+
+        private void RefreshJobLabels()
+        {
+            if (jobTitleLabel != null)
+            {
+                jobTitleLabel.text = selectedJob != null ? selectedJob.DisplayName : "직업 미정";
+                UiFont.Apply(jobTitleLabel, bold: true);
+            }
+
+            if (jobDescriptionLabel != null)
+            {
+                jobDescriptionLabel.text = selectedJob != null
+                    ? $"{selectedJob.Description}\n월급 {selectedJob.Salary:N0}원 · 시작 현금 {selectedJob.StartingCash:N0}원"
+                    : string.Empty;
+                UiFont.Apply(jobDescriptionLabel);
+            }
         }
 
         /// <summary>
@@ -204,28 +262,34 @@ namespace SurviveUntilPayday.UI
                 scrollRectTransform.sizeDelta = new Vector2(0f, scrollHeight);
             }
 
-            // 상단 텍스트 블록을 (화면 상단 ~ 스크롤 상단) 구간의 중앙에
-            const float titleH = 48f;
-            const float descH = 96f;
-            const float hintH = 36f;
-            const float selectedH = 100f;
-            const float stackGap = 8f;
+            // 상단: 직업 버튼 행 + 텍스트 블록
+            const float jobRowH = 64f;
+            const float titleH = 44f;
+            const float descH = 88f;
+            const float hintH = 34f;
+            const float selectedH = 88f;
+            const float stackGap = 6f;
             var headerBlock =
-                titleH + stackGap + descH + stackGap + hintH + stackGap + selectedH;
+                jobRowH + stackGap + titleH + stackGap + descH + stackGap + hintH + stackGap + selectedH;
             var headerTop = Mathf.Clamp(
                 (sideGap - headerBlock) * 0.5f,
                 8f,
                 Mathf.Max(8f, sideGap - 8f));
 
-            PlaceFromTop(jobTitleLabel?.rectTransform, headerTop, titleH);
-            PlaceFromTop(jobDescriptionLabel?.rectTransform, headerTop + titleH + stackGap, descH);
+            EnsureJobButtonRoot();
+            PlaceFromTop(jobButtonRoot as RectTransform, headerTop, jobRowH);
+            PlaceFromTop(jobTitleLabel?.rectTransform, headerTop + jobRowH + stackGap, titleH);
+            PlaceFromTop(
+                jobDescriptionLabel?.rectTransform,
+                headerTop + jobRowH + stackGap + titleH + stackGap,
+                descH);
             PlaceFromTop(
                 traitHintLabel?.rectTransform,
-                headerTop + titleH + stackGap + descH + stackGap,
+                headerTop + jobRowH + stackGap + titleH + stackGap + descH + stackGap,
                 hintH);
             PlaceFromTop(
                 selectedTraitLabel?.rectTransform,
-                headerTop + titleH + stackGap + descH + stackGap + hintH + stackGap,
+                headerTop + jobRowH + stackGap + titleH + stackGap + descH + stackGap + hintH + stackGap,
                 selectedH);
 
             ConfigureHeaderTexts();
@@ -604,13 +668,149 @@ namespace SurviveUntilPayday.UI
 
         private void OnConfirmClicked()
         {
-            onConfirm?.Invoke(selectedTrait);
+            onConfirm?.Invoke(selectedJob, selectedTrait);
         }
 
         private void OnCancelClicked()
         {
             onCancel?.Invoke();
             Hide();
+        }
+
+        private void EnsureJobButtonRoot()
+        {
+            var panel = root != null ? root.transform : transform;
+            if (jobButtonRoot == null)
+            {
+                var existing = panel.Find("JobButtonRoot");
+                if (existing != null)
+                {
+                    jobButtonRoot = existing;
+                }
+                else
+                {
+                    var go = new GameObject("JobButtonRoot", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+                    go.transform.SetParent(panel, false);
+                    jobButtonRoot = go.transform;
+                }
+            }
+
+            var layout = jobButtonRoot.GetComponent<HorizontalLayoutGroup>();
+            if (layout == null)
+            {
+                layout = jobButtonRoot.gameObject.AddComponent<HorizontalLayoutGroup>();
+            }
+
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.spacing = 10f;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = true;
+            layout.padding = new RectOffset(4, 4, 4, 4);
+        }
+
+        private void RebuildJobButtons(IReadOnlyList<JobData> unlockedJobs)
+        {
+            ClearJobButtons();
+            EnsureJobButtonRoot();
+            if (jobButtonRoot == null || unlockedJobs == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < unlockedJobs.Count; i++)
+            {
+                var job = unlockedJobs[i];
+                if (job == null)
+                {
+                    continue;
+                }
+
+                var button = CreateJobButton(job);
+                if (button != null)
+                {
+                    jobButtons.Add(button);
+                }
+            }
+        }
+
+        private Button CreateJobButton(JobData job)
+        {
+            var go = new GameObject($"Job_{job.Id}", typeof(RectTransform));
+            go.transform.SetParent(jobButtonRoot, false);
+            var layoutElement = go.AddComponent<LayoutElement>();
+            layoutElement.minHeight = 56f;
+            layoutElement.preferredHeight = 56f;
+            layoutElement.flexibleWidth = 1f;
+
+            var image = go.AddComponent<Image>();
+            image.color = new Color(0.32f, 0.36f, 0.45f, 1f);
+            var button = go.AddComponent<Button>();
+            button.targetGraphic = image;
+
+            var labelGo = new GameObject("Label", typeof(RectTransform));
+            labelGo.transform.SetParent(go.transform, false);
+            var labelRect = labelGo.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(6f, 4f);
+            labelRect.offsetMax = new Vector2(-6f, -4f);
+            var label = labelGo.AddComponent<Text>();
+            label.font = UiFont.Regular;
+            label.fontSize = 22;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+            label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            label.verticalOverflow = VerticalWrapMode.Truncate;
+            label.text = job.DisplayName;
+            UiFont.Apply(label);
+
+            var captured = job;
+            button.onClick.AddListener(() =>
+            {
+                selectedJob = captured;
+                RefreshJobLabels();
+                HighlightJobSelection(captured);
+            });
+
+            return button;
+        }
+
+        private void HighlightJobSelection(JobData selected)
+        {
+            for (var i = 0; i < jobButtons.Count; i++)
+            {
+                var button = jobButtons[i];
+                if (button == null)
+                {
+                    continue;
+                }
+
+                var image = button.targetGraphic as Image;
+                if (image == null)
+                {
+                    continue;
+                }
+
+                var isSelected = selected != null && button.gameObject.name == $"Job_{selected.Id}";
+                image.color = isSelected
+                    ? new Color(0.2f, 0.55f, 0.4f, 1f)
+                    : new Color(0.32f, 0.36f, 0.45f, 1f);
+            }
+        }
+
+        private void ClearJobButtons()
+        {
+            for (var i = 0; i < jobButtons.Count; i++)
+            {
+                if (jobButtons[i] != null)
+                {
+                    Destroy(jobButtons[i].gameObject);
+                }
+            }
+
+            jobButtons.Clear();
         }
 
         private void RefreshSelectionLabel()

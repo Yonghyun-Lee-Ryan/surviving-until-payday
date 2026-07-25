@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_WeekendPlan_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_weekend_plan_001
+  title: "주말 계획"
+  description: "주말에 무엇을 할지 고민된다."
+  category: 3
+  minDay: 1
+  maxDay: 30
+  weight: 80
+  isFixedEvent: 0
+  fixedDay: 0
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
+  choices:
+  - choiceId: event_weekend_plan_001_a
+    text: "친구를 만난다"
+    fixedEffects:
+    - statType: 0
+      value: -40000
+    - statType: 2
+      value: -3
+    - statType: 3
+      value: 8
+    randomOutcomes: []
+  - choiceId: event_weekend_plan_001_b
+    text: "집에서 쉮다"
+    fixedEffects:
+    - statType: 1
+      value: 4
+    - statType: 2
+      value: -6
+    - statType: 3
+      value: 3
+    randomOutcomes: []
+  - choiceId: event_weekend_plan_001_c
+    text: "밀린 일을 한다"
+    fixedEffects:
+    - statType: 1
+      value: -2
+    - statType: 2
+      value: 4
+    - statType: 3
+      value: -2
+    - statType: 4
+      value: 3
+    randomOutcomes: []

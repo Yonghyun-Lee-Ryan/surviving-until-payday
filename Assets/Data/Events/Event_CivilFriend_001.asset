@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_CivilFriend_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_civil_friend_001
+  title: "취준 동기 만남"
+  description: "같은 시험을 준비하는 친구를 만났다."
+  category: 4
+  minDay: 1
+  maxDay: 30
+  weight: 80
+  isFixedEvent: 0
+  fixedDay: 0
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: job_civil_prep
+    dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
+  choices:
+  - choiceId: event_civil_friend_001_a
+    text: "정보 교환한다"
+    fixedEffects:
+    - statType: 0
+      value: -20000
+    - statType: 2
+      value: -2
+    - statType: 3
+      value: 4
+    randomOutcomes: []
+  - choiceId: event_civil_friend_001_b
+    text: "짧게 인사만"
+    fixedEffects:
+    - statType: 3
+      value: 1
+    randomOutcomes: []
+  - choiceId: event_civil_friend_001_c
+    text: "거절한다"
+    fixedEffects:
+    - statType: 2
+      value: 1
+    - statType: 3
+      value: -2
+    randomOutcomes: []

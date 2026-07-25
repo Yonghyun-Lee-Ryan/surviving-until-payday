@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_FreelanceBurnout_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_freelance_burnout_001
+  title: "번아웃 징후"
+  description: "연속 마감에 몸이 먼저 반응한다."
+  category: 2
+  minDay: 1
+  maxDay: 30
+  weight: 80
+  isFixedEvent: 0
+  fixedDay: 0
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: job_freelancer
+    dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
+  choices:
+  - choiceId: event_freelance_burnout_001_a
+    text: "하루 쉮다"
+    fixedEffects:
+    - statType: 1
+      value: 5
+    - statType: 2
+      value: -6
+    - statType: 3
+      value: 3
+    - statType: 4
+      value: -1
+    randomOutcomes: []
+  - choiceId: event_freelance_burnout_001_b
+    text: "스케줄을 줄인다"
+    fixedEffects:
+    - statType: 1
+      value: 2
+    - statType: 2
+      value: -3
+    - statType: 3
+      value: 1
+    randomOutcomes: []
+  - choiceId: event_freelance_burnout_001_c
+    text: "카페인으로 버틴다"
+    fixedEffects:
+    - statType: 0
+      value: -5000
+    - statType: 1
+      value: -4
+    - statType: 2
+      value: 3
+    - statType: 3
+      value: -2
+    - statType: 4
+      value: 1
+    randomOutcomes: []

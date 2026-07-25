@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4cc6c5de40d0344ba6ba0ee625ffac1, type: 3}
+  m_Name: Job_CivilPrep
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.JobData
+  id: job_civil_prep
+  displayName: "\uACF5\uBB34\uC6D0 \uC900\uBE44\uC0DD"
+  description: "\uB0AE\uC740 \uC218\uC785\uC774\uC9C0\uB9CC \uC9C1\uC7A5 \uC0AC\uAC74\uC740
+    \uC801\uB2E4. \uACF5\uBD80\uC640 \uC2DC\uD5D8 \uC2A4\uD2B8\uB808\uC2A4\uAC00 \uC9C3\uB2E4."
+  unlockLevel: 2
+  salary: 1200000
+  startingCash: 1800000
+  startingHealth: 75
+  startingStress: 35
+  startingHappiness: 45
+  startingCompanyScore: 20
