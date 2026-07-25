@@ -124,6 +124,7 @@ namespace SurviveUntilPayday.Save
             data.meta.unlockedEndingIds ??= new System.Collections.Generic.List<string>();
             data.meta.unlockedEventIds ??= new System.Collections.Generic.List<string>();
             data.meta.unlockedTraitIds ??= new System.Collections.Generic.List<string>();
+            data.meta.unlockedJobIds ??= new System.Collections.Generic.List<string>();
             data.meta.unlockedAchievementIds ??= new System.Collections.Generic.List<string>();
             data.run.jobId ??= string.Empty;
             data.run.traitId ??= string.Empty;

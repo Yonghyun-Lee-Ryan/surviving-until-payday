@@ -91,6 +91,12 @@ namespace SurviveUntilPayday.Core
         {
             CachedSave = SaveRepository.Normalize(save ?? SaveRepository.CreateDefault());
             SaveMapper.ApplyMeta(CachedSave.meta, Meta);
+            TraitFragmentCount = Meta.TraitFragmentCount;
+        }
+
+        public void SyncTraitFragmentsFromMeta()
+        {
+            TraitFragmentCount = Meta != null ? Meta.TraitFragmentCount : 0;
         }
     }
 }

@@ -16,22 +16,28 @@ namespace SurviveUntilPayday.Core
         public int LevelAfter { get; set; }
         public bool LeveledUp => LevelAfter > LevelBefore;
         public List<string> NewlyUnlockedTraits { get; } = new List<string>();
+        public List<string> NewlyUnlockedJobs { get; } = new List<string>();
         public List<string> NewlyUnlockedEndings { get; } = new List<string>();
         public List<string> NewlyUnlockedEvents { get; } = new List<string>();
         public List<string> NewlyUnlockedAchievements { get; } = new List<string>();
+        public int TraitFragmentsGained { get; set; }
     }
 
     /// <summary>
-    /// 인생 경험치, 레벨, 특성/사건/엔딩/업적 해금.
+    /// 인생 경험치, 레벨, 특성/직업/사건/엔딩/업적 해금.
     /// </summary>
     public sealed class MetaProgressionManager
     {
         public UnlockCodex Endings { get; } = new UnlockCodex();
         public UnlockCodex Events { get; } = new UnlockCodex();
         public UnlockCodex Traits { get; } = new UnlockCodex();
+        public UnlockCodex Jobs { get; } = new UnlockCodex();
         public UnlockCodex Achievements { get; } = new UnlockCodex();
 
         public int TotalExperience { get; private set; }
+
+        /// <summary>업적·광고 등으로 쌓인 특성 조각.</summary>
+        public int TraitFragmentCount { get; private set; }
 
         public int Level => PlayerLevel.GetLevel(TotalExperience);
 
@@ -45,13 +51,27 @@ namespace SurviveUntilPayday.Core
             IEnumerable<string> endingIds,
             IEnumerable<string> eventIds,
             IEnumerable<string> traitIds,
-            IEnumerable<string> achievementIds)
+            IEnumerable<string> achievementIds,
+            IEnumerable<string> jobIds = null,
+            int traitFragmentCount = 0)
         {
             TotalExperience = Math.Max(0, totalExperience);
+            TraitFragmentCount = Math.Max(0, traitFragmentCount);
             Endings.LoadFrom(endingIds);
             Events.LoadFrom(eventIds);
             Traits.LoadFrom(traitIds);
             Achievements.LoadFrom(achievementIds);
+            Jobs.LoadFrom(jobIds);
+        }
+
+        public void AddTraitFragments(int amount)
+        {
+            if (amount <= 0)
+            {
+                return;
+            }
+
+            TraitFragmentCount += amount;
         }
 
         public bool DiscoverEvent(string eventId, string displayName = null)
@@ -91,10 +111,26 @@ namespace SurviveUntilPayday.Core
             return Traits.IsUnlocked(trait.Id) || Level >= trait.UnlockLevel;
         }
 
+        public bool IsJobUnlocked(JobData job)
+        {
+            if (job == null)
+            {
+                return false;
+            }
+
+            if (job.UnlockLevel <= 1)
+            {
+                return true;
+            }
+
+            return Jobs.IsUnlocked(job.Id) || Level >= job.UnlockLevel;
+        }
+
         public MetaProgressResult ApplyRunResult(
             ResultData result,
             IEnumerable<TraitData> allTraits,
-            IEnumerable<string> discoveredEventIdsThisRun)
+            IEnumerable<string> discoveredEventIdsThisRun,
+            IEnumerable<JobData> allJobs = null)
         {
             var progress = new MetaProgressResult
             {
@@ -132,6 +168,7 @@ namespace SurviveUntilPayday.Core
             TotalExperience += gained;
 
             UnlockEligibleTraits(allTraits, progress);
+            UnlockEligibleJobs(allJobs, progress);
 
             var achievementsBeforeBonus = progress.NewlyUnlockedAchievements.Count;
             EvaluateAchievements(result, progress);
@@ -144,6 +181,7 @@ namespace SurviveUntilPayday.Core
             }
 
             UnlockEligibleTraits(allTraits, progress);
+            UnlockEligibleJobs(allJobs, progress);
             var achievementsBeforeSecond = progress.NewlyUnlockedAchievements.Count;
             EvaluateAchievements(result, progress);
             var secondWave = progress.NewlyUnlockedAchievements.Count - achievementsBeforeSecond;
@@ -153,6 +191,7 @@ namespace SurviveUntilPayday.Core
                 TotalExperience += extra;
                 gained += extra;
                 UnlockEligibleTraits(allTraits, progress);
+                UnlockEligibleJobs(allJobs, progress);
             }
 
             progress.ExperienceGained = gained;
@@ -164,7 +203,10 @@ namespace SurviveUntilPayday.Core
         /// <summary>
         /// 결과 화면 보상형 광고(경험치 2배) 등 보너스 XP.
         /// </summary>
-        public void AddBonusExperience(int amount, IEnumerable<TraitData> allTraits = null)
+        public void AddBonusExperience(
+            int amount,
+            IEnumerable<TraitData> allTraits = null,
+            IEnumerable<JobData> allJobs = null)
         {
             if (amount <= 0)
             {
@@ -175,6 +217,11 @@ namespace SurviveUntilPayday.Core
             if (allTraits != null)
             {
                 UnlockEligibleTraits(allTraits, progress: null);
+            }
+
+            if (allJobs != null)
+            {
+                UnlockEligibleJobs(allJobs, progress: null);
             }
         }
 
@@ -192,7 +239,6 @@ namespace SurviveUntilPayday.Core
                     continue;
                 }
 
-                // unlockLevel 0~1: 기본 해금. 도감률용으로 한 번만 등록한다.
                 if (trait.UnlockLevel <= 1)
                 {
                     if (Traits.TryUnlock(trait.Id))
@@ -217,6 +263,44 @@ namespace SurviveUntilPayday.Core
             }
         }
 
+        private void UnlockEligibleJobs(IEnumerable<JobData> allJobs, MetaProgressResult progress)
+        {
+            if (allJobs == null)
+            {
+                return;
+            }
+
+            foreach (var job in allJobs)
+            {
+                if (job == null || string.IsNullOrWhiteSpace(job.Id))
+                {
+                    continue;
+                }
+
+                if (job.UnlockLevel <= 1)
+                {
+                    if (Jobs.TryUnlock(job.Id))
+                    {
+                        progress?.NewlyUnlockedJobs.Add(job.Id);
+                        RaiseUnlock("job", job.Id, job.DisplayName);
+                    }
+
+                    continue;
+                }
+
+                if (Level < job.UnlockLevel)
+                {
+                    continue;
+                }
+
+                if (Jobs.TryUnlock(job.Id))
+                {
+                    progress?.NewlyUnlockedJobs.Add(job.Id);
+                    RaiseUnlock("job", job.Id, job.DisplayName);
+                }
+            }
+        }
+
         private void EvaluateAchievements(ResultData result, MetaProgressResult progress)
         {
             if (result == null)
@@ -224,14 +308,56 @@ namespace SurviveUntilPayday.Core
                 return;
             }
 
+            var stats = result.FinalStats;
+            var endingId = result.Ending != null ? result.Ending.Id : null;
+
             TryAchieve(AchievementIds.Survive7Days, result.DaysSurvived >= 7, progress);
+            TryAchieve(AchievementIds.Survive15Days, result.DaysSurvived >= 15, progress);
             TryAchieve(AchievementIds.Survive30Days, result.IsSuccess && result.DaysSurvived >= 30, progress);
+            TryAchieve(AchievementIds.PaydaySuccess, result.IsSuccess, progress);
             TryAchieve(
                 AchievementIds.CashHalfMillion,
-                result.FinalStats != null && result.FinalStats.Cash >= 500_000L,
+                stats != null && stats.Cash >= 500_000L,
+                progress);
+            TryAchieve(
+                AchievementIds.CashOneMillion,
+                stats != null && stats.Cash >= 1_000_000L,
+                progress);
+            TryAchieve(
+                AchievementIds.HealthNinety,
+                stats != null && stats.Health >= 90,
+                progress);
+            TryAchieve(
+                AchievementIds.StressTenOrLess,
+                stats != null && stats.Stress <= 10,
+                progress);
+            TryAchieve(
+                AchievementIds.HappinessNinety,
+                stats != null && stats.Happiness >= 90,
+                progress);
+            TryAchieve(
+                AchievementIds.CompanyNinety,
+                stats != null && stats.CompanyScore >= 90,
                 progress);
             TryAchieve(AchievementIds.FirstEnding, Endings.UnlockedCount >= 1, progress);
+            TryAchieve(AchievementIds.EndingsFive, Endings.UnlockedCount >= 5, progress);
             TryAchieve(AchievementIds.UnlockThreeTraits, Traits.UnlockedCount >= 3, progress);
+            TryAchieve(AchievementIds.EventsTen, Events.UnlockedCount >= 10, progress);
+            TryAchieve(AchievementIds.EventsThirty, Events.UnlockedCount >= 30, progress);
+            TryAchieve(AchievementIds.JobsTwo, Jobs.UnlockedCount >= 2, progress);
+            TryAchieve(AchievementIds.JobsThree, Jobs.UnlockedCount >= 3, progress);
+            TryAchieve(
+                AchievementIds.CardJuggleEnding,
+                endingId == "ending_card_juggle",
+                progress);
+            TryAchieve(
+                AchievementIds.OneBigShotEnding,
+                endingId == "ending_one_big_shot",
+                progress);
+            TryAchieve(
+                AchievementIds.ResignReadyEnding,
+                endingId == "ending_resign_ready",
+                progress);
         }
 
         private void TryAchieve(string id, bool condition, MetaProgressResult progress)
@@ -247,7 +373,14 @@ namespace SurviveUntilPayday.Core
             }
 
             progress?.NewlyUnlockedAchievements.Add(id);
-            RaiseUnlock("achievement", id, id);
+            const int fragmentPerAchievement = 1;
+            AddTraitFragments(fragmentPerAchievement);
+            if (progress != null)
+            {
+                progress.TraitFragmentsGained += fragmentPerAchievement;
+            }
+
+            RaiseUnlock("achievement", id, AchievementIds.GetDisplayName(id));
         }
 
         private void RaiseUnlock(string category, string id, string displayName)

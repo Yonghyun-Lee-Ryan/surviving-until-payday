@@ -31,6 +31,7 @@ namespace SurviveUntilPayday.EditorTools
                 CreatePromotionCandidate(),
                 CreateHappyConsumer(),
                 CreateOneBigShot(),
+                CreateResignReady(),
                 CreateCardJuggle(),
                 CreateBarelySurvived(),
                 CreateFailure(
@@ -133,6 +134,24 @@ namespace SurviveUntilPayday.EditorTools
                 "인생은 한방",
                 "큰 승부에서 이겼다. 이번 달은 운이 따랐다.",
                 75,
+                false,
+                FailureReason.None,
+                condition);
+            EditorUtility.SetDirty(ending);
+            return ending;
+        }
+
+        private static EndingData CreateResignReady()
+        {
+            var ending = LoadOrCreate($"{Folder}/Ending_ResignReady.asset");
+            var condition = new EndingCondition();
+            condition.EditorSetCash(true, 800_000L, false, 0);
+            condition.EditorSetCompanyScore(false, 0, true, 35);
+            ending.EditorSet(
+                "ending_resign_ready",
+                "퇴사 준비 완료",
+                "회사에서의 입지는 약해졌지만, 퇴사해도 될 만한 현금은 모아 두었다.",
+                72,
                 false,
                 FailureReason.None,
                 condition);

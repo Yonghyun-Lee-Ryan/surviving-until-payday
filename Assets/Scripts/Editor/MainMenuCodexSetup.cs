@@ -1,4 +1,6 @@
 using System.IO;
+using SurviveUntilPayday.Core;
+using SurviveUntilPayday.Data;
 using SurviveUntilPayday.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -8,13 +10,14 @@ using UnityEngine.UI;
 namespace SurviveUntilPayday.EditorTools
 {
     /// <summary>
-    /// 개발 단위 10: MainMenu 도감/레벨 패널.
+    /// Unit 10/24: MainMenu 도감 패널을 정리된 카드 레이아웃으로 재생성.
     /// </summary>
     public static class MainMenuCodexSetup
     {
         private const string MainMenuPath = "Assets/Scenes/MainMenu.unity";
+        private const string EndingsFolder = "Assets/Data/Endings";
 
-        [MenuItem("Tools/Surviving Until Payday/Setup MainMenu Codex Panel (Unit 10)")]
+        [MenuItem("Tools/Surviving Until Payday/Setup MainMenu Codex Panel (Unit 10/24)")]
         public static void Setup()
         {
             if (!File.Exists(MainMenuPath))
@@ -38,67 +41,98 @@ namespace SurviveUntilPayday.EditorTools
                 Object.DestroyImmediate(existing.gameObject);
             }
 
-            var panel = CreatePanel(safeArea.transform, "CodexPanel", new Vector2(0f, -620f), new Vector2(920f, 260f),
-                new Color(0.92f, 0.93f, 0.94f, 0.95f));
-            var level = CreateText(panel.transform, "Level", "Lv.1", 36, new Vector2(0f, 100f));
-            var xp = CreateText(panel.transform, "XP", "인생 경험치 0", 28, new Vector2(0f, 55f));
-            var ending = CreateText(panel.transform, "EndingRate", "엔딩 0/0", 26, new Vector2(-220f, 0f));
-            var events = CreateText(panel.transform, "EventRate", "사건 0/0", 26, new Vector2(220f, 0f));
-            var traits = CreateText(panel.transform, "TraitRate", "특성 0/0", 26, new Vector2(-220f, -50f));
-            var ach = CreateText(panel.transform, "AchievementRate", "업적 0/0", 26, new Vector2(220f, -50f));
-            var toast = CreateText(panel.transform, "UnlockToast", "", 24, new Vector2(0f, -100f));
+            // 실제 배치는 CodexPanelView.EnsureCleanLayout이 Play 시 재구성한다.
+            // 여기선 빈 패널 + 필수 바인딩용 더미만 둔다.
+            var panel = new GameObject("CodexPanel", typeof(RectTransform), typeof(Image), typeof(CodexPanelView));
+            panel.transform.SetParent(safeArea.transform, false);
+            var rect = panel.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.04f, 0.02f);
+            rect.anchorMax = new Vector2(0.96f, 0.48f);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.pivot = new Vector2(0.5f, 0f);
+            panel.GetComponent<Image>().color = new Color(0.96f, 0.95f, 0.92f, 0.98f);
 
-            var codex = panel.AddComponent<CodexPanelView>();
-            codex.Bind(level, xp, ending, events, traits, ach, toast);
-
+            var codex = panel.GetComponent<CodexPanelView>();
+            var endings = LoadEndings();
+            var events = LoadEvents();
             var so = new SerializedObject(controller);
             so.FindProperty("codexPanel").objectReferenceValue = codex;
-            so.FindProperty("totalEndingCount").intValue = 9;
-            so.FindProperty("totalEventCount").intValue = 20;
+            so.FindProperty("totalEndingCount").intValue = Mathf.Max(12, endings.Count);
+            so.FindProperty("totalEventCount").intValue = Mathf.Max(55, CountPlayableEvents(events));
             so.FindProperty("totalTraitCount").intValue = 4;
-            so.FindProperty("totalAchievementCount").intValue = 5;
+            so.FindProperty("totalAchievementCount").intValue = AchievementIds.CatalogCount;
+            WireList(so.FindProperty("endingCatalog"), endings);
+            WireList(so.FindProperty("eventCatalog"), events);
+
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(controller);
+            EditorUtility.SetDirty(panel);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
 
-            Debug.Log("[MainMenuCodexSetup] Codex panel added to MainMenu.");
+            Debug.Log($"[MainMenuCodexSetup] Codex panel 정리 완료. endings={endings.Count}, events={events.Count}");
         }
 
-        private static GameObject CreatePanel(
-            Transform parent,
-            string name,
-            Vector2 pos,
-            Vector2 size,
-            Color color)
+        private static void WireList<T>(SerializedProperty property, System.Collections.Generic.List<T> values)
+            where T : Object
         {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = pos;
-            rect.sizeDelta = size;
-            var image = go.AddComponent<Image>();
-            image.color = color;
-            return go;
+            property.ClearArray();
+            for (var i = 0; i < values.Count; i++)
+            {
+                property.InsertArrayElementAtIndex(i);
+                property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            }
         }
 
-        private static Text CreateText(Transform parent, string name, string content, int size, Vector2 pos)
+        private static int CountPlayableEvents(System.Collections.Generic.List<EventData> events)
         {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = pos;
-            rect.sizeDelta = new Vector2(420f, 40f);
-            var text = go.AddComponent<Text>();
-            text.text = content;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                        ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
-            text.fontSize = size;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.color = new Color(0.15f, 0.15f, 0.18f);
-            return text;
+            var count = 0;
+            for (var i = 0; i < events.Count; i++)
+            {
+                if (events[i] != null && events[i].Id != "event_rest_fallback")
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static System.Collections.Generic.List<EndingData> LoadEndings()
+        {
+            var list = new System.Collections.Generic.List<EndingData>();
+            var guids = AssetDatabase.FindAssets("t:EndingData", new[] { EndingsFolder });
+            foreach (var guid in guids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var ending = AssetDatabase.LoadAssetAtPath<EndingData>(path);
+                if (ending != null)
+                {
+                    list.Add(ending);
+                }
+            }
+
+            list.Sort((a, b) => string.CompareOrdinal(a.Id, b.Id));
+            return list;
+        }
+
+        private static System.Collections.Generic.List<EventData> LoadEvents()
+        {
+            var list = new System.Collections.Generic.List<EventData>();
+            var guids = AssetDatabase.FindAssets("t:EventData", new[] { "Assets/Data/Events" });
+            foreach (var guid in guids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var eventData = AssetDatabase.LoadAssetAtPath<EventData>(path);
+                if (eventData != null)
+                {
+                    list.Add(eventData);
+                }
+            }
+
+            list.Sort((a, b) => string.CompareOrdinal(a.Id, b.Id));
+            return list;
         }
     }
 }

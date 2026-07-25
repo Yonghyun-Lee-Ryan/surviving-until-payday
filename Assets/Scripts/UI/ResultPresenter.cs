@@ -1,6 +1,7 @@
 using SurviveUntilPayday.Ads;
 using SurviveUntilPayday.Audio;
 using SurviveUntilPayday.Core;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -159,36 +160,65 @@ namespace SurviveUntilPayday.UI
 
             if (unlockLabel != null)
             {
-                var parts = new System.Collections.Generic.List<string>();
-                if (result.EndingNewlyUnlocked)
-                {
-                    parts.Add($"새 엔딩 해금! (엔딩 {unlockedCount}개)");
-                }
-                else if (result.Ending != null)
-                {
-                    parts.Add($"이미 해금된 엔딩 (엔딩 {unlockedCount}개)");
-                }
-
-                if (result.MetaProgress != null)
-                {
-                    if (result.MetaProgress.NewlyUnlockedTraits.Count > 0)
-                    {
-                        parts.Add($"특성 해금 {result.MetaProgress.NewlyUnlockedTraits.Count}개");
-                    }
-
-                    if (result.MetaProgress.NewlyUnlockedEvents.Count > 0)
-                    {
-                        parts.Add($"사건 도감 +{result.MetaProgress.NewlyUnlockedEvents.Count}");
-                    }
-
-                    if (result.MetaProgress.NewlyUnlockedAchievements.Count > 0)
-                    {
-                        parts.Add($"업적 {result.MetaProgress.NewlyUnlockedAchievements.Count}개");
-                    }
-                }
-
-                unlockLabel.text = string.Join("\n", parts);
+                unlockLabel.text = BuildUnlockHighlight(result, unlockedCount);
             }
+        }
+
+        private static string BuildUnlockHighlight(ResultData result, int unlockedCount)
+        {
+            var parts = new List<string>();
+            if (result.EndingNewlyUnlocked && result.Ending != null)
+            {
+                parts.Add($"★ 새 엔딩: {result.Ending.Title}");
+            }
+            else if (result.Ending != null)
+            {
+                parts.Add($"엔딩: {result.Ending.Title} (도감 {unlockedCount}개)");
+            }
+
+            var meta = result.MetaProgress;
+            if (meta == null)
+            {
+                return string.Join("\n", parts);
+            }
+
+            AppendNamedUnlocks(parts, "★ 특성", meta.NewlyUnlockedTraits);
+            AppendNamedUnlocks(parts, "★ 직업", meta.NewlyUnlockedJobs);
+            AppendNamedUnlocks(parts, "★ 사건", meta.NewlyUnlockedEvents, maxShow: 3);
+            if (meta.NewlyUnlockedAchievements.Count > 0)
+            {
+                var names = new List<string>();
+                for (var i = 0; i < meta.NewlyUnlockedAchievements.Count; i++)
+                {
+                    names.Add(AchievementIds.GetDisplayName(meta.NewlyUnlockedAchievements[i]));
+                }
+
+                parts.Add("★ 업적: " + string.Join(", ", names));
+            }
+
+            if (meta.TraitFragmentsGained > 0)
+            {
+                parts.Add($"특성 조각 +{meta.TraitFragmentsGained}");
+            }
+
+            return string.Join("\n", parts);
+        }
+
+        private static void AppendNamedUnlocks(
+            List<string> parts,
+            string prefix,
+            List<string> ids,
+            int maxShow = 8)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return;
+            }
+
+            var shown = ids.Count <= maxShow
+                ? string.Join(", ", ids)
+                : string.Join(", ", ids.GetRange(0, maxShow)) + $" 외 {ids.Count - maxShow}개";
+            parts.Add($"{prefix}: {shown}");
         }
 
         private void ShowPlaceholder()

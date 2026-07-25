@@ -174,6 +174,7 @@ namespace SurviveUntilPayday.Tests
             var meta = new MetaProgressionManager();
             meta.DiscoverEnding("ending_a");
             meta.DiscoverEvent("event_b");
+            meta.Load(300, new[] { "ending_a" }, new[] { "event_b" }, null, null, new[] { "job_civil_prep" }, 2);
             meta.ApplyRunResult(
                 new ResultData(7, false, FailureReason.None, new PlayerStats(10_000, 50, 50, 50, 50), null, 0, false),
                 null,
@@ -185,7 +186,102 @@ namespace SurviveUntilPayday.Tests
 
             Assert.IsTrue(loaded.Endings.IsUnlocked("ending_a"));
             Assert.IsTrue(loaded.Events.IsUnlocked("event_b"));
+            Assert.IsTrue(loaded.Jobs.IsUnlocked("job_civil_prep"));
             Assert.AreEqual(meta.TotalExperience, loaded.TotalExperience);
+            Assert.AreEqual(meta.TraitFragmentCount, loaded.TraitFragmentCount);
+        }
+
+        [Test]
+        public void Meta_IsJobUnlocked_RespectsUnlockLevelGate()
+        {
+            var starter = ScriptableObject.CreateInstance<JobData>();
+            starter.EditorSet(
+                "job_junior_office",
+                "신입",
+                "기본",
+                0,
+                2_800_000L,
+                2_800_000L,
+                80,
+                20,
+                50,
+                50);
+
+            var civil = ScriptableObject.CreateInstance<JobData>();
+            civil.EditorSet(
+                "job_civil_prep",
+                "공준",
+                "레벨2",
+                2,
+                1_200_000L,
+                1_800_000L,
+                75,
+                35,
+                45,
+                20);
+
+            var freelance = ScriptableObject.CreateInstance<JobData>();
+            freelance.EditorSet(
+                "job_freelancer",
+                "프리",
+                "레벨3",
+                3,
+                2_200_000L,
+                2_400_000L,
+                70,
+                30,
+                55,
+                15);
+
+            var meta = new MetaProgressionManager();
+            Assert.IsTrue(meta.IsJobUnlocked(starter));
+            Assert.IsFalse(meta.IsJobUnlocked(civil));
+            Assert.IsFalse(meta.IsJobUnlocked(freelance));
+
+            meta.Load(100, null, null, null, null, null);
+            Assert.AreEqual(2, meta.Level);
+            Assert.IsTrue(meta.IsJobUnlocked(civil));
+            Assert.IsFalse(meta.IsJobUnlocked(freelance));
+
+            meta.Load(100 + 200, null, null, null, null, null);
+            Assert.AreEqual(3, meta.Level);
+            Assert.IsTrue(meta.IsJobUnlocked(freelance));
+        }
+
+        [Test]
+        public void Meta_ApplyRunResult_UnlocksEligibleJobs()
+        {
+            var civil = ScriptableObject.CreateInstance<JobData>();
+            civil.EditorSet(
+                "job_civil_prep",
+                "공준",
+                "레벨2",
+                2,
+                1_200_000L,
+                1_800_000L,
+                75,
+                35,
+                45,
+                20);
+
+            var ending = ScriptableObject.CreateInstance<EndingData>();
+            ending.EditorSet("e", "엔딩", "d", 1, false, FailureReason.None, new EndingCondition());
+
+            var draft = new ResultData(
+                30,
+                true,
+                FailureReason.None,
+                new PlayerStats(1_000_000, 80, 20, 80, 80),
+                ending,
+                0,
+                false);
+
+            var meta = new MetaProgressionManager();
+            var result = meta.ApplyRunResult(draft, null, null, new[] { civil });
+
+            Assert.GreaterOrEqual(result.LevelAfter, 2);
+            Assert.IsTrue(meta.IsJobUnlocked(civil));
+            Assert.Contains("job_civil_prep", result.NewlyUnlockedJobs);
         }
     }
 }

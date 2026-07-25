@@ -94,14 +94,17 @@ namespace SurviveUntilPayday.Save
                 meta.unlockedEndingIds,
                 meta.unlockedEventIds,
                 meta.unlockedTraitIds,
-                meta.unlockedAchievementIds);
+                meta.unlockedAchievementIds,
+                meta.unlockedJobIds,
+                meta.traitFragmentCount);
         }
 
         public static MetaSaveData CaptureMeta(MetaProgressionManager progression)
         {
             var meta = new MetaSaveData
             {
-                totalExperience = progression != null ? progression.TotalExperience : 0
+                totalExperience = progression != null ? progression.TotalExperience : 0,
+                traitFragmentCount = progression != null ? progression.TraitFragmentCount : 0
             };
 
             if (progression == null)
@@ -112,6 +115,7 @@ namespace SurviveUntilPayday.Save
             CopyIds(progression.Endings, meta.unlockedEndingIds);
             CopyIds(progression.Events, meta.unlockedEventIds);
             CopyIds(progression.Traits, meta.unlockedTraitIds);
+            CopyIds(progression.Jobs, meta.unlockedJobIds);
             CopyIds(progression.Achievements, meta.unlockedAchievementIds);
             return meta;
         }

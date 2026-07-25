@@ -5,7 +5,7 @@ namespace SurviveUntilPayday.Save
 {
     public static class SaveVersion
     {
-        public const int Current = 3;
+        public const int Current = 5;
     }
 
     [Serializable]
@@ -44,7 +44,9 @@ namespace SurviveUntilPayday.Save
         public List<string> unlockedEndingIds = new List<string>();
         public List<string> unlockedEventIds = new List<string>();
         public List<string> unlockedTraitIds = new List<string>();
+        public List<string> unlockedJobIds = new List<string>();
         public List<string> unlockedAchievementIds = new List<string>();
         public int totalExperience;
+        public int traitFragmentCount;
     }
 }
