@@ -4,6 +4,7 @@ using SurviveUntilPayday.Audio;
 using SurviveUntilPayday.Save;
 using SurviveUntilPayday.Services;
 using SurviveUntilPayday.Settings;
+using SurviveUntilPayday.UI;
 using UnityEngine;
 
 namespace SurviveUntilPayday.Core
@@ -51,6 +52,7 @@ namespace SurviveUntilPayday.Core
         public PrivacyPolicyConfig PrivacyPolicy => privacyPolicyConfig;
 
         private bool sessionTrackingActive;
+        private SettingsPanelView settingsOverlay;
 
         public static AppRoot EnsureCreated()
         {
@@ -340,6 +342,59 @@ namespace SurviveUntilPayday.Core
             AdQuota?.BeginRun();
             PersistSession(includeActiveRun: false);
             Debug.Log("[AppRoot] All save data reset.");
+        }
+
+        public void OpenSettings()
+        {
+            EnsureSettingsOverlay();
+            settingsOverlay?.Show();
+        }
+
+        public void ToggleSettings()
+        {
+            EnsureSettingsOverlay();
+            settingsOverlay?.Toggle();
+        }
+
+        private void EnsureSettingsOverlay()
+        {
+            if (settingsOverlay != null)
+            {
+                return;
+            }
+
+            var canvasGo = new GameObject(
+                "SettingsOverlayCanvas",
+                typeof(RectTransform),
+                typeof(Canvas),
+                typeof(UnityEngine.UI.CanvasScaler),
+                typeof(UnityEngine.UI.GraphicRaycaster));
+            canvasGo.transform.SetParent(transform, false);
+            var canvas = canvasGo.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 900;
+            var scaler = canvasGo.GetComponent<UnityEngine.UI.CanvasScaler>();
+            scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1080f, 1920f);
+            scaler.matchWidthOrHeight = 0.5f;
+
+            var panelGo = new GameObject(
+                "SettingsPanel",
+                typeof(RectTransform),
+                typeof(UnityEngine.UI.Image),
+                typeof(SettingsPanelView));
+            panelGo.transform.SetParent(canvasGo.transform, false);
+            var panelRect = panelGo.GetComponent<RectTransform>();
+            panelRect.anchorMin = Vector2.zero;
+            panelRect.anchorMax = Vector2.one;
+            panelRect.offsetMin = Vector2.zero;
+            panelRect.offsetMax = Vector2.zero;
+
+            settingsOverlay = panelGo.GetComponent<SettingsPanelView>();
+            // Awake에서 이미 레이아웃을 만듦. Bind로 layoutReady를 리셋하면
+            // Destroy 지연으로 카드가 사라질 수 있어 privacy만 주입한다.
+            settingsOverlay.SetPrivacyConfig(privacyPolicyConfig);
+            settingsOverlay.Hide();
         }
 
         private void OnAudioSettingsChanged(bool enabled, float volume)

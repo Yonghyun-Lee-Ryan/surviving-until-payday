@@ -6,10 +6,16 @@ using UnityEngine.UI;
 namespace SurviveUntilPayday.UI
 {
     /// <summary>
-    /// 메인 메뉴 설정: 사운드/진동/개인정보/데이터 초기화/버전.
+    /// 메인 메뉴 설정: 사운드(토글+볼륨 슬라이더)/진동(체크박스)/개인정보/초기화.
     /// </summary>
     public sealed class SettingsPanelView : MonoBehaviour
     {
+        private static readonly Color OverlayColor = new Color(0.05f, 0.06f, 0.08f, 0.82f);
+        private static readonly Color CardColor = new Color(0.14f, 0.16f, 0.2f, 1f);
+        private static readonly Color RowColor = new Color(0.22f, 0.24f, 0.28f, 1f);
+        private static readonly Color Accent = new Color(0.28f, 0.48f, 0.62f, 1f);
+        private static readonly Color CheckOn = new Color(0.35f, 0.72f, 0.48f, 1f);
+
         [SerializeField] private GameObject root;
         [SerializeField] private Toggle soundToggle;
         [SerializeField] private Toggle vibrationToggle;
@@ -20,8 +26,516 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private Text versionLabel;
         [SerializeField] private PrivacyPolicyConfig privacyConfig;
 
+        private bool layoutReady;
+        private bool listenersWired;
+        private Text volumeValueLabel;
+        private const int LayoutVersion = 8;
+        private const float CheckBoxSize = 25f;
+        private int builtLayoutVersion;
+
         private void Awake()
         {
+            if (root == null)
+            {
+                root = gameObject;
+            }
+
+            EnsureCleanLayout();
+            WireListeners();
+            Hide();
+        }
+
+        private void OnDestroy()
+        {
+            UnwireListeners();
+        }
+
+        public void Bind(
+            GameObject panelRoot,
+            Toggle sound,
+            Toggle vibration,
+            Slider volume,
+            Button privacy,
+            Button resetSave,
+            Button close,
+            Text version,
+            PrivacyPolicyConfig config)
+        {
+            root = panelRoot;
+            soundToggle = sound;
+            vibrationToggle = vibration;
+            volumeSlider = volume;
+            privacyButton = privacy;
+            resetSaveButton = resetSave;
+            closeButton = close;
+            versionLabel = version;
+            privacyConfig = config;
+            layoutReady = false;
+        }
+
+        public void SetPrivacyConfig(PrivacyPolicyConfig config)
+        {
+            privacyConfig = config;
+        }
+
+        public void Show()
+        {
+            EnsureCleanLayout();
+            RefreshFromSettings();
+            if (root != null)
+            {
+                root.SetActive(true);
+                root.transform.SetAsLastSibling();
+            }
+        }
+
+        public void Hide()
+        {
+            if (root != null)
+            {
+                root.SetActive(false);
+            }
+        }
+
+        public void Toggle()
+        {
+            if (root != null && root.activeSelf)
+            {
+                Hide();
+            }
+            else
+            {
+                Show();
+            }
+        }
+
+        private void EnsureCleanLayout()
+        {
+            if (layoutReady && builtLayoutVersion == LayoutVersion)
+            {
+                return;
+            }
+
+            if (root == null)
+            {
+                root = gameObject;
+            }
+
+            HideLegacyChildren(root.transform);
+            DestroyChildNamed(root.transform, "SettingsCard");
+
+            layoutReady = true;
+            builtLayoutVersion = LayoutVersion;
+            listenersWired = false;
+
+            var rootRect = root.GetComponent<RectTransform>();
+            if (rootRect != null)
+            {
+                rootRect.anchorMin = Vector2.zero;
+                rootRect.anchorMax = Vector2.one;
+                rootRect.offsetMin = Vector2.zero;
+                rootRect.offsetMax = Vector2.zero;
+                rootRect.pivot = new Vector2(0.5f, 0.5f);
+            }
+
+            var rootImage = root.GetComponent<Image>();
+            if (rootImage == null)
+            {
+                rootImage = root.AddComponent<Image>();
+            }
+
+            rootImage.color = OverlayColor;
+            rootImage.raycastTarget = true;
+
+            // Find 재사용 금지: Destroy는 프레임 말까지 남아서 죽은 카드를 다시 잡을 수 있음
+            var card = CreateFreshChild(root.transform, "SettingsCard", typeof(Image), typeof(VerticalLayoutGroup));
+            var cardRect = card.GetComponent<RectTransform>();
+            cardRect.anchorMin = new Vector2(0.5f, 0.5f);
+            cardRect.anchorMax = new Vector2(0.5f, 0.5f);
+            cardRect.pivot = new Vector2(0.5f, 0.5f);
+            cardRect.anchoredPosition = Vector2.zero;
+            cardRect.sizeDelta = new Vector2(820f, 700f);
+            card.GetComponent<Image>().color = CardColor;
+            card.GetComponent<Image>().raycastTarget = true;
+            card.transform.SetAsLastSibling();
+
+            var cardLayout = card.GetComponent<VerticalLayoutGroup>();
+            cardLayout.padding = new RectOffset(28, 28, 20, 16);
+            cardLayout.spacing = 10f;
+            cardLayout.childAlignment = TextAnchor.UpperCenter;
+            cardLayout.childControlWidth = true;
+            cardLayout.childControlHeight = true;
+            cardLayout.childForceExpandWidth = true;
+            cardLayout.childForceExpandHeight = false;
+
+            CreateTitle(card.transform, "설정");
+
+            // 제목·버전을 제외한 본문 5칸 비율 2:2:3:3:3
+            var body = CreateChild(card.transform, "BodyStack", typeof(VerticalLayoutGroup), typeof(LayoutElement));
+            var bodyElement = body.GetComponent<LayoutElement>();
+            bodyElement.flexibleHeight = 1f;
+            bodyElement.minHeight = 400f;
+            var bodyLayout = body.GetComponent<VerticalLayoutGroup>();
+            bodyLayout.spacing = 10f;
+            bodyLayout.padding = new RectOffset(0, 0, 0, 0);
+            bodyLayout.childAlignment = TextAnchor.UpperCenter;
+            bodyLayout.childControlWidth = true;
+            bodyLayout.childControlHeight = true;
+            bodyLayout.childForceExpandWidth = true;
+            bodyLayout.childForceExpandHeight = true;
+
+            CreateSoundVolumeBlock(body.transform, flex: 2f);
+            vibrationToggle = CreateCheckRow(body.transform, "VibrationToggle", "진동", flex: 2f);
+            privacyButton = CreateActionButton(body.transform, "PrivacyButton", "개인정보처리방침", flex: 3f);
+            resetSaveButton = CreateActionButton(body.transform, "ResetSaveButton", "저장 데이터 초기화", flex: 3f);
+            closeButton = CreateActionButton(body.transform, "CloseButton", "닫기", flex: 3f);
+
+            versionLabel = CreateLabel(card.transform, "Version", null, 20, 26f);
+            versionLabel.color = new Color(1f, 1f, 1f, 0.55f);
+
+            WireListeners();
+        }
+
+        private void CreateSoundVolumeBlock(Transform parent, float flex)
+        {
+            var row = CreateChild(parent, "SoundVolumeRow", typeof(Image), typeof(LayoutElement), typeof(VerticalLayoutGroup));
+            row.GetComponent<Image>().color = RowColor;
+            var element = row.GetComponent<LayoutElement>();
+            element.minHeight = 88f;
+            element.preferredHeight = 0f;
+            element.flexibleHeight = flex;
+
+            var layout = row.GetComponent<VerticalLayoutGroup>();
+            layout.padding = new RectOffset(18, 18, 14, 16);
+            layout.spacing = 8f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            // 남는 높이를 위(토글)·아래(슬라이더)에 균등 배분 → 슬라이더가 하단으로 깔리지 않음
+            layout.childForceExpandHeight = true;
+
+            var top = CreateChild(row.transform, "Top", typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+            var topElement = top.GetComponent<LayoutElement>();
+            topElement.minHeight = 36f;
+            topElement.preferredHeight = 36f;
+            topElement.flexibleHeight = 1f;
+            var topLayout = top.GetComponent<HorizontalLayoutGroup>();
+            topLayout.spacing = 12f;
+            topLayout.childAlignment = TextAnchor.MiddleLeft;
+            topLayout.childControlWidth = false;
+            topLayout.childControlHeight = false;
+            topLayout.childForceExpandWidth = false;
+            topLayout.childForceExpandHeight = false;
+
+            soundToggle = BuildToggleOn(top.transform, "SoundToggle", "사운드", CheckBoxSize);
+            volumeValueLabel = CreateChild(top.transform, "Value", typeof(Text), typeof(LayoutElement)).GetComponent<Text>();
+            volumeValueLabel.text = "100%";
+            volumeValueLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                                    ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            volumeValueLabel.fontSize = 22;
+            volumeValueLabel.alignment = TextAnchor.MiddleRight;
+            volumeValueLabel.color = new Color(0.85f, 0.9f, 1f, 1f);
+            var valueElement = volumeValueLabel.GetComponent<LayoutElement>();
+            valueElement.flexibleWidth = 1f;
+            valueElement.minWidth = 72f;
+            valueElement.preferredHeight = 36f;
+            valueElement.flexibleHeight = 0f;
+            UiFont.Apply(volumeValueLabel);
+
+            var sliderSlot = CreateChild(row.transform, "SliderSlot", typeof(LayoutElement));
+            var slotElement = sliderSlot.GetComponent<LayoutElement>();
+            slotElement.minHeight = 40f;
+            slotElement.preferredHeight = 40f;
+            slotElement.flexibleHeight = 1f;
+
+            volumeSlider = BuildSlider(sliderSlot.transform, "VolumeSlider", 36f);
+            var sliderRect = volumeSlider.GetComponent<RectTransform>();
+            sliderRect.anchorMin = new Vector2(0f, 0.5f);
+            sliderRect.anchorMax = new Vector2(1f, 0.5f);
+            sliderRect.pivot = new Vector2(0.5f, 0.5f);
+            sliderRect.anchoredPosition = Vector2.zero;
+            sliderRect.sizeDelta = new Vector2(0f, 36f);
+            var sliderLayout = volumeSlider.GetComponent<LayoutElement>();
+            if (sliderLayout != null)
+            {
+                sliderLayout.ignoreLayout = true;
+            }
+        }
+
+        private static void HideLegacyChildren(Transform parent)
+        {
+            for (var i = 0; i < parent.childCount; i++)
+            {
+                var child = parent.GetChild(i);
+                if (child.name == "SettingsCard")
+                {
+                    continue;
+                }
+
+                child.gameObject.SetActive(false);
+            }
+        }
+
+        private static void DestroyChildNamed(Transform parent, string name)
+        {
+            for (var i = parent.childCount - 1; i >= 0; i--)
+            {
+                var child = parent.GetChild(i);
+                if (child.name != name)
+                {
+                    continue;
+                }
+
+                // Destroy는 지연되므로 이름을 바꿔 Find/재사용이 못 잡게 한다
+                child.name = name + "_PendingDestroy";
+                child.gameObject.SetActive(false);
+                Object.Destroy(child.gameObject);
+            }
+        }
+
+        private static GameObject CreateFreshChild(Transform parent, string name, params System.Type[] components)
+        {
+            DestroyChildNamed(parent, name);
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            for (var i = 0; i < components.Length; i++)
+            {
+                if (go.GetComponent(components[i]) == null)
+                {
+                    go.AddComponent(components[i]);
+                }
+            }
+
+            return go;
+        }
+
+        private static GameObject CreateChild(Transform parent, string name, params System.Type[] components)
+        {
+            var existing = parent.Find(name);
+            if (existing != null && existing.gameObject != null)
+            {
+                existing.gameObject.SetActive(true);
+                return existing.gameObject;
+            }
+
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            for (var i = 0; i < components.Length; i++)
+            {
+                if (go.GetComponent(components[i]) == null)
+                {
+                    go.AddComponent(components[i]);
+                }
+            }
+
+            return go;
+        }
+
+        private static Text CreateTitle(Transform parent, string text)
+        {
+            var label = CreateLabel(parent, "Title", null, 34, 44f);
+            label.text = text;
+            label.color = Color.white;
+            UiFont.Apply(label, bold: true);
+            return label;
+        }
+
+        private static Text CreateLabel(
+            Transform parent,
+            string name,
+            Text existing,
+            int fontSize,
+            float height)
+        {
+            Text label = existing;
+            if (label != null)
+            {
+                label.transform.SetParent(parent, false);
+                label.gameObject.SetActive(true);
+                label.gameObject.name = name;
+            }
+            else
+            {
+                var go = CreateChild(parent, name, typeof(Text), typeof(LayoutElement));
+                label = go.GetComponent<Text>();
+            }
+
+            var element = label.GetComponent<LayoutElement>() ?? label.gameObject.AddComponent<LayoutElement>();
+            element.minHeight = height;
+            element.preferredHeight = height;
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                         ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            label.fontSize = fontSize;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+            UiFont.Apply(label);
+            return label;
+        }
+
+        private Toggle CreateCheckRow(Transform parent, string name, string caption, float flex)
+        {
+            var row = CreateChild(parent, name, typeof(Image), typeof(LayoutElement), typeof(HorizontalLayoutGroup));
+            row.GetComponent<Image>().color = RowColor;
+            var element = row.GetComponent<LayoutElement>();
+            element.minHeight = 56f;
+            element.preferredHeight = 0f;
+            element.flexibleHeight = flex;
+
+            var layout = row.GetComponent<HorizontalLayoutGroup>();
+            layout.padding = new RectOffset(18, 18, 12, 12);
+            layout.spacing = 12f;
+            layout.childAlignment = TextAnchor.MiddleLeft;
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+
+            return BuildToggleOn(row.transform, name + "_Toggle", caption, CheckBoxSize);
+        }
+
+        private Toggle BuildToggleOn(Transform parent, string name, string caption, float boxSize)
+        {
+            var host = CreateChild(parent, name, typeof(Toggle), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+            var hostLayout = host.GetComponent<HorizontalLayoutGroup>();
+            hostLayout.spacing = 10f;
+            hostLayout.childAlignment = TextAnchor.MiddleLeft;
+            hostLayout.childControlWidth = false;
+            hostLayout.childControlHeight = false;
+            hostLayout.childForceExpandWidth = false;
+            hostLayout.childForceExpandHeight = false;
+            var hostElement = host.GetComponent<LayoutElement>();
+            hostElement.flexibleWidth = 0f;
+            hostElement.flexibleHeight = 0f;
+            hostElement.minHeight = boxSize;
+            hostElement.preferredHeight = boxSize;
+
+            var box = CreateChild(host.transform, "CheckBox", typeof(Image), typeof(LayoutElement));
+            var boxImage = box.GetComponent<Image>();
+            boxImage.color = new Color(0.12f, 0.13f, 0.16f, 1f);
+            var boxRect = box.GetComponent<RectTransform>();
+            boxRect.anchorMin = new Vector2(0.5f, 0.5f);
+            boxRect.anchorMax = new Vector2(0.5f, 0.5f);
+            boxRect.pivot = new Vector2(0.5f, 0.5f);
+            boxRect.sizeDelta = new Vector2(boxSize, boxSize);
+            var boxElement = box.GetComponent<LayoutElement>();
+            boxElement.minWidth = boxElement.preferredWidth = boxSize;
+            boxElement.minHeight = boxElement.preferredHeight = boxSize;
+            boxElement.flexibleWidth = 0f;
+            boxElement.flexibleHeight = 0f;
+
+            var check = CreateChild(box.transform, "Checkmark", typeof(Image));
+            var checkRect = check.GetComponent<RectTransform>();
+            checkRect.anchorMin = new Vector2(0.18f, 0.18f);
+            checkRect.anchorMax = new Vector2(0.82f, 0.82f);
+            checkRect.offsetMin = Vector2.zero;
+            checkRect.offsetMax = Vector2.zero;
+            var checkImage = check.GetComponent<Image>();
+            checkImage.color = CheckOn;
+
+            var labelGo = CreateChild(host.transform, "Label", typeof(Text), typeof(LayoutElement));
+            var label = labelGo.GetComponent<Text>();
+            label.text = caption;
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                         ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            label.fontSize = 22;
+            label.alignment = TextAnchor.MiddleLeft;
+            label.color = Color.white;
+            UiFont.Apply(label, bold: true);
+            var labelElement = labelGo.GetComponent<LayoutElement>();
+            labelElement.minWidth = 72f;
+            labelElement.preferredHeight = boxSize;
+            labelElement.flexibleWidth = 0f;
+            labelElement.flexibleHeight = 0f;
+
+            var toggle = host.GetComponent<Toggle>();
+            toggle.targetGraphic = boxImage;
+            toggle.graphic = checkImage;
+            toggle.isOn = true;
+            return toggle;
+        }
+
+        private Slider BuildSlider(Transform parent, string name, float height)
+        {
+            var sliderGo = CreateChild(parent, name, typeof(Slider), typeof(LayoutElement));
+            var layoutElement = sliderGo.GetComponent<LayoutElement>();
+            layoutElement.minHeight = height;
+            layoutElement.preferredHeight = height;
+            layoutElement.flexibleHeight = 0f;
+            var slider = sliderGo.GetComponent<Slider>();
+
+            var background = CreateChild(sliderGo.transform, "Background", typeof(Image));
+            Stretch(background.GetComponent<RectTransform>(), 0f, 0.35f, 1f, 0.65f);
+            background.GetComponent<Image>().color = new Color(0.1f, 0.11f, 0.14f, 1f);
+
+            var fillArea = CreateChild(sliderGo.transform, "Fill Area", typeof(RectTransform));
+            Stretch(fillArea.GetComponent<RectTransform>(), 0.02f, 0.35f, 0.98f, 0.65f);
+            var fill = CreateChild(fillArea.transform, "Fill", typeof(Image));
+            Stretch(fill.GetComponent<RectTransform>(), 0f, 0f, 1f, 1f);
+            fill.GetComponent<Image>().color = Accent;
+
+            var handleArea = CreateChild(sliderGo.transform, "Handle Slide Area", typeof(RectTransform));
+            Stretch(handleArea.GetComponent<RectTransform>(), 0.02f, 0f, 0.98f, 1f);
+            var handle = CreateChild(handleArea.transform, "Handle", typeof(Image));
+            var handleRect = handle.GetComponent<RectTransform>();
+            handleRect.anchorMin = new Vector2(0.5f, 0.5f);
+            handleRect.anchorMax = new Vector2(0.5f, 0.5f);
+            handleRect.pivot = new Vector2(0.5f, 0.5f);
+            handleRect.sizeDelta = new Vector2(26f, 26f);
+            handle.GetComponent<Image>().color = Color.white;
+
+            slider.fillRect = fill.GetComponent<RectTransform>();
+            slider.handleRect = handle.GetComponent<RectTransform>();
+            slider.targetGraphic = handle.GetComponent<Image>();
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.wholeNumbers = false;
+            slider.value = 1f;
+            return slider;
+        }
+
+        private static Button CreateActionButton(Transform parent, string name, string caption, float flex)
+        {
+            var go = CreateChild(parent, name, typeof(Image), typeof(Button), typeof(LayoutElement));
+            go.GetComponent<Image>().color = Accent;
+            var element = go.GetComponent<LayoutElement>();
+            element.minHeight = 56f;
+            element.preferredHeight = 0f;
+            element.flexibleHeight = flex;
+            element.flexibleWidth = 1f;
+
+            var label = CreateChild(go.transform, "Label", typeof(Text)).GetComponent<Text>();
+            Stretch(label.GetComponent<RectTransform>(), 0f, 0f, 1f, 1f);
+            label.text = caption;
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                         ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            label.fontSize = 24;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+            UiFont.Apply(label, bold: true);
+
+            var button = go.GetComponent<Button>();
+            button.targetGraphic = go.GetComponent<Image>();
+            return button;
+        }
+
+        private static void Stretch(RectTransform rect, float minX, float minY, float maxX, float maxY)
+        {
+            rect.anchorMin = new Vector2(minX, minY);
+            rect.anchorMax = new Vector2(maxX, maxY);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+        }
+
+        private void WireListeners()
+        {
+            if (listenersWired)
+            {
+                return;
+            }
+
+            UnwireListeners();
             if (soundToggle != null)
             {
                 soundToggle.onValueChanged.AddListener(OnSoundChanged);
@@ -52,91 +566,18 @@ namespace SurviveUntilPayday.UI
                 closeButton.onClick.AddListener(Hide);
             }
 
-            Hide();
+            listenersWired = true;
         }
 
-        private void OnDestroy()
+        private void UnwireListeners()
         {
-            if (soundToggle != null)
-            {
-                soundToggle.onValueChanged.RemoveListener(OnSoundChanged);
-            }
-
-            if (vibrationToggle != null)
-            {
-                vibrationToggle.onValueChanged.RemoveListener(OnVibrationChanged);
-            }
-
-            if (volumeSlider != null)
-            {
-                volumeSlider.onValueChanged.RemoveListener(OnVolumeChanged);
-            }
-
-            if (privacyButton != null)
-            {
-                privacyButton.onClick.RemoveListener(OnPrivacyClicked);
-            }
-
-            if (resetSaveButton != null)
-            {
-                resetSaveButton.onClick.RemoveListener(OnResetSaveClicked);
-            }
-
-            if (closeButton != null)
-            {
-                closeButton.onClick.RemoveListener(Hide);
-            }
-        }
-
-        public void Bind(
-            GameObject panelRoot,
-            Toggle sound,
-            Toggle vibration,
-            Slider volume,
-            Button privacy,
-            Button resetSave,
-            Button close,
-            Text version,
-            PrivacyPolicyConfig config)
-        {
-            root = panelRoot;
-            soundToggle = sound;
-            vibrationToggle = vibration;
-            volumeSlider = volume;
-            privacyButton = privacy;
-            resetSaveButton = resetSave;
-            closeButton = close;
-            versionLabel = version;
-            privacyConfig = config;
-        }
-
-        public void Show()
-        {
-            RefreshFromSettings();
-            if (root != null)
-            {
-                root.SetActive(true);
-            }
-        }
-
-        public void Hide()
-        {
-            if (root != null)
-            {
-                root.SetActive(false);
-            }
-        }
-
-        public void Toggle()
-        {
-            if (root != null && root.activeSelf)
-            {
-                Hide();
-            }
-            else
-            {
-                Show();
-            }
+            soundToggle?.onValueChanged.RemoveAllListeners();
+            vibrationToggle?.onValueChanged.RemoveAllListeners();
+            volumeSlider?.onValueChanged.RemoveAllListeners();
+            privacyButton?.onClick.RemoveAllListeners();
+            resetSaveButton?.onClick.RemoveAllListeners();
+            closeButton?.onClick.RemoveAllListeners();
+            listenersWired = false;
         }
 
         private void RefreshFromSettings()
@@ -160,11 +601,21 @@ namespace SurviveUntilPayday.UI
             if (volumeSlider != null)
             {
                 volumeSlider.SetValueWithoutNotify(settings.SoundVolume);
+                UpdateVolumeLabel(settings.SoundVolume);
+                volumeSlider.interactable = settings.SoundEnabled;
             }
 
             if (versionLabel != null)
             {
                 versionLabel.text = $"v{Application.version} ({Application.platform})";
+            }
+        }
+
+        private void UpdateVolumeLabel(float value)
+        {
+            if (volumeValueLabel != null)
+            {
+                volumeValueLabel.text = $"{Mathf.RoundToInt(Mathf.Clamp01(value) * 100f)}%";
             }
         }
 
@@ -177,6 +628,10 @@ namespace SurviveUntilPayday.UI
             }
 
             settings.SoundEnabled = enabled;
+            if (volumeSlider != null)
+            {
+                volumeSlider.interactable = enabled;
+            }
         }
 
         private void OnVibrationChanged(bool enabled)
@@ -203,6 +658,7 @@ namespace SurviveUntilPayday.UI
             }
 
             settings.SoundVolume = value;
+            UpdateVolumeLabel(value);
         }
 
         private void OnPrivacyClicked()

@@ -16,6 +16,7 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private StatGaugeView companyGauge;
         [SerializeField] private GameObject crisisBanner;
         [SerializeField] private Text crisisBannerLabel;
+        [SerializeField] private Button settingsButton;
 
         public StatGaugeView HealthGauge => healthGauge;
         public StatGaugeView StressGauge => stressGauge;
@@ -71,6 +72,86 @@ namespace SurviveUntilPayday.UI
             stressGauge = stress;
             happinessGauge = happiness;
             companyGauge = company;
+        }
+
+        public void BindSettingsButton(Button button)
+        {
+            settingsButton = button;
+        }
+
+        public void SetSettingsClickHandler(UnityEngine.Events.UnityAction handler)
+        {
+            EnsureSettingsButton();
+            if (settingsButton == null)
+            {
+                return;
+            }
+
+            settingsButton.onClick.RemoveAllListeners();
+            if (handler != null)
+            {
+                settingsButton.onClick.AddListener(handler);
+            }
+
+            settingsButton.transform.SetAsLastSibling();
+        }
+
+        /// <summary>레이아웃 적용 시 설정 버튼만 생성·배치한다.</summary>
+        public void EnsureInGameSettingsButton()
+        {
+            EnsureSettingsButton();
+            if (settingsButton != null)
+            {
+                settingsButton.transform.SetAsLastSibling();
+            }
+        }
+
+        private void EnsureSettingsButton()
+        {
+            if (settingsButton != null)
+            {
+                settingsButton.gameObject.SetActive(true);
+                return;
+            }
+
+            var existing = transform.Find("SettingsButton");
+            if (existing != null)
+            {
+                settingsButton = existing.GetComponent<Button>();
+                if (settingsButton != null)
+                {
+                    return;
+                }
+            }
+
+            var go = new GameObject("SettingsButton", typeof(RectTransform), typeof(Image), typeof(Button));
+            go.transform.SetParent(transform, false);
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-16f, -68f);
+            rect.sizeDelta = new Vector2(120f, 52f);
+            var image = go.GetComponent<Image>();
+            image.color = new Color(0.28f, 0.48f, 0.62f, 1f);
+            settingsButton = go.GetComponent<Button>();
+            settingsButton.targetGraphic = image;
+
+            var labelGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            labelGo.transform.SetParent(go.transform, false);
+            var labelRect = labelGo.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+            var label = labelGo.GetComponent<Text>();
+            label.text = "설정";
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                         ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            label.fontSize = 24;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+            UiFont.Apply(label, bold: true);
         }
 
         public void BindLabels(Text day, Text cash, GameObject crisisRoot, Text crisisText)

@@ -108,7 +108,7 @@ namespace SurviveUntilPayday.Audio
                 return;
             }
 
-            sfxSource.PlayOneShot(clip, volume);
+            sfxSource.PlayOneShot(clip, 1f);
         }
 
         public void SetBgm(BgmId id)
@@ -120,13 +120,6 @@ namespace SurviveUntilPayday.Audio
                 return;
             }
 
-            if (!soundEnabled || volume <= 0.0001f)
-            {
-                StopBgm();
-                currentBgm = id;
-                return;
-            }
-
             var clip = ResolveBgm(id);
             if (clip == null)
             {
@@ -135,14 +128,17 @@ namespace SurviveUntilPayday.Audio
                 return;
             }
 
-            if (currentBgm == id && bgmSource.isPlaying && bgmSource.clip == clip)
+            if (currentBgm == id && bgmSource.clip == clip && bgmSource.isPlaying)
             {
+                bgmSource.volume = 1f;
                 return;
             }
 
             currentBgm = id;
             bgmSource.clip = clip;
-            bgmSource.volume = volume;
+            bgmSource.volume = 1f;
+            // 음소거여도 재생은 유지해 설정 복구 시 처음부터 다시 시작하지 않음
+            // (가청 여부는 AudioListener.volume으로 제어)
             bgmSource.Play();
         }
 
@@ -159,32 +155,46 @@ namespace SurviveUntilPayday.Audio
 
         public void ApplySettings(bool enabled, float soundVolume)
         {
+            EnsureSources();
             soundEnabled = enabled;
             volume = Mathf.Clamp01(soundVolume);
-            AudioListener.volume = soundEnabled ? volume : 0f;
+            var audible = soundEnabled && volume > 0.0001f;
+            // 마스터 볼륨만 조절. Pause/Stop/Play 금지 → 재생 위치 유지
+            AudioListener.volume = audible ? volume : 0f;
 
-            EnsureSources();
-            if (bgmSource != null)
+            if (bgmSource == null)
             {
-                bgmSource.volume = volume;
-            }
-
-            if (!soundEnabled || volume <= 0.0001f)
-            {
-                if (bgmSource != null && bgmSource.isPlaying)
-                {
-                    bgmSource.Stop();
-                }
-
                 return;
             }
 
-            // 뮤트 해제 시 마지막 BGM 복구
-            if (currentBgm != BgmId.None)
+            bgmSource.volume = 1f;
+
+            if (!audible || currentBgm == BgmId.None)
             {
-                var resume = currentBgm;
-                currentBgm = BgmId.None;
-                SetBgm(resume);
+                return;
+            }
+
+            var clip = ResolveBgm(currentBgm);
+            if (clip == null)
+            {
+                return;
+            }
+
+            if (bgmSource.clip != clip)
+            {
+                bgmSource.clip = clip;
+                bgmSource.Play();
+                return;
+            }
+
+            if (!bgmSource.isPlaying)
+            {
+                var resumeTime = bgmSource.time;
+                bgmSource.Play();
+                if (resumeTime > 0f && resumeTime < clip.length)
+                {
+                    bgmSource.time = resumeTime;
+                }
             }
         }
 

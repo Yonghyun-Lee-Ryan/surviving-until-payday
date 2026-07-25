@@ -57,6 +57,7 @@ namespace SurviveUntilPayday.UI
 
         [Header("Meta")]
         [SerializeField] private List<TraitData> allTraits = new List<TraitData>();
+        [SerializeField] private List<JobData> allJobs = new List<JobData>();
 
         private void Awake()
         {
@@ -124,6 +125,7 @@ namespace SurviveUntilPayday.UI
             }
 
             GameplayLayoutApplier.Apply(hudView, eventPanelView, choicePanelView);
+            WireHudSettingsButton();
             // 폰트 로드 직후 한 프레임 뒤에도 HUD를 재적용 (씬 Arial 덮어쓰기 보장)
             StartCoroutine(ReapplyHudNextFrame());
 
@@ -154,11 +156,26 @@ namespace SurviveUntilPayday.UI
         {
             yield return null;
             GameplayLayoutApplier.Apply(hudView, eventPanelView, choicePanelView);
+            WireHudSettingsButton();
             ConfigureGaugeThresholds();
             if (runManager?.State != null)
             {
                 RefreshHudInstant();
             }
+        }
+
+        private void WireHudSettingsButton()
+        {
+            if (hudView == null)
+            {
+                return;
+            }
+
+            hudView.SetSettingsClickHandler(() =>
+            {
+                AppRoot.EnsureCreated().Audio?.PlaySfx(SfxId.Click);
+                AppRoot.EnsureCreated().OpenSettings();
+            });
         }
 
         public void BindViews(
@@ -964,7 +981,18 @@ namespace SurviveUntilPayday.UI
                     ? new List<TraitData> { startingTrait }
                     : new List<TraitData>());
 
-            var metaResult = session.Meta.ApplyRunResult(draft, traitsForUnlock, discoveredEventIdsThisRun);
+            var jobsForUnlock = allJobs != null && allJobs.Count > 0
+                ? allJobs
+                : (startingJob != null
+                    ? new List<JobData> { startingJob }
+                    : new List<JobData>());
+
+            var metaResult = session.Meta.ApplyRunResult(
+                draft,
+                traitsForUnlock,
+                discoveredEventIdsThisRun,
+                jobsForUnlock);
+            session.SyncTraitFragmentsFromMeta();
             session.LastResult = draft.WithMeta(metaResult);
 
             appRoot.ClearActiveRunAndSave();

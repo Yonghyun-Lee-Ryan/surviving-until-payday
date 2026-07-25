@@ -60,6 +60,7 @@ namespace SurviveUntilPayday.UI
             day?.transform.SetAsLastSibling();
             cash?.transform.SetAsLastSibling();
             hud.RefreshTopLabelBindings();
+            hud.EnsureInGameSettingsButton();
         }
 
         private static Text ForceTopLabel(GameHudView hud, string name, bool isCash, string fallback)
