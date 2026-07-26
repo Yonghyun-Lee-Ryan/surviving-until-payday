@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SurviveUntilPayday.Data;
 
 namespace SurviveUntilPayday.DebugTools
@@ -11,10 +12,15 @@ namespace SurviveUntilPayday.DebugTools
         GameState DebugGetState();
         void DebugSetDay(int day);
         void DebugSetStats(long cash, int health, int stress, int happiness, int companyScore);
+        void DebugAdjustCash(long delta);
         void DebugSetSeed(int seed);
         void DebugForceEvent(EventData eventData);
         void DebugForceEnding(EndingData ending);
         void DebugForceSuccess();
         void DebugForceFailure(FailureReason reason);
+        void DebugSetFlag(string flagId, bool enabled);
+        void DebugClearFlags();
+        IReadOnlyList<string> DebugGetFlags();
+        string DebugBuildStateDump();
     }
 }
