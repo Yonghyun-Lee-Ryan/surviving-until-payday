@@ -32,6 +32,12 @@ namespace SurviveUntilPayday.Core
         /// <summary>PendingJob/PendingTrait를 새 회차에 적용할지.</summary>
         public bool UsePendingRunSelection { get; private set; }
 
+        /// <summary>메뉴에서 지정한 회차 시드. null이면 Presenter 기본값.</summary>
+        public int? PendingRandomSeed { get; private set; }
+
+        /// <summary>오늘의 직장인 회차 여부.</summary>
+        public bool IsDailyChallengeRun { get; private set; }
+
         /// <summary>결과 화면에서 경험치 2배 광고를 이미 수령했는지.</summary>
         public bool DoubleExperienceClaimedForLastResult { get; set; }
 
@@ -39,9 +45,29 @@ namespace SurviveUntilPayday.Core
 
         public int TotalExperience => Meta.TotalExperience;
 
+        /// <summary>메뉴·Game에서 공유하는 일일 미션 풀.</summary>
+        public List<DailyMissionData> DailyMissionPool { get; } = new List<DailyMissionData>();
+
         public GameSession()
         {
             EndingCodex = new EndingCodex(Meta.Endings);
+        }
+
+        public void SetDailyMissionPool(IEnumerable<DailyMissionData> missions)
+        {
+            DailyMissionPool.Clear();
+            if (missions == null)
+            {
+                return;
+            }
+
+            foreach (var mission in missions)
+            {
+                if (mission != null)
+                {
+                    DailyMissionPool.Add(mission);
+                }
+            }
         }
 
         public bool HasActiveRun =>
@@ -55,6 +81,21 @@ namespace SurviveUntilPayday.Core
             PendingJob = job;
             PendingTrait = trait;
             UsePendingRunSelection = true;
+            PendingRandomSeed = null;
+            IsDailyChallengeRun = false;
+            StartMode = GameStartMode.NewRun;
+        }
+
+        /// <summary>
+        /// 오늘의 직장인: 고정 시드·직업으로 새 회차를 시작한다.
+        /// </summary>
+        public void SetPendingDailyRun(JobData job, TraitData trait, int seed)
+        {
+            PendingJob = job;
+            PendingTrait = trait;
+            UsePendingRunSelection = true;
+            PendingRandomSeed = seed;
+            IsDailyChallengeRun = true;
             StartMode = GameStartMode.NewRun;
         }
 
@@ -63,6 +104,28 @@ namespace SurviveUntilPayday.Core
             PendingJob = null;
             PendingTrait = null;
             UsePendingRunSelection = false;
+            PendingRandomSeed = null;
+            IsDailyChallengeRun = false;
+        }
+
+        public bool TryConsumePendingRandomSeed(out int seed)
+        {
+            if (PendingRandomSeed.HasValue)
+            {
+                seed = PendingRandomSeed.Value;
+                PendingRandomSeed = null;
+                return true;
+            }
+
+            seed = 0;
+            return false;
+        }
+
+        public bool ConsumeDailyChallengeFlag()
+        {
+            var value = IsDailyChallengeRun;
+            IsDailyChallengeRun = false;
+            return value;
         }
 
         public void SetEndingCatalog(IEnumerable<EndingData> endings, EndingData fallbackSuccess)

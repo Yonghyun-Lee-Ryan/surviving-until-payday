@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b569868db79efd4a834e0adf6b603bb, type: 3}
+  m_Name: Mission_Health_80_Payday
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.DailyMissionData
+  id: mission_health_80_payday
+  title: "\uAC74\uAC15 80 \uC6D4\uAE09\uB0A0"
+  description: "\uAC74\uAC15 80 \uC774\uC0C1\uC73C\uB85C \uC6D4\uAE09\uB0A0\uC5D0
+    \uB3C4\uB2EC\uD55C\uB2E4."
+  goalType: 5
+  longThreshold: 0
+  intThreshold: 80
+  flagId: 
+  rewardExperience: 25
+  rewardTraitFragments: 1
