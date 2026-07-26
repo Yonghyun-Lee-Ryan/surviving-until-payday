@@ -20,9 +20,9 @@ namespace SurviveUntilPayday.Audio
         {
         }
 
-        public void ApplySettings(bool soundEnabled, float volume)
+        public void ApplySettings(bool soundEnabled, float bgmVolume, float sfxVolume)
         {
-            AudioListener.volume = soundEnabled ? Mathf.Clamp01(volume) : 0f;
+            AudioListener.volume = soundEnabled ? 1f : 0f;
         }
     }
 }

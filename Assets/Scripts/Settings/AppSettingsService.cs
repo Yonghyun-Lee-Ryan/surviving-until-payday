@@ -9,8 +9,12 @@ namespace SurviveUntilPayday.Settings
     [Serializable]
     public sealed class AppSettingsData
     {
+        public int schemaVersion = 2;
         public bool soundEnabled = true;
+        /// <summary>구버전 호환용. schema 2부터는 bgm/sfx를 우선한다.</summary>
         public float soundVolume = 1f;
+        public float bgmVolume = 1f;
+        public float sfxVolume = 1f;
         public bool vibrationEnabled = true;
         public bool privacyAccepted;
         public bool adsConsentGranted;
@@ -69,6 +73,8 @@ namespace SurviveUntilPayday.Settings
     /// </summary>
     public sealed class AppSettingsService
     {
+        private const int CurrentSchema = 2;
+
         private readonly IAppSettingsStore store;
         private AppSettingsData data;
 
@@ -76,13 +82,14 @@ namespace SurviveUntilPayday.Settings
         {
             this.store = store ?? new PlayerPrefsAppSettingsStore();
             data = this.store.Load() ?? new AppSettingsData();
+            MigrateIfNeeded();
             ApplyAudio();
         }
 
         public AppSettingsData Current => data;
 
-        /// <summary>사운드 ON/OFF·볼륨이 바뀔 때 (enabled, volume).</summary>
-        public event Action<bool, float> AudioSettingsChanged;
+        /// <summary>(enabled, bgmVolume, sfxVolume)</summary>
+        public event Action<bool, float, float> AudioSettingsChanged;
 
         public bool SoundEnabled
         {
@@ -95,12 +102,40 @@ namespace SurviveUntilPayday.Settings
             }
         }
 
+        /// <summary>구 API: BGM·SFX를 함께 설정한다.</summary>
         public float SoundVolume
         {
-            get => data.soundVolume;
+            get => (data.bgmVolume + data.sfxVolume) * 0.5f;
             set
             {
-                data.soundVolume = Mathf.Clamp01(value);
+                var clamped = Mathf.Clamp01(value);
+                data.soundVolume = clamped;
+                data.bgmVolume = clamped;
+                data.sfxVolume = clamped;
+                ApplyAudio();
+                Persist();
+            }
+        }
+
+        public float BgmVolume
+        {
+            get => data.bgmVolume;
+            set
+            {
+                data.bgmVolume = Mathf.Clamp01(value);
+                data.soundVolume = (data.bgmVolume + data.sfxVolume) * 0.5f;
+                ApplyAudio();
+                Persist();
+            }
+        }
+
+        public float SfxVolume
+        {
+            get => data.sfxVolume;
+            set
+            {
+                data.sfxVolume = Mathf.Clamp01(value);
+                data.soundVolume = (data.bgmVolume + data.sfxVolume) * 0.5f;
                 ApplyAudio();
                 Persist();
             }
@@ -159,10 +194,30 @@ namespace SurviveUntilPayday.Settings
 #endif
         }
 
+        private void MigrateIfNeeded()
+        {
+            if (data.schemaVersion >= CurrentSchema)
+            {
+                data.bgmVolume = Mathf.Clamp01(data.bgmVolume);
+                data.sfxVolume = Mathf.Clamp01(data.sfxVolume);
+                return;
+            }
+
+            // schema 1 → 2: 단일 soundVolume을 BGM/SFX에 복제
+            var legacy = Mathf.Clamp01(data.soundVolume);
+            data.bgmVolume = legacy;
+            data.sfxVolume = legacy;
+            data.schemaVersion = CurrentSchema;
+            Persist();
+        }
+
         private void ApplyAudio()
         {
-            AudioListener.volume = data.soundEnabled ? Mathf.Clamp01(data.soundVolume) : 0f;
-            AudioSettingsChanged?.Invoke(data.soundEnabled, data.soundVolume);
+            var bgm = Mathf.Clamp01(data.bgmVolume);
+            var sfx = Mathf.Clamp01(data.sfxVolume);
+            // 구독자(AppRoot)가 없을 때도 테스트·에디터에서 마스터 뮤트가 반영되게 한다.
+            AudioListener.volume = data.soundEnabled ? 1f : 0f;
+            AudioSettingsChanged?.Invoke(data.soundEnabled, bgm, sfx);
         }
 
         private void Persist()

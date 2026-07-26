@@ -13,14 +13,36 @@ namespace SurviveUntilPayday.Tests
             var settings = new AppSettingsService(store);
 
             settings.SoundEnabled = false;
-            settings.SoundVolume = 0.4f;
+            settings.BgmVolume = 0.4f;
+            settings.SfxVolume = 0.6f;
             settings.VibrationEnabled = false;
 
             var reloaded = new AppSettingsService(store);
             Assert.IsFalse(reloaded.SoundEnabled);
-            Assert.AreEqual(0.4f, reloaded.SoundVolume, 0.001f);
+            Assert.AreEqual(0.4f, reloaded.BgmVolume, 0.001f);
+            Assert.AreEqual(0.6f, reloaded.SfxVolume, 0.001f);
             Assert.IsFalse(reloaded.VibrationEnabled);
             Assert.AreEqual(0f, AudioListener.volume, 0.001f);
+        }
+
+        [Test]
+        public void AppSettings_MigratesLegacySoundVolumeToBgmAndSfx()
+        {
+            var store = new MemoryAppSettingsStore();
+            store.Save(new AppSettingsData
+            {
+                schemaVersion = 1,
+                soundEnabled = true,
+                soundVolume = 0.35f,
+                bgmVolume = 0f,
+                sfxVolume = 0f,
+                vibrationEnabled = true
+            });
+
+            var settings = new AppSettingsService(store);
+            Assert.AreEqual(0.35f, settings.BgmVolume, 0.001f);
+            Assert.AreEqual(0.35f, settings.SfxVolume, 0.001f);
+            Assert.AreEqual(2, settings.Current.schemaVersion);
         }
 
         [Test]

@@ -1,12 +1,13 @@
 using SurviveUntilPayday.Core;
 using SurviveUntilPayday.Settings;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace SurviveUntilPayday.UI
 {
     /// <summary>
-    /// 메인 메뉴 설정: 사운드(토글+볼륨 슬라이더)/진동(체크박스)/개인정보/초기화.
+    /// 설정: 사운드 토글 + BGM/SFX 볼륨, 진동, 개인정보, 초기화, (게임 중) 메인 메뉴.
     /// </summary>
     public sealed class SettingsPanelView : MonoBehaviour
     {
@@ -15,21 +16,25 @@ namespace SurviveUntilPayday.UI
         private static readonly Color RowColor = new Color(0.22f, 0.24f, 0.28f, 1f);
         private static readonly Color Accent = new Color(0.28f, 0.48f, 0.62f, 1f);
         private static readonly Color CheckOn = new Color(0.35f, 0.72f, 0.48f, 1f);
+        private static readonly Color Danger = new Color(0.55f, 0.28f, 0.28f, 1f);
 
         [SerializeField] private GameObject root;
         [SerializeField] private Toggle soundToggle;
         [SerializeField] private Toggle vibrationToggle;
-        [SerializeField] private Slider volumeSlider;
+        [SerializeField] private Slider bgmSlider;
+        [SerializeField] private Slider sfxSlider;
         [SerializeField] private Button privacyButton;
         [SerializeField] private Button resetSaveButton;
+        [SerializeField] private Button mainMenuButton;
         [SerializeField] private Button closeButton;
         [SerializeField] private Text versionLabel;
         [SerializeField] private PrivacyPolicyConfig privacyConfig;
 
         private bool layoutReady;
         private bool listenersWired;
-        private Text volumeValueLabel;
-        private const int LayoutVersion = 8;
+        private Text bgmValueLabel;
+        private Text sfxValueLabel;
+        private const int LayoutVersion = 9;
         private const float CheckBoxSize = 25f;
         private int builtLayoutVersion;
 
@@ -54,9 +59,11 @@ namespace SurviveUntilPayday.UI
             GameObject panelRoot,
             Toggle sound,
             Toggle vibration,
-            Slider volume,
+            Slider bgm,
+            Slider sfx,
             Button privacy,
             Button resetSave,
+            Button mainMenu,
             Button close,
             Text version,
             PrivacyPolicyConfig config)
@@ -64,9 +71,11 @@ namespace SurviveUntilPayday.UI
             root = panelRoot;
             soundToggle = sound;
             vibrationToggle = vibration;
-            volumeSlider = volume;
+            bgmSlider = bgm;
+            sfxSlider = sfx;
             privacyButton = privacy;
             resetSaveButton = resetSave;
+            mainMenuButton = mainMenu;
             closeButton = close;
             versionLabel = version;
             privacyConfig = config;
@@ -147,21 +156,20 @@ namespace SurviveUntilPayday.UI
             rootImage.color = OverlayColor;
             rootImage.raycastTarget = true;
 
-            // Find 재사용 금지: Destroy는 프레임 말까지 남아서 죽은 카드를 다시 잡을 수 있음
             var card = CreateFreshChild(root.transform, "SettingsCard", typeof(Image), typeof(VerticalLayoutGroup));
             var cardRect = card.GetComponent<RectTransform>();
             cardRect.anchorMin = new Vector2(0.5f, 0.5f);
             cardRect.anchorMax = new Vector2(0.5f, 0.5f);
             cardRect.pivot = new Vector2(0.5f, 0.5f);
             cardRect.anchoredPosition = Vector2.zero;
-            cardRect.sizeDelta = new Vector2(820f, 700f);
+            cardRect.sizeDelta = new Vector2(820f, 920f);
             card.GetComponent<Image>().color = CardColor;
             card.GetComponent<Image>().raycastTarget = true;
             card.transform.SetAsLastSibling();
 
             var cardLayout = card.GetComponent<VerticalLayoutGroup>();
             cardLayout.padding = new RectOffset(28, 28, 20, 16);
-            cardLayout.spacing = 10f;
+            cardLayout.spacing = 8f;
             cardLayout.childAlignment = TextAnchor.UpperCenter;
             cardLayout.childControlWidth = true;
             cardLayout.childControlHeight = true;
@@ -170,13 +178,12 @@ namespace SurviveUntilPayday.UI
 
             CreateTitle(card.transform, "설정");
 
-            // 제목·버전을 제외한 본문 5칸 비율 2:2:3:3:3
             var body = CreateChild(card.transform, "BodyStack", typeof(VerticalLayoutGroup), typeof(LayoutElement));
             var bodyElement = body.GetComponent<LayoutElement>();
             bodyElement.flexibleHeight = 1f;
-            bodyElement.minHeight = 400f;
+            bodyElement.minHeight = 560f;
             var bodyLayout = body.GetComponent<VerticalLayoutGroup>();
-            bodyLayout.spacing = 10f;
+            bodyLayout.spacing = 8f;
             bodyLayout.padding = new RectOffset(0, 0, 0, 0);
             bodyLayout.childAlignment = TextAnchor.UpperCenter;
             bodyLayout.childControlWidth = true;
@@ -184,11 +191,14 @@ namespace SurviveUntilPayday.UI
             bodyLayout.childForceExpandWidth = true;
             bodyLayout.childForceExpandHeight = true;
 
-            CreateSoundVolumeBlock(body.transform, flex: 2f);
-            vibrationToggle = CreateCheckRow(body.transform, "VibrationToggle", "진동", flex: 2f);
-            privacyButton = CreateActionButton(body.transform, "PrivacyButton", "개인정보처리방침", flex: 3f);
-            resetSaveButton = CreateActionButton(body.transform, "ResetSaveButton", "저장 데이터 초기화", flex: 3f);
-            closeButton = CreateActionButton(body.transform, "CloseButton", "닫기", flex: 3f);
+            soundToggle = CreateCheckRow(body.transform, "SoundToggle", "사운드", flex: 1.5f);
+            bgmSlider = CreateVolumeRow(body.transform, "BgmVolume", "BGM", flex: 2f, out bgmValueLabel);
+            sfxSlider = CreateVolumeRow(body.transform, "SfxVolume", "SFX", flex: 2f, out sfxValueLabel);
+            vibrationToggle = CreateCheckRow(body.transform, "VibrationToggle", "진동", flex: 1.5f);
+            privacyButton = CreateActionButton(body.transform, "PrivacyButton", "개인정보처리방침", flex: 2f, Accent);
+            resetSaveButton = CreateActionButton(body.transform, "ResetSaveButton", "저장 데이터 초기화", flex: 2f, Accent);
+            mainMenuButton = CreateActionButton(body.transform, "MainMenuButton", "메인 메뉴로", flex: 2f, Danger);
+            closeButton = CreateActionButton(body.transform, "CloseButton", "닫기", flex: 2f, Accent);
 
             versionLabel = CreateLabel(card.transform, "Version", null, 20, 26f);
             versionLabel.color = new Color(1f, 1f, 1f, 0.55f);
@@ -196,29 +206,28 @@ namespace SurviveUntilPayday.UI
             WireListeners();
         }
 
-        private void CreateSoundVolumeBlock(Transform parent, float flex)
+        private Slider CreateVolumeRow(Transform parent, string name, string caption, float flex, out Text valueLabel)
         {
-            var row = CreateChild(parent, "SoundVolumeRow", typeof(Image), typeof(LayoutElement), typeof(VerticalLayoutGroup));
+            var row = CreateChild(parent, name + "Row", typeof(Image), typeof(LayoutElement), typeof(VerticalLayoutGroup));
             row.GetComponent<Image>().color = RowColor;
             var element = row.GetComponent<LayoutElement>();
-            element.minHeight = 88f;
+            element.minHeight = 80f;
             element.preferredHeight = 0f;
             element.flexibleHeight = flex;
 
             var layout = row.GetComponent<VerticalLayoutGroup>();
-            layout.padding = new RectOffset(18, 18, 14, 16);
-            layout.spacing = 8f;
+            layout.padding = new RectOffset(18, 18, 10, 12);
+            layout.spacing = 6f;
             layout.childAlignment = TextAnchor.MiddleCenter;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
             layout.childForceExpandWidth = true;
-            // 남는 높이를 위(토글)·아래(슬라이더)에 균등 배분 → 슬라이더가 하단으로 깔리지 않음
             layout.childForceExpandHeight = true;
 
             var top = CreateChild(row.transform, "Top", typeof(HorizontalLayoutGroup), typeof(LayoutElement));
             var topElement = top.GetComponent<LayoutElement>();
-            topElement.minHeight = 36f;
-            topElement.preferredHeight = 36f;
+            topElement.minHeight = 32f;
+            topElement.preferredHeight = 32f;
             topElement.flexibleHeight = 1f;
             var topLayout = top.GetComponent<HorizontalLayoutGroup>();
             topLayout.spacing = 12f;
@@ -228,39 +237,51 @@ namespace SurviveUntilPayday.UI
             topLayout.childForceExpandWidth = false;
             topLayout.childForceExpandHeight = false;
 
-            soundToggle = BuildToggleOn(top.transform, "SoundToggle", "사운드", CheckBoxSize);
-            volumeValueLabel = CreateChild(top.transform, "Value", typeof(Text), typeof(LayoutElement)).GetComponent<Text>();
-            volumeValueLabel.text = "100%";
-            volumeValueLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                                    ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
-            volumeValueLabel.fontSize = 22;
-            volumeValueLabel.alignment = TextAnchor.MiddleRight;
-            volumeValueLabel.color = new Color(0.85f, 0.9f, 1f, 1f);
-            var valueElement = volumeValueLabel.GetComponent<LayoutElement>();
+            var captionLabel = CreateChild(top.transform, "Caption", typeof(Text), typeof(LayoutElement)).GetComponent<Text>();
+            captionLabel.text = caption;
+            captionLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                                ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            captionLabel.fontSize = 22;
+            captionLabel.alignment = TextAnchor.MiddleLeft;
+            captionLabel.color = Color.white;
+            UiFont.Apply(captionLabel, bold: true);
+            var captionElement = captionLabel.GetComponent<LayoutElement>();
+            captionElement.minWidth = 72f;
+            captionElement.preferredHeight = 32f;
+
+            valueLabel = CreateChild(top.transform, "Value", typeof(Text), typeof(LayoutElement)).GetComponent<Text>();
+            valueLabel.text = "100%";
+            valueLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                              ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            valueLabel.fontSize = 22;
+            valueLabel.alignment = TextAnchor.MiddleRight;
+            valueLabel.color = new Color(0.85f, 0.9f, 1f, 1f);
+            var valueElement = valueLabel.GetComponent<LayoutElement>();
             valueElement.flexibleWidth = 1f;
             valueElement.minWidth = 72f;
-            valueElement.preferredHeight = 36f;
-            valueElement.flexibleHeight = 0f;
-            UiFont.Apply(volumeValueLabel);
+            valueElement.preferredHeight = 32f;
+            UiFont.Apply(valueLabel);
 
             var sliderSlot = CreateChild(row.transform, "SliderSlot", typeof(LayoutElement));
             var slotElement = sliderSlot.GetComponent<LayoutElement>();
-            slotElement.minHeight = 40f;
-            slotElement.preferredHeight = 40f;
+            slotElement.minHeight = 36f;
+            slotElement.preferredHeight = 36f;
             slotElement.flexibleHeight = 1f;
 
-            volumeSlider = BuildSlider(sliderSlot.transform, "VolumeSlider", 36f);
-            var sliderRect = volumeSlider.GetComponent<RectTransform>();
+            var slider = BuildSlider(sliderSlot.transform, name + "Slider", 32f);
+            var sliderRect = slider.GetComponent<RectTransform>();
             sliderRect.anchorMin = new Vector2(0f, 0.5f);
             sliderRect.anchorMax = new Vector2(1f, 0.5f);
             sliderRect.pivot = new Vector2(0.5f, 0.5f);
             sliderRect.anchoredPosition = Vector2.zero;
-            sliderRect.sizeDelta = new Vector2(0f, 36f);
-            var sliderLayout = volumeSlider.GetComponent<LayoutElement>();
+            sliderRect.sizeDelta = new Vector2(0f, 32f);
+            var sliderLayout = slider.GetComponent<LayoutElement>();
             if (sliderLayout != null)
             {
                 sliderLayout.ignoreLayout = true;
             }
+
+            return slider;
         }
 
         private static void HideLegacyChildren(Transform parent)
@@ -287,7 +308,6 @@ namespace SurviveUntilPayday.UI
                     continue;
                 }
 
-                // Destroy는 지연되므로 이름을 바꿔 Find/재사용이 못 잡게 한다
                 child.name = name + "_PendingDestroy";
                 child.gameObject.SetActive(false);
                 Object.Destroy(child.gameObject);
@@ -378,12 +398,12 @@ namespace SurviveUntilPayday.UI
             var row = CreateChild(parent, name, typeof(Image), typeof(LayoutElement), typeof(HorizontalLayoutGroup));
             row.GetComponent<Image>().color = RowColor;
             var element = row.GetComponent<LayoutElement>();
-            element.minHeight = 56f;
+            element.minHeight = 52f;
             element.preferredHeight = 0f;
             element.flexibleHeight = flex;
 
             var layout = row.GetComponent<HorizontalLayoutGroup>();
-            layout.padding = new RectOffset(18, 18, 12, 12);
+            layout.padding = new RectOffset(18, 18, 10, 10);
             layout.spacing = 12f;
             layout.childAlignment = TextAnchor.MiddleLeft;
             layout.childControlWidth = false;
@@ -495,12 +515,12 @@ namespace SurviveUntilPayday.UI
             return slider;
         }
 
-        private static Button CreateActionButton(Transform parent, string name, string caption, float flex)
+        private static Button CreateActionButton(Transform parent, string name, string caption, float flex, Color color)
         {
             var go = CreateChild(parent, name, typeof(Image), typeof(Button), typeof(LayoutElement));
-            go.GetComponent<Image>().color = Accent;
+            go.GetComponent<Image>().color = color;
             var element = go.GetComponent<LayoutElement>();
-            element.minHeight = 56f;
+            element.minHeight = 52f;
             element.preferredHeight = 0f;
             element.flexibleHeight = flex;
             element.flexibleWidth = 1f;
@@ -546,9 +566,14 @@ namespace SurviveUntilPayday.UI
                 vibrationToggle.onValueChanged.AddListener(OnVibrationChanged);
             }
 
-            if (volumeSlider != null)
+            if (bgmSlider != null)
             {
-                volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
+                bgmSlider.onValueChanged.AddListener(OnBgmVolumeChanged);
+            }
+
+            if (sfxSlider != null)
+            {
+                sfxSlider.onValueChanged.AddListener(OnSfxVolumeChanged);
             }
 
             if (privacyButton != null)
@@ -559,6 +584,11 @@ namespace SurviveUntilPayday.UI
             if (resetSaveButton != null)
             {
                 resetSaveButton.onClick.AddListener(OnResetSaveClicked);
+            }
+
+            if (mainMenuButton != null)
+            {
+                mainMenuButton.onClick.AddListener(OnMainMenuClicked);
             }
 
             if (closeButton != null)
@@ -573,9 +603,11 @@ namespace SurviveUntilPayday.UI
         {
             soundToggle?.onValueChanged.RemoveAllListeners();
             vibrationToggle?.onValueChanged.RemoveAllListeners();
-            volumeSlider?.onValueChanged.RemoveAllListeners();
+            bgmSlider?.onValueChanged.RemoveAllListeners();
+            sfxSlider?.onValueChanged.RemoveAllListeners();
             privacyButton?.onClick.RemoveAllListeners();
             resetSaveButton?.onClick.RemoveAllListeners();
+            mainMenuButton?.onClick.RemoveAllListeners();
             closeButton?.onClick.RemoveAllListeners();
             listenersWired = false;
         }
@@ -598,11 +630,23 @@ namespace SurviveUntilPayday.UI
                 vibrationToggle.SetIsOnWithoutNotify(settings.VibrationEnabled);
             }
 
-            if (volumeSlider != null)
+            if (bgmSlider != null)
             {
-                volumeSlider.SetValueWithoutNotify(settings.SoundVolume);
-                UpdateVolumeLabel(settings.SoundVolume);
-                volumeSlider.interactable = settings.SoundEnabled;
+                bgmSlider.SetValueWithoutNotify(settings.BgmVolume);
+                UpdateVolumeLabel(bgmValueLabel, settings.BgmVolume);
+                bgmSlider.interactable = settings.SoundEnabled;
+            }
+
+            if (sfxSlider != null)
+            {
+                sfxSlider.SetValueWithoutNotify(settings.SfxVolume);
+                UpdateVolumeLabel(sfxValueLabel, settings.SfxVolume);
+                sfxSlider.interactable = settings.SoundEnabled;
+            }
+
+            if (mainMenuButton != null)
+            {
+                mainMenuButton.gameObject.SetActive(IsInGameScene());
             }
 
             if (versionLabel != null)
@@ -611,11 +655,16 @@ namespace SurviveUntilPayday.UI
             }
         }
 
-        private void UpdateVolumeLabel(float value)
+        private static bool IsInGameScene()
         {
-            if (volumeValueLabel != null)
+            return SceneManager.GetActiveScene().name == SceneNames.Game;
+        }
+
+        private static void UpdateVolumeLabel(Text label, float value)
+        {
+            if (label != null)
             {
-                volumeValueLabel.text = $"{Mathf.RoundToInt(Mathf.Clamp01(value) * 100f)}%";
+                label.text = $"{Mathf.RoundToInt(Mathf.Clamp01(value) * 100f)}%";
             }
         }
 
@@ -628,9 +677,14 @@ namespace SurviveUntilPayday.UI
             }
 
             settings.SoundEnabled = enabled;
-            if (volumeSlider != null)
+            if (bgmSlider != null)
             {
-                volumeSlider.interactable = enabled;
+                bgmSlider.interactable = enabled;
+            }
+
+            if (sfxSlider != null)
+            {
+                sfxSlider.interactable = enabled;
             }
         }
 
@@ -649,7 +703,7 @@ namespace SurviveUntilPayday.UI
             }
         }
 
-        private void OnVolumeChanged(float value)
+        private void OnBgmVolumeChanged(float value)
         {
             var settings = AppRoot.Instance?.Settings;
             if (settings == null)
@@ -657,8 +711,20 @@ namespace SurviveUntilPayday.UI
                 return;
             }
 
-            settings.SoundVolume = value;
-            UpdateVolumeLabel(value);
+            settings.BgmVolume = value;
+            UpdateVolumeLabel(bgmValueLabel, value);
+        }
+
+        private void OnSfxVolumeChanged(float value)
+        {
+            var settings = AppRoot.Instance?.Settings;
+            if (settings == null)
+            {
+                return;
+            }
+
+            settings.SfxVolume = value;
+            UpdateVolumeLabel(sfxValueLabel, value);
         }
 
         private void OnPrivacyClicked()
@@ -672,6 +738,12 @@ namespace SurviveUntilPayday.UI
             appRoot.ResetAllSaveData();
             appRoot.Settings?.TryVibrate();
             Debug.Log("[Settings] 저장 데이터를 초기화했습니다.");
+        }
+
+        private void OnMainMenuClicked()
+        {
+            var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
+            appRoot.ReturnToMainMenuFromGame();
         }
     }
 }

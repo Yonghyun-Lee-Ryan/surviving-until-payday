@@ -12,11 +12,11 @@ namespace SurviveUntilPayday.Tests
         public void NullAudioService_MuteAndPlay_DoNotThrow()
         {
             var audio = new NullAudioService();
-            Assert.DoesNotThrow(() => audio.ApplySettings(false, 0f));
+            Assert.DoesNotThrow(() => audio.ApplySettings(false, 0f, 0f));
             Assert.DoesNotThrow(() => audio.PlaySfx(SfxId.Click));
             Assert.DoesNotThrow(() => audio.SetBgm(BgmId.Main));
             Assert.DoesNotThrow(() => audio.StopBgm());
-            Assert.DoesNotThrow(() => audio.ApplySettings(true, 1f));
+            Assert.DoesNotThrow(() => audio.ApplySettings(true, 1f, 0.5f));
         }
 
         [Test]
@@ -26,10 +26,10 @@ namespace SurviveUntilPayday.Tests
             try
             {
                 var audio = go.AddComponent<UnityAudioService>();
-                Assert.DoesNotThrow(() => audio.ApplySettings(true, 1f));
+                Assert.DoesNotThrow(() => audio.ApplySettings(true, 1f, 1f));
                 Assert.DoesNotThrow(() => audio.PlaySfx(SfxId.CashGain));
                 Assert.DoesNotThrow(() => audio.SetBgm(BgmId.Crisis));
-                Assert.DoesNotThrow(() => audio.ApplySettings(false, 0.5f));
+                Assert.DoesNotThrow(() => audio.ApplySettings(false, 0.5f, 0.2f));
                 Assert.DoesNotThrow(() => audio.PlaySfx(SfxId.Payday));
                 Assert.DoesNotThrow(() => audio.StopBgm());
             }

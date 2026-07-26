@@ -14,9 +14,10 @@
 
 ## 설정 연동
 
-- `AppSettingsService.SoundEnabled` / `SoundVolume`
-- 변경 시 `AudioSettingsChanged` → `AppRoot.Audio.ApplySettings`
-- 사운드 OFF면 BGM 정지, SFX 재생 안 함
+- `AppSettingsService.SoundEnabled` / `BgmVolume` / `SfxVolume` (구 `SoundVolume`은 마이그레이션·평균값 호환)
+- 변경 시 `AudioSettingsChanged(enabled, bgm, sfx)` → `AppRoot.Audio.ApplySettings`
+- 사운드 OFF면 `AudioListener` 뮤트, SFX는 볼륨 0일 때 재생 안 함
+- 인게임 설정 패널에서 BGM/SFX를 따로 조절하고, Game 씬에서는「메인 메뉴로」로 복귀 가능
 
 ## 훅
 

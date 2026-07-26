@@ -31,6 +31,6 @@ namespace SurviveUntilPayday.Audio
 
         void StopBgm();
 
-        void ApplySettings(bool soundEnabled, float volume);
+        void ApplySettings(bool soundEnabled, float bgmVolume, float sfxVolume);
     }
 }

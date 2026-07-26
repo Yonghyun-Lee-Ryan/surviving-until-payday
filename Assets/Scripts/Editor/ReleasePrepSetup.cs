@@ -239,15 +239,17 @@ namespace SurviveUntilPayday.EditorTools
 
             var soundToggle = CreateToggle(root.transform, "SoundToggle", "사운드", new Vector2(0f, 360f));
             var vibrationToggle = CreateToggle(root.transform, "VibrationToggle", "진동", new Vector2(0f, 260f));
-            var volume = CreateSlider(root.transform, "VolumeSlider", new Vector2(0f, 160f));
-            var privacyBtn = CreateButton(root.transform, "PrivacyButton", "개인정보처리방침", new Vector2(0f, 40f));
-            var resetBtn = CreateButton(root.transform, "ResetSaveButton", "저장 데이터 초기화", new Vector2(0f, -80f));
-            var closeBtn = CreateButton(root.transform, "CloseButton", "닫기", new Vector2(0f, -200f));
-            var version = EnsureText(root.transform, "Version", "v0.1.0", 24, new Vector2(0f, -320f));
+            var bgm = CreateSlider(root.transform, "BgmSlider", new Vector2(0f, 180f));
+            var sfx = CreateSlider(root.transform, "SfxSlider", new Vector2(0f, 100f));
+            var privacyBtn = CreateButton(root.transform, "PrivacyButton", "개인정보처리방침", new Vector2(0f, 20f));
+            var resetBtn = CreateButton(root.transform, "ResetSaveButton", "저장 데이터 초기화", new Vector2(0f, -100f));
+            var mainMenuBtn = CreateButton(root.transform, "MainMenuButton", "메인 메뉴로", new Vector2(0f, -200f));
+            var closeBtn = CreateButton(root.transform, "CloseButton", "닫기", new Vector2(0f, -300f));
+            var version = EnsureText(root.transform, "Version", "v0.1.0", 24, new Vector2(0f, -400f));
             version.color = new Color(1f, 1f, 1f, 0.65f);
 
             var view = root.AddComponent<SettingsPanelView>();
-            view.Bind(root, soundToggle, vibrationToggle, volume, privacyBtn, resetBtn, closeBtn, version, privacy);
+            view.Bind(root, soundToggle, vibrationToggle, bgm, sfx, privacyBtn, resetBtn, mainMenuBtn, closeBtn, version, privacy);
             root.SetActive(false);
             return view;
         }

@@ -5,6 +5,7 @@ namespace SurviveUntilPayday.Audio
 {
     /// <summary>
     /// BGM 루프 1개 + SFX PlayOneShot. 클립 null이면 재생하지 않는다.
+    /// BGM/SFX 볼륨은 소스별로 분리하고, 마스터 뮤트는 AudioListener로 처리한다.
     /// </summary>
     public sealed class UnityAudioService : MonoBehaviour, IAudioService
     {
@@ -27,7 +28,8 @@ namespace SurviveUntilPayday.Audio
         private AudioSource sfxSource;
         private BgmId currentBgm = BgmId.None;
         private bool soundEnabled = true;
-        private float volume = 1f;
+        private float bgmVolume = 1f;
+        private float sfxVolume = 1f;
 
         public static UnityAudioService Create(Transform parent)
         {
@@ -97,7 +99,7 @@ namespace SurviveUntilPayday.Audio
         public void PlaySfx(SfxId id)
         {
             EnsureSources();
-            if (!soundEnabled || volume <= 0.0001f)
+            if (!soundEnabled || sfxVolume <= 0.0001f)
             {
                 return;
             }
@@ -108,7 +110,7 @@ namespace SurviveUntilPayday.Audio
                 return;
             }
 
-            sfxSource.PlayOneShot(clip, 1f);
+            sfxSource.PlayOneShot(clip, sfxVolume);
         }
 
         public void SetBgm(BgmId id)
@@ -130,15 +132,14 @@ namespace SurviveUntilPayday.Audio
 
             if (currentBgm == id && bgmSource.clip == clip && bgmSource.isPlaying)
             {
-                bgmSource.volume = 1f;
+                bgmSource.volume = bgmVolume;
                 return;
             }
 
             currentBgm = id;
             bgmSource.clip = clip;
-            bgmSource.volume = 1f;
+            bgmSource.volume = bgmVolume;
             // 음소거여도 재생은 유지해 설정 복구 시 처음부터 다시 시작하지 않음
-            // (가청 여부는 AudioListener.volume으로 제어)
             bgmSource.Play();
         }
 
@@ -153,23 +154,23 @@ namespace SurviveUntilPayday.Audio
             currentBgm = BgmId.None;
         }
 
-        public void ApplySettings(bool enabled, float soundVolume)
+        public void ApplySettings(bool enabled, float bgmVol, float sfxVol)
         {
             EnsureSources();
             soundEnabled = enabled;
-            volume = Mathf.Clamp01(soundVolume);
-            var audible = soundEnabled && volume > 0.0001f;
-            // 마스터 볼륨만 조절. Pause/Stop/Play 금지 → 재생 위치 유지
-            AudioListener.volume = audible ? volume : 0f;
+            bgmVolume = Mathf.Clamp01(bgmVol);
+            sfxVolume = Mathf.Clamp01(sfxVol);
+            // 마스터 뮤트만 Listener로. BGM/SFX 비율은 소스 볼륨으로 유지
+            AudioListener.volume = soundEnabled ? 1f : 0f;
 
             if (bgmSource == null)
             {
                 return;
             }
 
-            bgmSource.volume = 1f;
+            bgmSource.volume = bgmVolume;
 
-            if (!audible || currentBgm == BgmId.None)
+            if (!soundEnabled || currentBgm == BgmId.None)
             {
                 return;
             }
@@ -205,7 +206,7 @@ namespace SurviveUntilPayday.Audio
                 return;
             }
 
-            ApplySettings(settings.SoundEnabled, settings.SoundVolume);
+            ApplySettings(settings.SoundEnabled, settings.BgmVolume, settings.SfxVolume);
         }
 
         /// <summary>

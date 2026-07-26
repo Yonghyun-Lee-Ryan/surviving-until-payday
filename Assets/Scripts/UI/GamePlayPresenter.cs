@@ -38,6 +38,9 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private EventData fallbackEvent;
         [SerializeField] private int randomSeed = 1;
 
+        [Header("Daily (Unit 25)")]
+        [SerializeField] private List<DailyMissionData> dailyMissionPool = new List<DailyMissionData>();
+
         [Header("Endings")]
         [SerializeField] private List<EndingData> endingCatalog = new List<EndingData>();
         [SerializeField] private EndingData fallbackSuccessEnding;
@@ -54,6 +57,7 @@ namespace SurviveUntilPayday.UI
         private WeeklySummaryInfo lastWeeklySummary;
         private string pendingEventId;
         private readonly HashSet<string> discoveredEventIdsThisRun = new HashSet<string>();
+        private bool isDailyChallengeRun;
 
         [Header("Meta")]
         [SerializeField] private List<TraitData> allTraits = new List<TraitData>();
@@ -220,6 +224,13 @@ namespace SurviveUntilPayday.UI
                 AppRoot.Instance.Session.DoubleExperienceClaimedForLastResult = false;
             }
 
+            var session = AppRoot.Instance?.Session;
+            isDailyChallengeRun = session != null && session.IsDailyChallengeRun;
+            if (session != null && session.TryConsumePendingRandomSeed(out var dailySeed))
+            {
+                randomSeed = dailySeed;
+            }
+
             ResolveNewRunJobAndTrait(out var job, out var trait);
 
             randomService = new SeededRandomService(randomSeed);
@@ -247,6 +258,7 @@ namespace SurviveUntilPayday.UI
 
         private void BeginContinuedRun(Save.RunSaveData runSave)
         {
+            isDailyChallengeRun = false;
             if (runSave == null || !runSave.hasActiveRun)
             {
                 Debug.LogWarning("[GamePlayPresenter] Continue requested but no run save. Starting new run.");
@@ -374,10 +386,15 @@ namespace SurviveUntilPayday.UI
             hudView.HappinessGauge?.ConfigureThresholds(-1, 20);
             hudView.CompanyGauge?.ConfigureThresholds(-1, CompanyWarning);
 
-            hudView.HealthGauge?.SetName("건강");
-            hudView.StressGauge?.SetName("스트레스");
-            hudView.HappinessGauge?.SetName("행복도");
-            hudView.CompanyGauge?.SetName("회사 평가");
+            hudView.HealthGauge?.SetName(StatCopy.GetDisplayName(StatType.Health));
+            hudView.StressGauge?.SetName(StatCopy.GetDisplayName(StatType.Stress));
+            hudView.HappinessGauge?.SetName(StatCopy.GetDisplayName(StatType.Happiness));
+            hudView.CompanyGauge?.SetName(StatCopy.GetDisplayName(StatType.CompanyScore));
+
+            hudView.HealthGauge?.SetHelpDescription(StatCopy.GetDescription(StatType.Health));
+            hudView.StressGauge?.SetHelpDescription(StatCopy.GetDescription(StatType.Stress));
+            hudView.HappinessGauge?.SetHelpDescription(StatCopy.GetDescription(StatType.Happiness));
+            hudView.CompanyGauge?.SetHelpDescription(StatCopy.GetDescription(StatType.CompanyScore));
         }
 
         private void PresentTodaysEvent()
@@ -454,6 +471,14 @@ namespace SurviveUntilPayday.UI
             {
                 analytics.EventShown(selected.Id, runManager.State.CurrentDay);
             }
+        }
+
+        /// <summary>
+        /// 메인 메뉴 복귀 등 씬 전환 직전에 활성 회차를 디스크에 남긴다.
+        /// </summary>
+        public void FlushSaveBeforeExit()
+        {
+            SaveActiveRun();
         }
 
         private void SaveActiveRun()
@@ -718,6 +743,7 @@ namespace SurviveUntilPayday.UI
                 }
 
                 AdRewardApplicator.ApplyCash(runManager.State, grant.Value);
+                runManager.State.RegisterSideJobCompletion();
                 RefreshHudInstant();
                 SaveActiveRun();
                 RefreshResultAdButtons(effectResolver?.LastResult);
@@ -991,13 +1017,54 @@ namespace SurviveUntilPayday.UI
                 draft,
                 traitsForUnlock,
                 discoveredEventIdsThisRun,
-                jobsForUnlock);
+                jobsForUnlock,
+                eventCatalog);
+
+            if (isDailyChallengeRun)
+            {
+                ApplyDailyChallengeProgress(session, state, isSuccess, draft);
+            }
+
             session.SyncTraitFragmentsFromMeta();
             session.LastResult = draft.WithMeta(metaResult);
 
             appRoot.ClearActiveRunAndSave();
             session.StartMode = GameStartMode.NewRun;
             discoveredEventIdsThisRun.Clear();
+            isDailyChallengeRun = false;
+        }
+
+        private void ApplyDailyChallengeProgress(
+            GameSession session,
+            GameState state,
+            bool isSuccess,
+            ResultData draft)
+        {
+            if (session?.Meta?.Daily == null || state == null || draft == null)
+            {
+                return;
+            }
+
+            var pool = ResolveDailyMissionPool(session);
+            session.Meta.Daily.EnsureForLocalDate(pool);
+            session.Meta.Daily.BindMissionDefinitions(pool);
+            session.Meta.Daily.TryUpdateBest(draft);
+            session.Meta.Daily.ApplyRunToMissions(state, isSuccess, session.Meta);
+        }
+
+        private List<DailyMissionData> ResolveDailyMissionPool(GameSession session)
+        {
+            if (dailyMissionPool != null && dailyMissionPool.Count > 0)
+            {
+                return dailyMissionPool;
+            }
+
+            if (session?.DailyMissionPool != null && session.DailyMissionPool.Count > 0)
+            {
+                return session.DailyMissionPool;
+            }
+
+            return DailyMissionDefaults.CreateRuntimePool();
         }
 
         private void LoadResultScene()
@@ -1032,24 +1099,33 @@ namespace SurviveUntilPayday.UI
         private void RefreshCrisis(PlayerStats stats)
         {
             var messages = new List<string>();
-            if (runManager?.Days != null && runManager.Days.IsLateCrisisDay())
-            {
-                messages.Add("월급날 직전 · 위기 구간");
-            }
-
             if (stats.Health <= HealthWarning)
             {
-                messages.Add("건강 위험");
+                messages.Add(CrisisWarningCopy.HealthWarning);
             }
 
             if (stats.Stress >= StressWarning)
             {
-                messages.Add("스트레스 경고");
+                messages.Add(CrisisWarningCopy.StressWarning);
             }
 
             if (stats.CompanyScore <= CompanyWarning)
             {
-                messages.Add("해고 위기");
+                messages.Add(CrisisWarningCopy.CompanyWarning);
+            }
+
+            if (stats.Cash < CrisisWarningCopy.CriticalCashThreshold)
+            {
+                messages.Add(CrisisWarningCopy.CriticalCash);
+            }
+            else if (stats.Cash < CrisisWarningCopy.LowCashThreshold)
+            {
+                messages.Add(CrisisWarningCopy.LowCash);
+            }
+
+            if (runManager?.Days != null && runManager.Days.IsLateCrisisDay())
+            {
+                messages.Insert(0, CrisisWarningCopy.LateCrisis);
             }
 
             hudView.SetCrisis(messages.Count > 0, string.Join(" · ", messages));
@@ -1107,21 +1183,7 @@ namespace SurviveUntilPayday.UI
 
         private static string GetStatDisplayName(StatType statType)
         {
-            switch (statType)
-            {
-                case StatType.Health:
-                    return "건강";
-                case StatType.Stress:
-                    return "스트레스";
-                case StatType.Happiness:
-                    return "행복도";
-                case StatType.CompanyScore:
-                    return "회사 평가";
-                case StatType.Cash:
-                    return "현금";
-                default:
-                    return statType.ToString();
-            }
+            return StatCopy.GetDisplayName(statType);
         }
 
         private bool ValidateReferences()
@@ -1216,6 +1278,19 @@ namespace SurviveUntilPayday.UI
             SaveActiveRun();
         }
 
+        public void DebugAdjustCash(long delta)
+        {
+            var state = DebugGetState();
+            if (state == null)
+            {
+                return;
+            }
+
+            state.Stats.Cash += delta;
+            RefreshHudInstant();
+            SaveActiveRun();
+        }
+
         public void DebugSetSeed(int seed)
         {
             var state = DebugGetState();
@@ -1292,6 +1367,68 @@ namespace SurviveUntilPayday.UI
 
             PublishResult(runManager.State, isSuccess: false, reason);
             LoadResultScene();
+        }
+
+        public void DebugSetFlag(string flagId, bool enabled)
+        {
+            var state = DebugGetState();
+            if (state == null || string.IsNullOrWhiteSpace(flagId))
+            {
+                return;
+            }
+
+            if (enabled)
+            {
+                state.SetFlag(flagId);
+            }
+            else
+            {
+                state.ClearFlag(flagId);
+            }
+
+            SaveActiveRun();
+        }
+
+        public void DebugClearFlags()
+        {
+            var state = DebugGetState();
+            if (state == null)
+            {
+                return;
+            }
+
+            state.ClearRunFlags();
+            SaveActiveRun();
+        }
+
+        public IReadOnlyList<string> DebugGetFlags()
+        {
+            var state = DebugGetState();
+            if (state?.RunFlags == null)
+            {
+                return System.Array.Empty<string>();
+            }
+
+            return state.RunFlags;
+        }
+
+        public string DebugBuildStateDump()
+        {
+            var state = DebugGetState();
+            if (state == null)
+            {
+                return "run not ready";
+            }
+
+            var flags = state.RunFlags;
+            var flagText = flags == null || flags.Count == 0
+                ? "(none)"
+                : string.Join(", ", flags);
+            var stats = state.Stats;
+            return
+                $"Day={state.CurrentDay} Seed={state.RandomSeed} " +
+                $"Cash={stats.Cash} H={stats.Health} S={stats.Stress} " +
+                $"Hp={stats.Happiness} Co={stats.CompanyScore} Flags=[{flagText}]";
         }
     }
 }
