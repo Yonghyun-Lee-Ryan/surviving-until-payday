@@ -19,6 +19,12 @@ namespace SurviveUntilPayday.Core
         public List<string> NewlyUnlockedJobs { get; } = new List<string>();
         public List<string> NewlyUnlockedEndings { get; } = new List<string>();
         public List<string> NewlyUnlockedEvents { get; } = new List<string>();
+        /// <summary>NewlyUnlockedEvents와 같은 순서의 표시 제목.</summary>
+        public List<string> NewlyUnlockedEventTitles { get; } = new List<string>();
+        /// <summary>NewlyUnlockedTraits와 같은 순서의 표시 이름.</summary>
+        public List<string> NewlyUnlockedTraitNames { get; } = new List<string>();
+        /// <summary>NewlyUnlockedJobs와 같은 순서의 표시 이름.</summary>
+        public List<string> NewlyUnlockedJobNames { get; } = new List<string>();
         public List<string> NewlyUnlockedAchievements { get; } = new List<string>();
         public int TraitFragmentsGained { get; set; }
     }
@@ -34,10 +40,21 @@ namespace SurviveUntilPayday.Core
         public UnlockCodex Jobs { get; } = new UnlockCodex();
         public UnlockCodex Achievements { get; } = new UnlockCodex();
 
+        public DailyContentState Daily { get; } = new DailyContentState();
+
         public int TotalExperience { get; private set; }
 
         /// <summary>업적·광고 등으로 쌓인 특성 조각.</summary>
         public int TraitFragmentCount { get; private set; }
+
+        /// <summary>레벨 미달 특성을 조각으로 조기 해금할 때 기본 비용.</summary>
+        public const int TraitUnlockFragmentCost = 3;
+
+        /// <summary>Unit 26: 첫 실행 튜토리얼 완료/스킵 여부.</summary>
+        public bool FirstRunTutorialCompleted { get; private set; }
+
+        /// <summary>Unit 28: 전면 광고 제거 소유(로컬).</summary>
+        public bool HasNoAds { get; private set; }
 
         public int Level => PlayerLevel.GetLevel(TotalExperience);
 
@@ -53,15 +70,29 @@ namespace SurviveUntilPayday.Core
             IEnumerable<string> traitIds,
             IEnumerable<string> achievementIds,
             IEnumerable<string> jobIds = null,
-            int traitFragmentCount = 0)
+            int traitFragmentCount = 0,
+            bool firstRunTutorialCompleted = false,
+            bool hasNoAds = false)
         {
             TotalExperience = Math.Max(0, totalExperience);
             TraitFragmentCount = Math.Max(0, traitFragmentCount);
+            FirstRunTutorialCompleted = firstRunTutorialCompleted;
+            HasNoAds = hasNoAds;
             Endings.LoadFrom(endingIds);
             Events.LoadFrom(eventIds);
             Traits.LoadFrom(traitIds);
             Achievements.LoadFrom(achievementIds);
             Jobs.LoadFrom(jobIds);
+        }
+
+        public void MarkFirstRunTutorialCompleted()
+        {
+            FirstRunTutorialCompleted = true;
+        }
+
+        public void SetHasNoAds(bool owned)
+        {
+            HasNoAds = owned;
         }
 
         public void AddTraitFragments(int amount)
@@ -72,6 +103,48 @@ namespace SurviveUntilPayday.Core
             }
 
             TraitFragmentCount += amount;
+        }
+
+        /// <summary>
+        /// 레벨 미달 특성을 조각으로 조기 해금한다. 이미 해금됐거나 조각이 부족하면 false.
+        /// </summary>
+        public bool TryUnlockTraitWithFragments(TraitData trait, out string failReason, int cost = TraitUnlockFragmentCost)
+        {
+            if (trait == null || string.IsNullOrWhiteSpace(trait.Id))
+            {
+                failReason = "특성이 없습니다.";
+                return false;
+            }
+
+            if (cost < 1)
+            {
+                failReason = "비용이 올바르지 않습니다.";
+                return false;
+            }
+
+            if (IsTraitUnlocked(trait))
+            {
+                failReason = "이미 해금된 특성입니다.";
+                return false;
+            }
+
+            if (TraitFragmentCount < cost)
+            {
+                failReason = $"특성 조각이 부족합니다. ({TraitFragmentCount}/{cost})";
+                return false;
+            }
+
+            TraitFragmentCount -= cost;
+            if (Traits.TryUnlock(trait.Id))
+            {
+                RaiseUnlock(
+                    "trait",
+                    trait.Id,
+                    string.IsNullOrWhiteSpace(trait.DisplayName) ? trait.Id : trait.DisplayName);
+            }
+
+            failReason = null;
+            return true;
         }
 
         public bool DiscoverEvent(string eventId, string displayName = null)
@@ -130,20 +203,34 @@ namespace SurviveUntilPayday.Core
             ResultData result,
             IEnumerable<TraitData> allTraits,
             IEnumerable<string> discoveredEventIdsThisRun,
-            IEnumerable<JobData> allJobs = null)
+            IEnumerable<JobData> allJobs = null,
+            IEnumerable<EventData> allEvents = null)
         {
             var progress = new MetaProgressResult
             {
                 LevelBefore = Level
             };
 
+            var eventTitles = BuildEventTitleMap(allEvents);
             if (discoveredEventIdsThisRun != null)
             {
                 foreach (var eventId in discoveredEventIdsThisRun)
                 {
-                    if (DiscoverEvent(eventId))
+                    if (string.IsNullOrWhiteSpace(eventId))
+                    {
+                        continue;
+                    }
+
+                    eventTitles.TryGetValue(eventId, out var title);
+                    if (string.IsNullOrWhiteSpace(title))
+                    {
+                        title = eventId;
+                    }
+
+                    if (DiscoverEvent(eventId, title))
                     {
                         progress.NewlyUnlockedEvents.Add(eventId);
+                        progress.NewlyUnlockedEventTitles.Add(title);
                     }
                 }
             }
@@ -200,6 +287,29 @@ namespace SurviveUntilPayday.Core
             return progress;
         }
 
+        private static Dictionary<string, string> BuildEventTitleMap(IEnumerable<EventData> allEvents)
+        {
+            var map = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (allEvents == null)
+            {
+                return map;
+            }
+
+            foreach (var eventData in allEvents)
+            {
+                if (eventData == null || string.IsNullOrWhiteSpace(eventData.Id))
+                {
+                    continue;
+                }
+
+                map[eventData.Id] = string.IsNullOrWhiteSpace(eventData.Title)
+                    ? eventData.Id
+                    : eventData.Title;
+            }
+
+            return map;
+        }
+
         /// <summary>
         /// 결과 화면 보상형 광고(경험치 2배) 등 보너스 XP.
         /// </summary>
@@ -244,6 +354,8 @@ namespace SurviveUntilPayday.Core
                     if (Traits.TryUnlock(trait.Id))
                     {
                         progress?.NewlyUnlockedTraits.Add(trait.Id);
+                        progress?.NewlyUnlockedTraitNames.Add(
+                            string.IsNullOrWhiteSpace(trait.DisplayName) ? trait.Id : trait.DisplayName);
                         RaiseUnlock("trait", trait.Id, trait.DisplayName);
                     }
 
@@ -258,6 +370,8 @@ namespace SurviveUntilPayday.Core
                 if (Traits.TryUnlock(trait.Id))
                 {
                     progress?.NewlyUnlockedTraits.Add(trait.Id);
+                    progress?.NewlyUnlockedTraitNames.Add(
+                        string.IsNullOrWhiteSpace(trait.DisplayName) ? trait.Id : trait.DisplayName);
                     RaiseUnlock("trait", trait.Id, trait.DisplayName);
                 }
             }
@@ -282,6 +396,8 @@ namespace SurviveUntilPayday.Core
                     if (Jobs.TryUnlock(job.Id))
                     {
                         progress?.NewlyUnlockedJobs.Add(job.Id);
+                        progress?.NewlyUnlockedJobNames.Add(
+                            string.IsNullOrWhiteSpace(job.DisplayName) ? job.Id : job.DisplayName);
                         RaiseUnlock("job", job.Id, job.DisplayName);
                     }
 
@@ -296,6 +412,8 @@ namespace SurviveUntilPayday.Core
                 if (Jobs.TryUnlock(job.Id))
                 {
                     progress?.NewlyUnlockedJobs.Add(job.Id);
+                    progress?.NewlyUnlockedJobNames.Add(
+                        string.IsNullOrWhiteSpace(job.DisplayName) ? job.Id : job.DisplayName);
                     RaiseUnlock("job", job.Id, job.DisplayName);
                 }
             }
