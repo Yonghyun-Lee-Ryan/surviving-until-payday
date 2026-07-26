@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace SurviveUntilPayday.Ads
 {
@@ -25,6 +26,7 @@ namespace SurviveUntilPayday.Ads
         private int currentGameDay = 1;
         private int sideJobUsesToday;
         private int traitFragmentUsesToday;
+        private string traitFragmentDateKey = string.Empty;
         private double lastRewardedUtcSeconds = double.NegativeInfinity;
         private bool rewardedRecentlyForInterstitial;
 
@@ -43,12 +45,17 @@ namespace SurviveUntilPayday.Ads
 
         public bool HasRewardedRecentlyForInterstitial => rewardedRecentlyForInterstitial;
 
+        /// <summary>무료 상점 특성 조각 — 캘린더 일자 키.</summary>
+        public string TraitFragmentDateKey => traitFragmentDateKey;
+
+        public int TraitFragmentUsedToday => traitFragmentUsesToday;
+
         public void BeginRun()
         {
             runUsage.Clear();
             currentGameDay = 1;
             sideJobUsesToday = 0;
-            traitFragmentUsesToday = 0;
+            // TraitFragment는 캘린더 일 기준이므로 회차 시작으로 초기화하지 않는다.
             rewardedRecentlyForInterstitial = false;
         }
 
@@ -66,6 +73,22 @@ namespace SurviveUntilPayday.Ads
 
             currentGameDay = gameDay;
             sideJobUsesToday = 0;
+        }
+
+        /// <summary>
+        /// 로컬 캘린더 일자로 특성 조각 쿼터를 맞춘다. 날짜가 바뀌면 사용 횟수를 0으로 한다.
+        /// </summary>
+        public void SyncTraitFragmentCalendar(string todayKey, string savedKey, int savedUsed)
+        {
+            var today = todayKey ?? string.Empty;
+            if (string.Equals(today, savedKey, StringComparison.Ordinal))
+            {
+                traitFragmentDateKey = today;
+                traitFragmentUsesToday = Math.Max(0, savedUsed);
+                return;
+            }
+
+            traitFragmentDateKey = today;
             traitFragmentUsesToday = 0;
         }
 
@@ -96,10 +119,15 @@ namespace SurviveUntilPayday.Ads
 
         public bool CanConsume(RewardedAdPlacement placement, out string reason)
         {
-            if (IsOnCooldown(out var remaining))
+            // 무료 상점 특성 조각은 하루 3회 한도만 적용(연속 시청 가능).
+            // 그 외 보상형은 글로벌 쿨다운으로 연타를 막는다.
+            if (placement != RewardedAdPlacement.TraitFragment)
             {
-                reason = $"Ad cooldown {remaining:F1}s remaining.";
-                return false;
+                if (IsOnCooldown(out var remaining))
+                {
+                    reason = $"Ad cooldown {remaining:F1}s remaining.";
+                    return false;
+                }
             }
 
             if (GetRemaining(placement) <= 0)
@@ -123,6 +151,13 @@ namespace SurviveUntilPayday.Ads
                     sideJobUsesToday++;
                     break;
                 case RewardedAdPlacement.TraitFragment:
+                    if (string.IsNullOrEmpty(traitFragmentDateKey))
+                    {
+                        traitFragmentDateKey = DateTime.Now.ToString(
+                            "yyyy-MM-dd",
+                            CultureInfo.InvariantCulture);
+                    }
+
                     traitFragmentUsesToday++;
                     break;
                 default:

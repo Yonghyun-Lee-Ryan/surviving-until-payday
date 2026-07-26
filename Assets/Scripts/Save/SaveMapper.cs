@@ -30,7 +30,8 @@ namespace SurviveUntilPayday.Save
                 happiness = state.Stats.Happiness,
                 companyScore = state.Stats.CompanyScore,
                 lastSelectedEventId = selector != null ? selector.LastSelectedEventId ?? string.Empty : string.Empty,
-                pendingEventId = pendingEventId ?? string.Empty
+                pendingEventId = pendingEventId ?? string.Empty,
+                sideJobCount = state.SideJobCount
             };
 
             if (selector != null)
@@ -78,6 +79,7 @@ namespace SurviveUntilPayday.Save
             state.Stats.CompanyScore = run.companyScore;
             state.LoadRunFlags(run.runFlags);
             state.LoadFollowUpQueue(run.queuedEventIds);
+            state.SideJobCount = run.sideJobCount;
             return state;
         }
 
@@ -96,7 +98,18 @@ namespace SurviveUntilPayday.Save
                 meta.unlockedTraitIds,
                 meta.unlockedAchievementIds,
                 meta.unlockedJobIds,
-                meta.traitFragmentCount);
+                meta.traitFragmentCount,
+                meta.firstRunTutorialCompleted,
+                meta.hasNoAds);
+            progression.Daily.Load(
+                meta.dailyDateKey,
+                meta.dailyBestCash,
+                meta.dailyBestSurvived,
+                meta.dailyBestStress,
+                meta.dailyBestCompanyScore,
+                meta.dailyBestDaysSurvived,
+                meta.dailyHasBestRecord,
+                meta.dailyMissions);
         }
 
         public static MetaSaveData CaptureMeta(MetaProgressionManager progression)
@@ -104,7 +117,9 @@ namespace SurviveUntilPayday.Save
             var meta = new MetaSaveData
             {
                 totalExperience = progression != null ? progression.TotalExperience : 0,
-                traitFragmentCount = progression != null ? progression.TraitFragmentCount : 0
+                traitFragmentCount = progression != null ? progression.TraitFragmentCount : 0,
+                firstRunTutorialCompleted = progression != null && progression.FirstRunTutorialCompleted,
+                hasNoAds = progression != null && progression.HasNoAds
             };
 
             if (progression == null)
@@ -117,6 +132,20 @@ namespace SurviveUntilPayday.Save
             CopyIds(progression.Traits, meta.unlockedTraitIds);
             CopyIds(progression.Jobs, meta.unlockedJobIds);
             CopyIds(progression.Achievements, meta.unlockedAchievementIds);
+
+            var daily = progression.Daily;
+            if (daily != null)
+            {
+                meta.dailyDateKey = daily.DateKey ?? string.Empty;
+                meta.dailyBestCash = daily.BestCash;
+                meta.dailyBestSurvived = daily.BestSurvived;
+                meta.dailyBestStress = daily.BestStress;
+                meta.dailyBestCompanyScore = daily.BestCompanyScore;
+                meta.dailyBestDaysSurvived = daily.BestDaysSurvived;
+                meta.dailyHasBestRecord = daily.HasBestRecord;
+                meta.dailyMissions = daily.CaptureEntries();
+            }
+
             return meta;
         }
 

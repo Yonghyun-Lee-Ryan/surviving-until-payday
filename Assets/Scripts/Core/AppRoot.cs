@@ -1,6 +1,7 @@
 using SurviveUntilPayday.Ads;
 using SurviveUntilPayday.Analytics;
 using SurviveUntilPayday.Audio;
+using SurviveUntilPayday.Purchasing;
 using SurviveUntilPayday.Save;
 using SurviveUntilPayday.Services;
 using SurviveUntilPayday.Settings;
@@ -48,6 +49,8 @@ namespace SurviveUntilPayday.Core
         public IAudioService Audio { get; private set; }
 
         public IAdsConsentService AdsConsent { get; private set; }
+
+        public IPurchaseService Purchases { get; private set; }
 
         public PrivacyPolicyConfig PrivacyPolicy => privacyPolicyConfig;
 
@@ -168,7 +171,7 @@ namespace SurviveUntilPayday.Core
 
             Settings.AudioSettingsChanged -= OnAudioSettingsChanged;
             Settings.AudioSettingsChanged += OnAudioSettingsChanged;
-            OnAudioSettingsChanged(Settings.SoundEnabled, Settings.SoundVolume);
+            OnAudioSettingsChanged(Settings.SoundEnabled, Settings.BgmVolume, Settings.SfxVolume);
 
             if (AdsConsent == null)
             {
@@ -214,6 +217,11 @@ namespace SurviveUntilPayday.Core
                 InterstitialAds = new InterstitialAdGateway(AdService, AdQuota, everyN);
             }
 
+            if (Purchases == null)
+            {
+                Purchases = new MockPurchaseService();
+            }
+
             RemoteConfig.FetchAndActivate(ok =>
             {
                 SdkComposition.ApplyRemoteConfigToAds(RemoteConfig, InterstitialAds);
@@ -225,6 +233,25 @@ namespace SurviveUntilPayday.Core
         {
             var save = SaveRepository.LoadOrCreate();
             Session.ApplyLoadedSave(save);
+            ApplyMonetizationFromMeta(save.meta);
+        }
+
+        /// <summary>
+        /// NoAds·무료 상점 쿼터를 게이트웨이/쿼터에 반영한다.
+        /// </summary>
+        public void ApplyMonetizationFromMeta(MetaSaveData meta)
+        {
+            meta ??= new MetaSaveData();
+            var hasNoAds = Session?.Meta != null ? Session.Meta.HasNoAds : meta.hasNoAds;
+            InterstitialAds?.SetRemoveInterstitials(hasNoAds);
+
+            if (Purchases is MockPurchaseService mock && hasNoAds)
+            {
+                mock.SetOwned(PurchaseProductIds.RemoveInterstitial, true);
+            }
+
+            var today = DailyChallenge.LocalDateKey();
+            AdQuota?.SyncTraitFragmentCalendar(today, meta.shopTraitAdDateKey, meta.shopTraitAdUsesToday);
         }
 
         public void PersistSession(bool includeActiveRun, RunSaveData runOverride = null)
@@ -236,6 +263,7 @@ namespace SurviveUntilPayday.Core
 
             var save = Session.CachedSave ?? SaveRepository.CreateDefault();
             save.meta = SaveMapper.CaptureMeta(Session.Meta);
+            WriteShopQuotaToMeta(save.meta);
 
             if (includeActiveRun && runOverride != null)
             {
@@ -259,8 +287,45 @@ namespace SurviveUntilPayday.Core
 
             var save = Session.CachedSave ?? SaveRepository.CreateDefault();
             save.meta = SaveMapper.CaptureMeta(Session.Meta);
+            WriteShopQuotaToMeta(save.meta);
             SaveRepository.ClearRunAndSave(save);
             Session.CachedSave = save;
+        }
+
+        private void WriteShopQuotaToMeta(MetaSaveData meta)
+        {
+            if (meta == null || AdQuota == null)
+            {
+                return;
+            }
+
+            meta.shopTraitAdDateKey = AdQuota.TraitFragmentDateKey ?? string.Empty;
+            meta.shopTraitAdUsesToday = AdQuota.TraitFragmentUsedToday;
+        }
+
+        /// <summary>
+        /// Mock/실구매로 전면 광고 제거를 소유 처리하고 저장한다.
+        /// </summary>
+        public void PurchaseRemoveInterstitial(System.Action<PurchaseResult> onFinished)
+        {
+            if (Purchases == null)
+            {
+                onFinished?.Invoke(PurchaseResult.Fail(PurchaseProductIds.RemoveInterstitial, "purchase service missing"));
+                return;
+            }
+
+            Purchases.Purchase(PurchaseProductIds.RemoveInterstitial, result =>
+            {
+                if (result.IsSuccess)
+                {
+                    Session?.Meta?.SetHasNoAds(true);
+                    InterstitialAds?.SetRemoveInterstitials(true);
+                    PersistSession(includeActiveRun: Session != null && Session.HasActiveRun,
+                        runOverride: Session?.CachedSave?.run);
+                }
+
+                onFinished?.Invoke(result);
+            });
         }
 
         private void OnApplicationPause(bool pauseStatus)
@@ -340,6 +405,13 @@ namespace SurviveUntilPayday.Core
             Session.ApplyLoadedSave(SaveRepository.CreateDefault());
             Settings?.ResetToDefaultsKeepingConsent(keepConsent: true);
             AdQuota?.BeginRun();
+            AdQuota?.SyncTraitFragmentCalendar(DailyChallenge.LocalDateKey(), string.Empty, 0);
+            InterstitialAds?.SetRemoveInterstitials(false);
+            if (Purchases is MockPurchaseService mockPurchases)
+            {
+                mockPurchases.SetOwned(PurchaseProductIds.RemoveInterstitial, false);
+            }
+
             PersistSession(includeActiveRun: false);
             Debug.Log("[AppRoot] All save data reset.");
         }
@@ -354,6 +426,17 @@ namespace SurviveUntilPayday.Core
         {
             EnsureSettingsOverlay();
             settingsOverlay?.Toggle();
+        }
+
+        /// <summary>
+        /// 게임 중 설정에서 메인 메뉴로 돌아갈 때 호출. 활성 회차를 저장한 뒤 MainMenu를 로드한다.
+        /// </summary>
+        public void ReturnToMainMenuFromGame()
+        {
+            var presenter = FindAnyObjectByType<GamePlayPresenter>();
+            presenter?.FlushSaveBeforeExit();
+            settingsOverlay?.Hide();
+            SceneLoader?.LoadMainMenu();
         }
 
         private void EnsureSettingsOverlay()
@@ -397,9 +480,9 @@ namespace SurviveUntilPayday.Core
             settingsOverlay.Hide();
         }
 
-        private void OnAudioSettingsChanged(bool enabled, float volume)
+        private void OnAudioSettingsChanged(bool enabled, float bgmVolume, float sfxVolume)
         {
-            Audio?.ApplySettings(enabled, volume);
+            Audio?.ApplySettings(enabled, bgmVolume, sfxVolume);
         }
     }
 }

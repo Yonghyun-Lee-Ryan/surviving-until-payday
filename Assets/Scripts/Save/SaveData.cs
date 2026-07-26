@@ -5,7 +5,7 @@ namespace SurviveUntilPayday.Save
 {
     public static class SaveVersion
     {
-        public const int Current = 5;
+        public const int Current = 7;
     }
 
     [Serializable]
@@ -36,6 +36,7 @@ namespace SurviveUntilPayday.Save
         public string pendingEventId = string.Empty;
         public List<string> runFlags = new List<string>();
         public List<string> queuedEventIds = new List<string>();
+        public int sideJobCount;
     }
 
     [Serializable]
@@ -48,5 +49,31 @@ namespace SurviveUntilPayday.Save
         public List<string> unlockedAchievementIds = new List<string>();
         public int totalExperience;
         public int traitFragmentCount;
+
+        // Unit 25 — 일일 콘텐츠 (로컬)
+        public string dailyDateKey = string.Empty;
+        public long dailyBestCash;
+        public bool dailyBestSurvived;
+        public int dailyBestStress = 999;
+        public int dailyBestCompanyScore;
+        public int dailyBestDaysSurvived;
+        public bool dailyHasBestRecord;
+        public List<DailyMissionSaveEntry> dailyMissions = new List<DailyMissionSaveEntry>();
+
+        // Unit 26 — 첫 실행 튜토리얼
+        public bool firstRunTutorialCompleted;
+
+        // Unit 28 — 광고 제거 · 무료 상점 캘린더 쿼터
+        public bool hasNoAds;
+        public string shopTraitAdDateKey = string.Empty;
+        public int shopTraitAdUsesToday;
+    }
+
+    [Serializable]
+    public sealed class DailyMissionSaveEntry
+    {
+        public string missionId = string.Empty;
+        public bool completed;
+        public bool rewardClaimed;
     }
 }
