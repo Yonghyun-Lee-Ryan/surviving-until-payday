@@ -104,7 +104,7 @@ namespace SurviveUntilPayday.EditorTools
                 "Job_CivilPrep.asset",
                 "job_civil_prep",
                 "\uACF5\uBB34\uC6D0 \uC900\uBE44\uC0DD",
-                "\uB0AE\uC740 \uC218\uC785\uC774\uC9C0\uB9CC \uC9C1\uC7A5 \uC0AC\uAC74\uC740 \uC801\uB2E4. \uACF5\uBD80\uC640 \uC2DC\uD5D8 \uC2A4\uD2B8\uB808\uC2A4\uAC00 \uC9C3\uB2E4.",
+                "\uB0AE\uC740 \uC218\uC785\uC774\uC9C0\uB9CC \uC9C1\uC7A5 \uC0AC\uAC74\uC740 \uC801\uB2E4. \uACF5\uBD80\uC640 \uC2DC\uD5D8 \uC2A4\uD2B8\uB808\uC2A4\uAC00 \uC2EC\uD558\uB2E4.",
                 2,
                 1_200_000L,
                 1_800_000L,
