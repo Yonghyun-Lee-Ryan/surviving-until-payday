@@ -42,7 +42,7 @@ MonoBehaviour:
     text: "\uC804\uC561 \uACB0\uC81C\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -170000
+      value: -200000
     - statType: 2
       value: -3
     - statType: 3
@@ -52,9 +52,9 @@ MonoBehaviour:
     text: "\uC77C\uBD80\uB9CC \uACB0\uC81C\uD558\uACE0 \uB098\uBA38\uC9C0\uB294 \uC774\uC6D4\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -85000
+      value: -100000
     - statType: 2
-      value: 4
+      value: 5
     randomOutcomes: []
     setFlags:
     - owesDebt
@@ -63,9 +63,9 @@ MonoBehaviour:
     text: "\uB9AC\uBCFC\uBE59\uC73C\uB85C \uCD5C\uC18C \uAE08\uC561\uB9CC \uACB0\uC81C\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -35000
+      value: -40000
     - statType: 2
-      value: 8
+      value: 10
     randomOutcomes: []
     setFlags:
     - owesDebt

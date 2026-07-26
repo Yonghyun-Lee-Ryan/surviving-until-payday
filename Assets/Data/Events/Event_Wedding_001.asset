@@ -20,7 +20,7 @@ MonoBehaviour:
   category: 4
   minDay: 5
   maxDay: 28
-  weight: 80
+  weight: 105
   isFixedEvent: 0
   fixedDay: 0
   conditions:

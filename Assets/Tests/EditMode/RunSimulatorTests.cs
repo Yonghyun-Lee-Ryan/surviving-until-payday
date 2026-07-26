@@ -97,8 +97,12 @@ namespace SurviveUntilPayday.Tests
             Assert.AreEqual(99, summary.BaseSeed);
             Assert.Greater(summary.ReachDay7Count, 0);
             Assert.AreEqual(summary.ReachDay7Count, summary.ReachCounts[7]);
-            StringAssert.Contains("ReachDay7=", summary.ToString());
-            StringAssert.Contains("Day1FailRate=", summary.ToString());
+            var text = summary.ToString();
+            StringAssert.Contains("ReachDay7=", text);
+            StringAssert.Contains("Day1FailRate=", text);
+            StringAssert.Contains("SurvivalCurve:", text);
+            StringAssert.Contains("Bucket:D1-7", text);
+            StringAssert.Contains("Bucket:D22-30", text);
         }
 
         [Test]
@@ -112,6 +116,7 @@ namespace SurviveUntilPayday.Tests
             StringAssert.Contains("Fail:Bankruptcy=2", text);
             StringAssert.Contains("전체", text);
             StringAssert.Contains("실패 중", text);
+            StringAssert.Contains("SurvivalCurve:", text);
         }
 
         [Test]

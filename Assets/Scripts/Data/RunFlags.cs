@@ -9,5 +9,6 @@ namespace SurviveUntilPayday.Data
         public const string StockBigWin = "stockBigWin";
         public const string PhoneStillCracked = "phoneStillCracked";
         public const string OwesDebt = "owesDebt";
+        public const string OrderedDelivery = "orderedDelivery";
     }
 }

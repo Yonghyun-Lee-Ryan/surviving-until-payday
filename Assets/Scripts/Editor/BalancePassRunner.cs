@@ -72,6 +72,7 @@ namespace SurviveUntilPayday.EditorTools
             report.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             report.AppendLine($"Job: {job.name} (trait=null, first-run baseline)");
             report.AppendLine($"Iterations per policy: {iterations}, BaseSeed: {baseSeed}");
+            report.AppendLine("KPI targets (Random): Day7≈70%, Day15≈50%, Day30Success≈15~35%, Day1Fail 낮게");
             report.AppendLine();
 
             SimulationSummary randomSummary = null;
@@ -88,6 +89,20 @@ namespace SurviveUntilPayday.EditorTools
                 report.AppendLine();
             }
 
+            if (randomSummary != null)
+            {
+                report.AppendLine("--- Random KPI vs Target ---");
+                report.AppendLine(FormatKpiDelta("Day7", randomSummary.ReachRate(7), 0.70));
+                report.AppendLine(FormatKpiDelta("Day15", randomSummary.ReachRate(15), 0.50));
+                report.AppendLine(
+                    $"Day30Success={randomSummary.SuccessRate:P1} (목표 15~35%) " +
+                    $"{DescribeBand(randomSummary.SuccessRate, 0.15, 0.35)}");
+                report.AppendLine(
+                    $"Day1Fail={randomSummary.Day1FailureRate:P1} " +
+                    $"{(randomSummary.Day1FailureRate <= 0.05 ? "OK" : "HIGH")}");
+                report.AppendLine();
+            }
+
             var logsDir = Path.Combine(Application.dataPath, "..", "Logs");
             Directory.CreateDirectory(logsDir);
             var fileName = $"balance_pass_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
@@ -97,6 +112,28 @@ namespace SurviveUntilPayday.EditorTools
             AppendBalanceNotes(randomSummary, reportPath);
             Debug.Log(report.ToString());
             return reportPath;
+        }
+
+        private static string FormatKpiDelta(string label, double actual, double target)
+        {
+            var deltaPp = (actual - target) * 100.0;
+            var sign = deltaPp >= 0 ? "+" : string.Empty;
+            return $"{label}={actual:P1} (목표 {target:P0}, {sign}{deltaPp:F1}pp)";
+        }
+
+        private static string DescribeBand(double actual, double low, double high)
+        {
+            if (actual < low)
+            {
+                return "LOW";
+            }
+
+            if (actual > high)
+            {
+                return "HIGH";
+            }
+
+            return "OK";
         }
 
         private static void AppendBalanceNotes(SimulationSummary randomSummary, string reportPath)
@@ -120,14 +157,9 @@ namespace SurviveUntilPayday.EditorTools
                     $"Day15={randomSummary.ReachRate(15):P1}, " +
                     $"Day30Success={randomSummary.SuccessRate:P1}, " +
                     $"Day1Fail={randomSummary.Day1FailureRate:P1}");
-            }
-
-            var content = File.ReadAllText(notesPath, Encoding.UTF8);
-            const string marker = "## 조정 후 시뮬";
-            var markerIndex = content.IndexOf(marker, StringComparison.Ordinal);
-            if (markerIndex < 0)
-            {
-                content += Environment.NewLine + marker + Environment.NewLine;
+                section.AppendLine(
+                    $"- vs Target: {FormatKpiDelta("Day7", randomSummary.ReachRate(7), 0.70)}, " +
+                    $"{FormatKpiDelta("Day15", randomSummary.ReachRate(15), 0.50)}");
             }
 
             File.AppendAllText(notesPath, section.ToString(), Encoding.UTF8);

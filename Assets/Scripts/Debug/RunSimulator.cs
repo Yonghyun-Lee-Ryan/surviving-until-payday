@@ -29,6 +29,9 @@ namespace SurviveUntilPayday.DebugTools
         public double AverageCash { get; set; }
         public int Day1FailureCount { get; set; }
         public int[] ReachCounts { get; } = new int[GameState.MaxDay + 1];
+        public long[] CashSumByEndDay { get; } = new long[GameState.MaxDay + 1];
+        public int[] EndCountByDay { get; } = new int[GameState.MaxDay + 1];
+        public int[] FailCountByEndDay { get; } = new int[GameState.MaxDay + 1];
         public double SuccessRate => Iterations <= 0 ? 0 : SuccessCount / (double)Iterations;
         public Dictionary<FailureReason, int> FailureCounts { get; } = new Dictionary<FailureReason, int>();
         public Dictionary<string, int> EndingCounts { get; } = new Dictionary<string, int>();
@@ -105,6 +108,18 @@ namespace SurviveUntilPayday.DebugTools
             }
 
             EndingCounts[endingId]++;
+
+            var endDay = Math.Max(GameState.MinDay, Math.Min(result.DaysSurvived, GameState.MaxDay));
+            EndCountByDay[endDay]++;
+            if (result.FinalStats != null)
+            {
+                CashSumByEndDay[endDay] += result.FinalStats.Cash;
+            }
+
+            if (!result.IsSuccess)
+            {
+                FailCountByEndDay[endDay]++;
+            }
         }
 
         public override string ToString()
@@ -126,6 +141,11 @@ namespace SurviveUntilPayday.DebugTools
                 $"ReachDay15={ReachRate(15):P1} ({ReachDay15Count}/{Iterations}), " +
                 $"ReachDay21={ReachRate(21):P1} ({ReachDay21Count}/{Iterations}), " +
                 $"ReachDay30Success={SuccessRate:P1} ({ReachDay30SuccessCount}/{Iterations})");
+            lines.Add(BuildSurvivalCurveLine());
+            lines.Add(BuildBucketLine(1, 7));
+            lines.Add(BuildBucketLine(8, 14));
+            lines.Add(BuildBucketLine(15, 21));
+            lines.Add(BuildBucketLine(22, 30));
 
             var failures = FailureCount;
             foreach (var pair in FailureCounts)
@@ -143,6 +163,37 @@ namespace SurviveUntilPayday.DebugTools
             }
 
             return string.Join("\n", lines);
+        }
+
+        private string BuildSurvivalCurveLine()
+        {
+            var parts = new List<string> { "SurvivalCurve:" };
+            var highlightDays = new[] { 1, 3, 5, 7, 10, 15, 21, 28, 30 };
+            for (var i = 0; i < highlightDays.Length; i++)
+            {
+                var day = highlightDays[i];
+                parts.Add($"D{day}={ReachRate(day):P0}");
+            }
+
+            return string.Join(" ", parts);
+        }
+
+        private string BuildBucketLine(int fromDay, int toDay)
+        {
+            var ends = 0;
+            var fails = 0;
+            long cashSum = 0;
+            for (var day = fromDay; day <= toDay; day++)
+            {
+                ends += EndCountByDay[day];
+                fails += FailCountByEndDay[day];
+                cashSum += CashSumByEndDay[day];
+            }
+
+            var failRate = ends <= 0 ? 0 : fails / (double)ends;
+            var avgCash = ends <= 0 ? 0 : cashSum / (double)ends;
+            return
+                $"Bucket:D{fromDay}-{toDay} ends={ends} failRate={failRate:P1} avgEndCash={avgCash:F0}";
         }
 
         /// <summary>

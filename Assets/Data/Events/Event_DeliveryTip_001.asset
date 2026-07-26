@@ -53,6 +53,9 @@ MonoBehaviour:
     - statType: 3
       value: 3
     randomOutcomes: []
+    setFlags:
+    - orderedDelivery
+    clearFlags: []
   - choiceId: event_delivery_tip_001_b
     text: "직접 사러 간다"
     fixedEffects:
@@ -63,6 +66,8 @@ MonoBehaviour:
     - statType: 2
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_delivery_tip_001_c
     text: "굵는다"
     fixedEffects:
@@ -73,3 +78,5 @@ MonoBehaviour:
     - statType: 3
       value: -4
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []

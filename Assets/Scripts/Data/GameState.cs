@@ -22,6 +22,7 @@ namespace SurviveUntilPayday.Data
         [SerializeField] private int randomSeed;
         [SerializeField] private List<string> runFlags = new List<string>();
         [SerializeField] private List<string> queuedFollowUpEventIds = new List<string>();
+        [SerializeField] private int sideJobCount;
 
         public int CurrentDay
         {
@@ -53,6 +54,12 @@ namespace SurviveUntilPayday.Data
         {
             get => randomSeed;
             set => randomSeed = value;
+        }
+
+        public int SideJobCount
+        {
+            get => sideJobCount;
+            set => sideJobCount = Math.Max(0, value);
         }
 
         public IReadOnlyList<string> RunFlags => runFlags ??= new List<string>();
@@ -114,6 +121,12 @@ namespace SurviveUntilPayday.Data
             Stats.CopyFrom(created.Stats);
             ClearRunFlags();
             ClearFollowUpQueue();
+            sideJobCount = 0;
+        }
+
+        public void RegisterSideJobCompletion()
+        {
+            sideJobCount = Math.Max(0, sideJobCount) + 1;
         }
 
         public bool HasFlag(string flagId)
@@ -226,6 +239,7 @@ namespace SurviveUntilPayday.Data
                 traitId = traitId,
                 salary = salary,
                 randomSeed = randomSeed,
+                sideJobCount = sideJobCount,
                 stats = Stats.Clone()
             };
             clone.LoadRunFlags(runFlags);

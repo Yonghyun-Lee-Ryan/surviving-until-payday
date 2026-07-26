@@ -42,9 +42,9 @@ MonoBehaviour:
     text: "\uC57C\uADFC\uD558\uACE0 \uB05D\uB0B8\uB2E4"
     fixedEffects:
     - statType: 1
-      value: -4
+      value: -5
     - statType: 2
-      value: 10
+      value: 12
     - statType: 3
       value: -5
     - statType: 4

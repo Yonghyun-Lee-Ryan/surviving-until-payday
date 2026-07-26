@@ -42,7 +42,7 @@ MonoBehaviour:
     text: "\uBC14\uB85C \uB0A9\uBD80\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -80000
+      value: -95000
     - statType: 2
       value: -1
     randomOutcomes: []
@@ -50,7 +50,7 @@ MonoBehaviour:
     text: "\uC544\uAEF4 \uC4F4 \uB9CC\uD07C \uC808\uC57D\uD574 \uB0A9\uBD80\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -65000
+      value: -75000
     - statType: 3
       value: -2
     randomOutcomes: []
@@ -58,7 +58,7 @@ MonoBehaviour:
     text: "\uB0A9\uBD80\uB97C \uBBF8\uB8E8\uACE0 \uC5F0\uCCB4\uB8CC\uB97C \uAC10\uC218\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -95000
+      value: -110000
     - statType: 2
       value: 6
     randomOutcomes: []

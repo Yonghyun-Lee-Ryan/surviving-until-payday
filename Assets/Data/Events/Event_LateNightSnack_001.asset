@@ -55,6 +55,9 @@ MonoBehaviour:
     - statType: 3
       value: 4
     randomOutcomes: []
+    setFlags:
+    - orderedDelivery
+    clearFlags: []
   - choiceId: event_late_night_snack_001_b
     text: "과일만 먹는다"
     fixedEffects:
@@ -65,6 +68,8 @@ MonoBehaviour:
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_late_night_snack_001_c
     text: "참는다"
     fixedEffects:
@@ -75,3 +80,5 @@ MonoBehaviour:
     - statType: 3
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
