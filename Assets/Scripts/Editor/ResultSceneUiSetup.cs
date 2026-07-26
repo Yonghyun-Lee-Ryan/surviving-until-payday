@@ -93,7 +93,15 @@ namespace SurviveUntilPayday.EditorTools
             var stats = CreateText(safeArea, "Stats", "능력치", 30, new Vector2(0f, 110f));
             stats.rectTransform.sizeDelta = new Vector2(900f, 90f);
             var xp = CreateText(safeArea, "XP", "경험치", 32, new Vector2(0f, -10f));
-            var unlock = CreateText(safeArea, "Unlock", "도감", 28, new Vector2(0f, -80f));
+            xp.alignment = TextAnchor.UpperCenter;
+            xp.rectTransform.pivot = new Vector2(0.5f, 1f);
+            xp.rectTransform.sizeDelta = new Vector2(900f, 64f);
+            xp.verticalOverflow = VerticalWrapMode.Overflow;
+            var unlock = CreateText(safeArea, "Unlock", "도감", 26, new Vector2(0f, -90f));
+            unlock.alignment = TextAnchor.UpperCenter;
+            unlock.rectTransform.pivot = new Vector2(0.5f, 1f);
+            unlock.rectTransform.sizeDelta = new Vector2(900f, 220f);
+            unlock.verticalOverflow = VerticalWrapMode.Overflow;
 
             var doubleXpObject = CreatePanel(safeArea, "DoubleXpAdButton", new Vector2(0f, -200f), new Vector2(480f, 90f),
                 new Color(0.45f, 0.32f, 0.18f));

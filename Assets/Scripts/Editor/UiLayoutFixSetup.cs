@@ -199,14 +199,18 @@ namespace SurviveUntilPayday.EditorTools
                 return;
             }
 
-            SetAnchored(safe.Find("Title") as RectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 420f),
+            SetAnchored(safe.Find("Title") as RectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 760f),
                 new Vector2(920f, 90f));
-            SetAnchored(safe.Find("SceneLabel") as RectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 320f),
-                new Vector2(920f, 50f));
-            SetAnchored(safe.Find("ActionButton") as RectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -120f),
-                new Vector2(520f, 110f));
-            SetAnchored(safe.Find("ContinueButton") as RectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -260f),
-                new Vector2(520f, 100f));
+            var sceneLabel = safe.Find("SceneLabel");
+            if (sceneLabel != null)
+            {
+                sceneLabel.gameObject.SetActive(false);
+            }
+
+            SetAnchored(safe.Find("ActionButton") as RectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 560f),
+                new Vector2(520f, 86f));
+            SetAnchored(safe.Find("ContinueButton") as RectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 356f),
+                new Vector2(520f, 86f));
             var settings = safe.Find("SettingsButton") as RectTransform;
             if (settings != null)
             {

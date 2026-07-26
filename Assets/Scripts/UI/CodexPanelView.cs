@@ -63,6 +63,9 @@ namespace SurviveUntilPayday.UI
         private readonly List<GameObject> listRows = new List<GameObject>();
         private bool layoutReady;
         private bool buttonsWired;
+        private GameObject detailOverlay;
+        private Text detailTitleLabel;
+        private Text detailBodyLabel;
 
         public void Bind(
             Text level,
@@ -180,7 +183,7 @@ namespace SurviveUntilPayday.UI
             StretchFull(root);
             var rootLayout = GetOrAdd<VerticalLayoutGroup>(root.gameObject);
             rootLayout.padding = new RectOffset(28, 28, 20, 18);
-            rootLayout.spacing = 10f;
+            rootLayout.spacing = 14f;
             rootLayout.childAlignment = TextAnchor.UpperCenter;
             rootLayout.childControlWidth = true;
             rootLayout.childControlHeight = true;
@@ -200,8 +203,8 @@ namespace SurviveUntilPayday.UI
             rateBlockLayout.childForceExpandWidth = true;
             rateBlockLayout.childForceExpandHeight = false;
             var rateBlockElement = rateBlock.GetComponent<LayoutElement>();
-            rateBlockElement.minHeight = 72f;
-            rateBlockElement.preferredHeight = 76f;
+            rateBlockElement.minHeight = 84f;
+            rateBlockElement.preferredHeight = 88f;
 
             var ratesTop = CreateRow(rateBlock.transform, "RateRowTop", 34f, 12f);
             endingRateLabel = EnsureLabel(ratesTop, "EndingRate", endingRateLabel, 20, false, 32f);
@@ -224,8 +227,9 @@ namespace SurviveUntilPayday.UI
             listTitleLabel.alignment = TextAnchor.MiddleLeft;
 
             listContentRoot = CreateScrollList(root);
-            unlockToastLabel = EnsureLabel(root, "UnlockToast", unlockToastLabel, 18, false, 26f);
+            unlockToastLabel = EnsureLabel(root, "UnlockToast", unlockToastLabel, 18, false, 28f);
             unlockToastLabel.color = new Color(0.25f, 0.4f, 0.55f, 1f);
+            unlockToastLabel.raycastTarget = false;
 
             WireButtons();
             HighlightChrome();
@@ -320,8 +324,8 @@ namespace SurviveUntilPayday.UI
             var scrollImage = scrollGo.GetComponent<Image>();
             scrollImage.color = new Color(0.9f, 0.9f, 0.88f, 0.55f);
             var scrollElement = scrollGo.GetComponent<LayoutElement>();
-            scrollElement.minHeight = 220f;
-            scrollElement.preferredHeight = 260f;
+            scrollElement.minHeight = 240f;
+            scrollElement.preferredHeight = 300f;
             scrollElement.flexibleHeight = 1f;
 
             var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(Mask));
@@ -329,6 +333,7 @@ namespace SurviveUntilPayday.UI
             StretchFull(viewport.transform);
             var viewportImage = viewport.GetComponent<Image>();
             viewportImage.color = new Color(1f, 1f, 1f, 0.04f);
+            viewportImage.raycastTarget = true;
             viewport.GetComponent<Mask>().showMaskGraphic = false;
 
             var content = new GameObject(
@@ -536,6 +541,7 @@ namespace SurviveUntilPayday.UI
         private void SetTab(CodexTab tab)
         {
             activeTab = tab;
+            HideDetail();
             RefreshList();
             HighlightChrome();
         }
@@ -543,6 +549,7 @@ namespace SurviveUntilPayday.UI
         private void SetFilter(CodexFilter filter)
         {
             activeFilter = filter;
+            HideDetail();
             RefreshList();
             HighlightChrome();
         }
@@ -581,6 +588,12 @@ namespace SurviveUntilPayday.UI
 
             SetText(listTitleLabel, $"{TabTitle(activeTab)}  ·  {FilterTitle(activeFilter)}");
             var entries = BuildEntries();
+            if (entries.Count == 0)
+            {
+                listRows.Add(CreateEmptyRow("아직 표시할 항목이 없습니다.\n플레이로 도감을 채워 보세요."));
+                return;
+            }
+
             for (var i = 0; i < entries.Count; i++)
             {
                 listRows.Add(CreateRow(entries[i]));
@@ -742,15 +755,60 @@ namespace SurviveUntilPayday.UI
             }
         }
 
-        private GameObject CreateRow(CodexListEntry entry)
+        private GameObject CreateEmptyRow(string message)
         {
-            var go = new GameObject(entry.Unlocked ? "UnlockedRow" : "LockedRow", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+            var go = new GameObject("EmptyRow", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
             go.transform.SetParent(listContentRoot, false);
             var layout = go.GetComponent<LayoutElement>();
-            layout.minHeight = 56f;
-            layout.preferredHeight = 56f;
+            layout.minHeight = 72f;
+            layout.preferredHeight = 72f;
+            go.GetComponent<Image>().color = RowLocked;
+
+            var labelGo = new GameObject("Message", typeof(RectTransform));
+            labelGo.transform.SetParent(go.transform, false);
+            var rect = labelGo.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(14f, 8f);
+            rect.offsetMax = new Vector2(-14f, -8f);
+            var label = labelGo.AddComponent<Text>();
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                         ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            label.fontSize = 20;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+            label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
+            label.text = message ?? string.Empty;
+            UiFont.Apply(label);
+            return go;
+        }
+
+        private GameObject CreateRow(CodexListEntry entry)
+        {
+            var go = new GameObject(
+                entry.Unlocked ? "UnlockedRow" : "LockedRow",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button),
+                typeof(LayoutElement));
+            go.transform.SetParent(listContentRoot, false);
+            var layout = go.GetComponent<LayoutElement>();
+            layout.minHeight = 72f;
+            layout.preferredHeight = 72f;
             var image = go.GetComponent<Image>();
             image.color = entry.Unlocked ? RowUnlocked : RowLocked;
+            image.raycastTarget = true;
+
+            var button = go.GetComponent<Button>();
+            button.targetGraphic = image;
+            button.transition = Selectable.Transition.ColorTint;
+            var colors = button.colors;
+            colors.highlightedColor = entry.Unlocked
+                ? new Color(0.92f, 0.95f, 1f, 1f)
+                : new Color(0.7f, 0.72f, 0.76f, 1f);
+            colors.pressedColor = new Color(0.85f, 0.88f, 0.92f, 1f);
+            button.colors = colors;
 
             var titleGo = new GameObject("Title", typeof(RectTransform));
             titleGo.transform.SetParent(go.transform, false);
@@ -766,6 +824,7 @@ namespace SurviveUntilPayday.UI
             title.alignment = TextAnchor.MiddleLeft;
             title.color = entry.Unlocked ? TextDark : Color.white;
             title.text = entry.Title;
+            title.raycastTarget = false;
             UiFont.Apply(title, bold: true);
 
             var descGo = new GameObject("Desc", typeof(RectTransform));
@@ -780,9 +839,154 @@ namespace SurviveUntilPayday.UI
             desc.fontSize = 16;
             desc.alignment = TextAnchor.UpperLeft;
             desc.color = entry.Unlocked ? TextMuted : new Color(0.92f, 0.92f, 0.94f, 1f);
-            desc.text = Truncate(entry.Description, 42);
+            desc.text = Truncate(entry.Description, 48);
+            desc.raycastTarget = false;
+            desc.horizontalOverflow = HorizontalWrapMode.Wrap;
+            desc.verticalOverflow = VerticalWrapMode.Truncate;
             UiFont.Apply(desc);
+
+            var captured = entry;
+            button.onClick.AddListener(() => OnCodexRowClicked(captured));
             return go;
+        }
+
+        private void OnCodexRowClicked(CodexListEntry entry)
+        {
+            if (!entry.Unlocked)
+            {
+                ShowUnlockToast("아직 해금되지 않은 항목입니다.");
+                return;
+            }
+
+            ShowDetail(entry.Title, entry.Description);
+        }
+
+        private void ShowDetail(string title, string body)
+        {
+            EnsureDetailOverlay();
+            if (detailOverlay == null)
+            {
+                return;
+            }
+
+            if (detailTitleLabel != null)
+            {
+                detailTitleLabel.text = title ?? string.Empty;
+            }
+
+            if (detailBodyLabel != null)
+            {
+                detailBodyLabel.text = string.IsNullOrWhiteSpace(body)
+                    ? "설명이 없습니다."
+                    : body;
+            }
+
+            detailOverlay.SetActive(true);
+            detailOverlay.transform.SetAsLastSibling();
+        }
+
+        private void HideDetail()
+        {
+            if (detailOverlay != null)
+            {
+                detailOverlay.SetActive(false);
+            }
+        }
+
+        private void EnsureDetailOverlay()
+        {
+            if (detailOverlay != null)
+            {
+                return;
+            }
+
+            detailOverlay = new GameObject(
+                "CodexDetailOverlay",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            detailOverlay.transform.SetParent(transform, false);
+            var overlayRt = detailOverlay.GetComponent<RectTransform>();
+            overlayRt.anchorMin = Vector2.zero;
+            overlayRt.anchorMax = Vector2.one;
+            overlayRt.offsetMin = Vector2.zero;
+            overlayRt.offsetMax = Vector2.zero;
+            var overlayImage = detailOverlay.GetComponent<Image>();
+            overlayImage.color = new Color(0.08f, 0.09f, 0.11f, 0.55f);
+            var overlayButton = detailOverlay.GetComponent<Button>();
+            overlayButton.targetGraphic = overlayImage;
+            overlayButton.onClick.AddListener(HideDetail);
+
+            var card = new GameObject("Card", typeof(RectTransform), typeof(Image));
+            card.transform.SetParent(detailOverlay.transform, false);
+            var cardRt = card.GetComponent<RectTransform>();
+            cardRt.anchorMin = new Vector2(0.08f, 0.22f);
+            cardRt.anchorMax = new Vector2(0.92f, 0.78f);
+            cardRt.offsetMin = Vector2.zero;
+            cardRt.offsetMax = Vector2.zero;
+            card.GetComponent<Image>().color = new Color(0.98f, 0.97f, 0.94f, 1f);
+
+            var titleGo = new GameObject("Title", typeof(RectTransform));
+            titleGo.transform.SetParent(card.transform, false);
+            var titleRt = titleGo.GetComponent<RectTransform>();
+            titleRt.anchorMin = new Vector2(0f, 0.72f);
+            titleRt.anchorMax = new Vector2(1f, 1f);
+            titleRt.offsetMin = new Vector2(20f, 8f);
+            titleRt.offsetMax = new Vector2(-20f, -12f);
+            detailTitleLabel = titleGo.AddComponent<Text>();
+            detailTitleLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                                    ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            detailTitleLabel.fontSize = 28;
+            detailTitleLabel.alignment = TextAnchor.MiddleCenter;
+            detailTitleLabel.color = TextDark;
+            detailTitleLabel.raycastTarget = false;
+            UiFont.Apply(detailTitleLabel, bold: true);
+
+            var bodyGo = new GameObject("Body", typeof(RectTransform));
+            bodyGo.transform.SetParent(card.transform, false);
+            var bodyRt = bodyGo.GetComponent<RectTransform>();
+            bodyRt.anchorMin = new Vector2(0f, 0.18f);
+            bodyRt.anchorMax = new Vector2(1f, 0.72f);
+            bodyRt.offsetMin = new Vector2(24f, 8f);
+            bodyRt.offsetMax = new Vector2(-24f, -8f);
+            detailBodyLabel = bodyGo.AddComponent<Text>();
+            detailBodyLabel.font = detailTitleLabel.font;
+            detailBodyLabel.fontSize = 22;
+            detailBodyLabel.alignment = TextAnchor.UpperCenter;
+            detailBodyLabel.color = TextMuted;
+            detailBodyLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
+            detailBodyLabel.verticalOverflow = VerticalWrapMode.Overflow;
+            detailBodyLabel.raycastTarget = false;
+            UiFont.Apply(detailBodyLabel);
+
+            var closeGo = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
+            closeGo.transform.SetParent(card.transform, false);
+            var closeRt = closeGo.GetComponent<RectTransform>();
+            closeRt.anchorMin = new Vector2(0.2f, 0.04f);
+            closeRt.anchorMax = new Vector2(0.8f, 0.16f);
+            closeRt.offsetMin = Vector2.zero;
+            closeRt.offsetMax = Vector2.zero;
+            closeGo.GetComponent<Image>().color = new Color(0.32f, 0.52f, 0.72f, 1f);
+            var closeButton = closeGo.GetComponent<Button>();
+            closeButton.targetGraphic = closeGo.GetComponent<Image>();
+            closeButton.onClick.AddListener(HideDetail);
+            var closeLabelGo = new GameObject("Label", typeof(RectTransform));
+            closeLabelGo.transform.SetParent(closeGo.transform, false);
+            var closeLabelRt = closeLabelGo.GetComponent<RectTransform>();
+            closeLabelRt.anchorMin = Vector2.zero;
+            closeLabelRt.anchorMax = Vector2.one;
+            closeLabelRt.offsetMin = Vector2.zero;
+            closeLabelRt.offsetMax = Vector2.zero;
+            var closeLabel = closeLabelGo.AddComponent<Text>();
+            closeLabel.font = detailTitleLabel.font;
+            closeLabel.fontSize = 22;
+            closeLabel.alignment = TextAnchor.MiddleCenter;
+            closeLabel.color = Color.white;
+            closeLabel.text = "닫기";
+            closeLabel.raycastTarget = false;
+            UiFont.Apply(closeLabel);
+
+            detailOverlay.SetActive(false);
         }
 
         private void ClearRows()

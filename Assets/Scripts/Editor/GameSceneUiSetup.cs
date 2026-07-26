@@ -529,16 +529,18 @@ namespace SurviveUntilPayday.EditorTools
             root.GetComponent<Image>().color = new Color(0.1f, 0.1f, 0.12f, 0.55f);
 
             var card = CreatePanel(root.transform, "Card", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                Vector2.zero, new Vector2(820f, 560f), new Color(0.97f, 0.96f, 0.92f, 1f));
+                Vector2.zero, new Vector2(820f, 620f), new Color(0.97f, 0.96f, 0.92f, 1f));
 
             var title = CreateText(card.transform, "Title", "주간 결산", 44, TextAnchor.MiddleCenter,
-                new Vector2(0f, 200f), new Vector2(760f, 60f));
+                new Vector2(0f, 230f), new Vector2(760f, 60f));
             var body = CreateText(card.transform, "Body", "요약", 30, TextAnchor.UpperCenter,
-                new Vector2(0f, 70f), new Vector2(740f, 180f));
+                new Vector2(0f, 80f), new Vector2(740f, 220f));
             body.horizontalOverflow = HorizontalWrapMode.Wrap;
+            body.verticalOverflow = VerticalWrapMode.Truncate;
             var warnings = CreateText(card.transform, "Warnings", "경고", 28, TextAnchor.UpperCenter,
-                new Vector2(0f, -90f), new Vector2(740f, 140f));
+                new Vector2(0f, -150f), new Vector2(740f, 120f));
             warnings.horizontalOverflow = HorizontalWrapMode.Wrap;
+            warnings.verticalOverflow = VerticalWrapMode.Truncate;
             warnings.color = new Color(0.55f, 0.2f, 0.15f, 1f);
 
             var continueObject = CreatePanel(card.transform, "ContinueButton", new Vector2(0.5f, 0f),

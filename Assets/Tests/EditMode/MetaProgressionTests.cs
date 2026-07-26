@@ -135,13 +135,31 @@ namespace SurviveUntilPayday.Tests
                 false);
 
             var meta = new MetaProgressionManager();
-            var result = meta.ApplyRunResult(draft, new[] { trait }, new[] { "event_x" });
+            var eventData = ScriptableObject.CreateInstance<EventData>();
+            eventData.EditorSetCore(
+                "event_x",
+                "테스트 사건",
+                "설명",
+                EventCategory.Work,
+                1,
+                30,
+                100,
+                new EventCondition(),
+                new List<EventChoiceData>());
+            var result = meta.ApplyRunResult(
+                draft,
+                new[] { trait },
+                new[] { "event_x" },
+                allJobs: null,
+                allEvents: new[] { eventData });
 
             Assert.GreaterOrEqual(result.LevelAfter, 2);
             Assert.IsTrue(meta.IsTraitUnlocked(trait));
             Assert.Contains("event_x", result.NewlyUnlockedEvents);
+            Assert.Contains("테스트 사건", result.NewlyUnlockedEventTitles);
             Assert.Contains("e", result.NewlyUnlockedEndings);
             Assert.Contains("trait_gym", result.NewlyUnlockedTraits);
+            Assert.Contains("체력왕", result.NewlyUnlockedTraitNames);
         }
 
         [Test]
