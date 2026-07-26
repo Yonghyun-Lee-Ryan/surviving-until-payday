@@ -1,4 +1,6 @@
 using System.Collections;
+using SurviveUntilPayday.Audio;
+using SurviveUntilPayday.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +25,8 @@ namespace SurviveUntilPayday.UI
 
         private int displayedValue;
         private Coroutine animationRoutine;
+        private string helpDescription = string.Empty;
+        private Button helpButton;
 
         public int DisplayedValue => displayedValue;
 
@@ -47,6 +51,12 @@ namespace SurviveUntilPayday.UI
                 nameLabel.enabled = true;
                 nameLabel.transform.SetAsLastSibling();
             }
+        }
+
+        public void SetHelpDescription(string description)
+        {
+            helpDescription = description ?? string.Empty;
+            EnsureHelpButton();
         }
 
         public void BindNameLabel(Text name)
@@ -162,6 +172,43 @@ namespace SurviveUntilPayday.UI
             }
 
             return false;
+        }
+
+        private void EnsureHelpButton()
+        {
+            if (helpButton != null || string.IsNullOrEmpty(helpDescription))
+            {
+                return;
+            }
+
+            helpButton = GetComponent<Button>();
+            if (helpButton == null)
+            {
+                helpButton = gameObject.AddComponent<Button>();
+                var graphic = backgroundImage != null
+                    ? (Graphic)backgroundImage
+                    : GetComponent<Image>();
+                if (graphic != null)
+                {
+                    graphic.raycastTarget = true;
+                    helpButton.targetGraphic = graphic;
+                }
+            }
+
+            helpButton.onClick.RemoveListener(OnHelpClicked);
+            helpButton.onClick.AddListener(OnHelpClicked);
+        }
+
+        private void OnHelpClicked()
+        {
+            if (string.IsNullOrEmpty(helpDescription))
+            {
+                return;
+            }
+
+            var hud = GetComponentInParent<GameHudView>();
+            hud?.ShowStatHelp(helpDescription);
+            AppRoot.EnsureCreated().Audio?.PlaySfx(SfxId.Click);
         }
     }
 }

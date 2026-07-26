@@ -25,11 +25,11 @@ namespace SurviveUntilPayday.Core
             var stats = info.StateSnapshot.Stats;
             var builder = new StringBuilder();
             builder.Append(info.Day);
-            builder.Append("일까지의 상태를 점검합니다.\n\n");
+            builder.Append("일까지의 상태를 점검합니다.\n");
             builder.Append("현금 ");
             builder.Append(stats.Cash.ToString("N0"));
-            builder.Append("원");
-            builder.Append("\n건강 ");
+            builder.Append("원\n");
+            builder.Append("건강 ");
             builder.Append(stats.Health);
             builder.Append(" · 스트레스 ");
             builder.Append(stats.Stress);

@@ -62,6 +62,27 @@ namespace SurviveUntilPayday.UI
             }
         }
 
+        public void ShowStatHelp(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+            {
+                return;
+            }
+
+            if (crisisBannerLabel != null)
+            {
+                crisisBannerLabel.text = message;
+                if (crisisBanner != null)
+                {
+                    crisisBanner.SetActive(true);
+                }
+            }
+            else
+            {
+                Debug.Log($"[HUD] {message}");
+            }
+        }
+
         public void BindGauges(
             StatGaugeView health,
             StatGaugeView stress,
