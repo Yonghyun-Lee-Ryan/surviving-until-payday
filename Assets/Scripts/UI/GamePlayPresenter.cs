@@ -568,7 +568,8 @@ namespace SurviveUntilPayday.UI
                 ? selected.ResolveEntryExpression()
                 : fallbackExpression;
             var catalog = ResolveArtCatalog();
-            var bgSprite = catalog != null ? catalog.GetBackground(backgroundId) : null;
+            var categoryBg = catalog != null ? catalog.GetBackground(backgroundId) : null;
+            var bgSprite = EventArtResolver.ResolveBackgroundSprite(selected.Id, categoryBg);
             var faceSprite = catalog != null ? catalog.GetExpression(expressionId) : null;
             eventPanelView.Show(
                 selected.Title,
@@ -631,22 +632,21 @@ namespace SurviveUntilPayday.UI
 
             var rewarded = AppRoot.Instance?.RewardedAds;
             var quota = AppRoot.Instance?.AdQuota;
-            var canRetry = rewarded != null && rewarded.CanRequest(RewardedAdPlacement.RetryOutcome, out _);
-            var canSide = rewarded != null && rewarded.CanRequest(RewardedAdPlacement.DailySideJob, out _);
+            var retryRemaining = quota?.GetRemaining(RewardedAdPlacement.RetryOutcome) ?? 0;
+            var sideRemaining = quota?.GetRemaining(RewardedAdPlacement.DailySideJob) ?? 0;
+            var loanRemaining = quota?.GetRemaining(RewardedAdPlacement.EmergencyLoan) ?? 0;
             var cash = result?.StatsAfter != null ? result.StatsAfter.Cash : runManager?.State?.Stats.Cash ?? 0;
             var needsLoan = cash < 50_000L
                             || (result != null && result.FailureAfter == FailureReason.Bankruptcy);
-            var canLoan = needsLoan
-                          && rewarded != null
-                          && rewarded.CanRequest(RewardedAdPlacement.EmergencyLoan, out _);
 
+            // 쿨다운·미준비는 Request 시 처리. 버튼은 잔여 쿼터만 반영(쿨다운 만료 후 UI 갱신 없이도 재활성).
             resultPopupView.SetAdButtons(
-                retryVisible: quota == null || quota.GetRemaining(RewardedAdPlacement.RetryOutcome) > 0,
-                retryInteractable: canRetry,
-                sideJobVisible: quota == null || quota.GetRemaining(RewardedAdPlacement.DailySideJob) > 0,
-                sideJobInteractable: canSide,
+                retryVisible: quota == null || retryRemaining > 0,
+                retryInteractable: rewarded != null && retryRemaining > 0,
+                sideJobVisible: quota == null || sideRemaining > 0,
+                sideJobInteractable: rewarded != null && sideRemaining > 0,
                 loanVisible: needsLoan,
-                loanInteractable: canLoan);
+                loanInteractable: rewarded != null && needsLoan && loanRemaining > 0);
         }
 
         private void OnRerollAdClicked()

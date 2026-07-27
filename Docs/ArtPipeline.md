@@ -38,6 +38,14 @@ Assets/Art/Expressions/face_despair.png
 - `EventData`에서 `overrideBackground` / `overrideExpression`으로 개별 지정 가능
 - 선택 결과 후 표정은 `ExpressionResolver`가 능력치 변화로 결정
 
+## 사건별 일러스트 (우선)
+
+경로: `Assets/Resources/Art/Events/{eventId}.png`  
+런타임: `EventArtResolver` → `Resources.Load<Sprite>("Art/Events/{id}")`  
+있으면 카테고리 배경 대신 사건 패널 배경으로 사용한다.
+
+임포트: **Tools → Surviving Until Payday → Import Event Illustrations**
+
 ## Editor
 
 `Tools → Surviving Until Payday → Setup Art Pipeline (Unit 21)`

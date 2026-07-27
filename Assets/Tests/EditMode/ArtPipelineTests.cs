@@ -3,6 +3,7 @@ using NUnit.Framework;
 using SurviveUntilPayday.Art;
 using SurviveUntilPayday.Data;
 using SurviveUntilPayday.Events;
+using UnityEngine;
 
 namespace SurviveUntilPayday.Tests
 {
@@ -84,6 +85,25 @@ namespace SurviveUntilPayday.Tests
                 FailureReason.None);
 
             Assert.AreEqual(ExpressionId.Happy, ExpressionResolver.FromChoiceResult(result));
+        }
+
+        [Test]
+        public void EventArtResolver_MissingResource_ReturnsNull_AndKeepsFallback()
+        {
+            Assert.IsNull(EventArtResolver.TryLoadEventIllustration(null));
+            Assert.IsNull(EventArtResolver.TryLoadEventIllustration(" "));
+            Assert.IsNull(EventArtResolver.TryLoadEventIllustration("event_does_not_exist_xyz"));
+
+            var fallback = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f));
+            try
+            {
+                var resolved = EventArtResolver.ResolveBackgroundSprite("event_does_not_exist_xyz", fallback);
+                Assert.AreSame(fallback, resolved);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(fallback);
+            }
         }
     }
 }
