@@ -119,7 +119,7 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
-        public void NonTraitPlacement_StillRespectsCooldown()
+        public void NonTraitPlacement_CooldownAppliesOnlyToSamePlacement()
         {
             var clock = new ManualAdClock { UtcSeconds = 50 };
             var quota = new AdQuotaTracker(clock, cooldownSeconds: 5);
@@ -127,9 +127,13 @@ namespace SurviveUntilPayday.Tests
             var gateway = new RewardedAdGateway(new MockAdService(), quota);
 
             gateway.Request(RewardedAdPlacement.ChoiceReroll, _ => { });
-            AdRewardRequestResult? blocked = null;
-            gateway.Request(RewardedAdPlacement.DailySideJob, r => blocked = r);
+            AdRewardRequestResult? sideJob = null;
+            gateway.Request(RewardedAdPlacement.DailySideJob, r => sideJob = r);
 
+            Assert.IsTrue(sideJob.Value.RewardGranted);
+
+            AdRewardRequestResult? blocked = null;
+            gateway.Request(RewardedAdPlacement.ChoiceReroll, r => blocked = r);
             Assert.AreEqual(AdShowStatus.OnCooldown, blocked.Value.ShowResult.Status);
             Assert.IsFalse(blocked.Value.RewardGranted);
         }

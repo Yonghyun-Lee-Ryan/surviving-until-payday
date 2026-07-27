@@ -28,6 +28,7 @@ namespace SurviveUntilPayday.Ads
         private int traitFragmentUsesToday;
         private string traitFragmentDateKey = string.Empty;
         private double lastRewardedUtcSeconds = double.NegativeInfinity;
+        private RewardedAdPlacement? lastRewardedPlacement;
         private bool rewardedRecentlyForInterstitial;
 
         public AdQuotaTracker(IAdClock clock = null, double cooldownSeconds = DefaultCooldownSeconds)
@@ -56,6 +57,7 @@ namespace SurviveUntilPayday.Ads
             currentGameDay = 1;
             sideJobUsesToday = 0;
             // TraitFragment는 캘린더 일 기준이므로 회차 시작으로 초기화하지 않는다.
+            lastRewardedPlacement = null;
             rewardedRecentlyForInterstitial = false;
         }
 
@@ -119,15 +121,14 @@ namespace SurviveUntilPayday.Ads
 
         public bool CanConsume(RewardedAdPlacement placement, out string reason)
         {
-            // 무료 상점 특성 조각은 하루 3회 한도만 적용(연속 시청 가능).
-            // 그 외 보상형은 글로벌 쿨다운으로 연타를 막는다.
-            if (placement != RewardedAdPlacement.TraitFragment)
+            // TraitFragment는 캘린더 일 한도만 적용(연속 시청 가능).
+            // 그 외 보상형은 같은 placement 연타만 쿨다운(부업 후 재시도 등 다른 종류는 연속 가능).
+            if (placement != RewardedAdPlacement.TraitFragment
+                && lastRewardedPlacement == placement
+                && IsOnCooldown(out var remaining))
             {
-                if (IsOnCooldown(out var remaining))
-                {
-                    reason = $"Ad cooldown {remaining:F1}s remaining.";
-                    return false;
-                }
+                reason = $"Ad cooldown {remaining:F1}s remaining.";
+                return false;
             }
 
             if (GetRemaining(placement) <= 0)
@@ -165,6 +166,7 @@ namespace SurviveUntilPayday.Ads
                     break;
             }
 
+            lastRewardedPlacement = placement;
             lastRewardedUtcSeconds = clock.UtcSeconds;
             rewardedRecentlyForInterstitial = true;
         }

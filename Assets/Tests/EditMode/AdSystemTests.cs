@@ -87,7 +87,7 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
-        public void Cooldown_BlocksRapidRequests()
+        public void Cooldown_BlocksSamePlacementRapidRequests()
         {
             var clock = new ManualAdClock { UtcSeconds = 50 };
             var quota = new AdQuotaTracker(clock, cooldownSeconds: 5);
@@ -96,15 +96,30 @@ namespace SurviveUntilPayday.Tests
 
             gateway.Request(RewardedAdPlacement.ChoiceReroll, _ => { });
             AdRewardRequestResult? blocked = null;
-            gateway.Request(RewardedAdPlacement.DailySideJob, r => blocked = r);
+            gateway.Request(RewardedAdPlacement.ChoiceReroll, r => blocked = r);
 
             Assert.AreEqual(AdShowStatus.OnCooldown, blocked.Value.ShowResult.Status);
             Assert.IsFalse(blocked.Value.RewardGranted);
 
             clock.UtcSeconds += 5;
             AdRewardRequestResult? ok = null;
-            gateway.Request(RewardedAdPlacement.DailySideJob, r => ok = r);
+            gateway.Request(RewardedAdPlacement.ChoiceReroll, r => ok = r);
             Assert.IsTrue(ok.Value.RewardGranted);
+        }
+
+        [Test]
+        public void Cooldown_DoesNotBlockDifferentPlacement()
+        {
+            var clock = new ManualAdClock { UtcSeconds = 50 };
+            var quota = new AdQuotaTracker(clock, cooldownSeconds: 5);
+            quota.BeginRun();
+            var gateway = new RewardedAdGateway(new MockAdService(), quota);
+
+            gateway.Request(RewardedAdPlacement.DailySideJob, _ => { });
+            AdRewardRequestResult? retry = null;
+            gateway.Request(RewardedAdPlacement.RetryOutcome, r => retry = r);
+
+            Assert.IsTrue(retry.Value.RewardGranted);
         }
 
         [Test]
