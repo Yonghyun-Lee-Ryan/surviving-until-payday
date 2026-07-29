@@ -49,7 +49,7 @@ namespace SurviveUntilPayday.Tests
         public void TraitRuntimeModifier_OvertimeProReducesWorkStressOnly()
         {
             var trait = ScriptableObject.CreateInstance<TraitData>();
-            trait.EditorSet("trait_overtime_pro", "야근전문가", "desc", 0);
+            trait.EditorSet("trait_overtime_pro", "야근 전문가", "desc", 0);
             trait.EditorSetRuntimeMultipliers(1f, 1f, 0.7f);
 
             var workStress = TraitRuntimeModifier.Adjust(

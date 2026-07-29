@@ -54,7 +54,7 @@ MonoBehaviour:
       value: 8
     randomOutcomes: []
   - choiceId: event_weekend_plan_001_b
-    text: "집에서 쉮다"
+    text: "집에서 쉰다"
     fixedEffects:
     - statType: 1
       value: 4

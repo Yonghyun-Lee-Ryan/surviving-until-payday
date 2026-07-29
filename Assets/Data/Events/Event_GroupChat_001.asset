@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_group_chat_001
   title: "단톡방 멘션"
-  description: "업무 단톡방에 멘션이 잔뜩 쌀였다."
+  description: "업무 단톡방에 멘션이 잔뜩 쌓였다."
   category: 1
   minDay: 1
   maxDay: 30

@@ -338,7 +338,7 @@ namespace SurviveUntilPayday.EditorTools
             {
                 new EventChoiceData(
                     "choice_phone_rebreak_repair",
-                    "또 사설 수리점에 고친다",
+                    "또 사설 수리점에서 고친다",
                     new List<StatEffect>
                     {
                         new StatEffect(StatType.Cash, -110_000L),

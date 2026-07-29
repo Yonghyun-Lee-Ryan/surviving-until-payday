@@ -64,7 +64,7 @@ MonoBehaviour:
       value: -2
     randomOutcomes: []
   - choiceId: event_freelance_tax_001_c
-    text: "미루다"
+    text: "미룬다"
     fixedEffects:
     - statType: 2
       value: 3

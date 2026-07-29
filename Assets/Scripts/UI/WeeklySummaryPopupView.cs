@@ -55,10 +55,12 @@ namespace SurviveUntilPayday.UI
             if (root != null)
             {
                 root.SetActive(true);
+                root.transform.SetAsLastSibling();
             }
             else
             {
                 gameObject.SetActive(true);
+                transform.SetAsLastSibling();
             }
 
             if (titleLabel != null)

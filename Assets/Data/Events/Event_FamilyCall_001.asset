@@ -60,7 +60,7 @@ MonoBehaviour:
       value: 2
     randomOutcomes: []
   - choiceId: event_family_call_001_c
-    text: "다음에 하겠다고 미루다"
+    text: "다음에 하겠다고 미룬다"
     fixedEffects:
     - statType: 2
       value: 2

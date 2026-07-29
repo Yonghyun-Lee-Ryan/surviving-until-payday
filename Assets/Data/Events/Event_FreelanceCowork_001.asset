@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_freelance_cowork_001
   title: "공유오피스"
-  description: "집중이 안 돼 공유오피스 데이패스가 눈에 띄다."
+  description: "집중이 안 돼 공유오피스 데이패스가 눈에 띈다."
   category: 3
   minDay: 1
   maxDay: 30

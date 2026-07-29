@@ -736,6 +736,7 @@ namespace SurviveUntilPayday.UI
         {
             var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
             appRoot.ResetAllSaveData();
+            RefreshFromSettings();
             appRoot.Settings?.TryVibrate();
             Debug.Log("[Settings] 저장 데이터를 초기화했습니다.");
         }

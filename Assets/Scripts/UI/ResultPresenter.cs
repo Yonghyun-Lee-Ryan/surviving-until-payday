@@ -131,7 +131,7 @@ namespace SurviveUntilPayday.UI
                 else if (!result.IsSuccess)
                 {
                     endingDescriptionLabel.text =
-                        $"{FailureEvaluator.ToDisplayName(result.FailureReason)}로 이번 회차가 끝났습니다.";
+                        $"{FailureEvaluator.ToDisplayPhraseEnded(result.FailureReason)} 이번 회차가 끝났습니다.";
                 }
                 else
                 {

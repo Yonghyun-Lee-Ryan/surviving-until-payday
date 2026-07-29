@@ -44,7 +44,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_freelance_burnout_001_a
-    text: "하루 쉮다"
+    text: "하루 쉰다"
     fixedEffects:
     - statType: 1
       value: 5

@@ -95,5 +95,23 @@ namespace SurviveUntilPayday.Core
                     return "없음";
             }
         }
+
+        /// <summary>실패명 + 조사(으로/로) 결합. 받침 유무에 맞춤.</summary>
+        public static string ToDisplayPhraseEnded(FailureReason reason)
+        {
+            switch (reason)
+            {
+                case FailureReason.Bankruptcy:
+                    return "파산으로";
+                case FailureReason.Hospitalization:
+                    return "병원 입원으로";
+                case FailureReason.Burnout:
+                    return "번아웃으로";
+                case FailureReason.Fired:
+                    return "해고로";
+                default:
+                    return "실패로";
+            }
+        }
     }
 }

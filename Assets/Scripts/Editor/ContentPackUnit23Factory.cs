@@ -117,7 +117,7 @@ namespace SurviveUntilPayday.EditorTools
                 "Job_Freelancer.asset",
                 "job_freelancer",
                 "\uD504\uB9AC\uB79C\uC11C",
-                "\uC218\uC785 \uBCC0\uB3D9\uC774 \uD070 \uC790\uC720\uB85C\uC6B4 \uC77C. \uD504\uB85C\uC81D\uD2B8\uC640 \uACE0\uAC1D \uAD00\uB9AC\uAC00 \uC0B6\uC744 \uC88B\uC74C.",
+                "\uC218\uC785 \uBCC0\uB3D9\uC774 \uD070 \uC790\uC720\uB85C\uC6B4 \uC77C. \uD504\uB85C\uC81D\uD2B8\uC640 \uACE0\uAC1D \uAD00\uB9AC\uAC00 \uC0B6\uC744 \uC88C\uC6B0\uD568.",
                 3,
                 2_200_000L,
                 2_400_000L,
@@ -180,19 +180,19 @@ namespace SurviveUntilPayday.EditorTools
                     "\ubc30\ub2ec\ube44 \ub51c\ub808\ub9c8",
                     "\ubc30\ub2ec\ube44\uac00 \uc62c\ub790\ub2e4.",
                     EventCategory.Consumption,
-                    "\uadf8\ub0e5 \uc2dc\ud0a8\ub2e4", -22000, 0, -1, 3, 0, "\uc9c1\uc811 \uc0ac\ub7ec \uac04\ub2e4", -12000, 1, 2, 0, 0, "\uad75\ub294\ub2e4", 0, -3, 4, -4, 0),
+                    "\uadf8\ub0e5 \uc2dc\ud0a8\ub2e4", -22000, 0, -1, 3, 0, "\uc9c1\uc811 \uc0ac\ub7ec \uac04\ub2e4", -12000, 1, 2, 0, 0, "\uad81\ub294\ub2e4", 0, -3, 4, -4, 0),
                 Make(
                     "Event_FamilyCall_001",
                     "event_family_call_001",
                     "\uac00\uc871 \uc804\ud654",
                     "\ubd80\ubaa8\ub2d8\uc5d0\uac8c\uc11c \uc548\ubd80 \uc804\ud654\uac00 \uc654\ub2e4.",
                     EventCategory.Relationship,
-                    "\uae38\uac8c \ud1b5\ud654\ud55c\ub2e4", 0, 0, -4, 6, 0, "\uc9e7\uac8c \uc548\ubd80\ub97c \uc804\ud55c\ub2e4", 0, 0, -1, 2, 0, "\ub2e4\uc74c\uc5d0 \ud558\uaca0\ub2e4\uace0 \ubbf8\ub8e8\ub2e4", 0, 0, 2, -4, 0),
+                    "\uae38\uac8c \ud1b5\ud654\ud55c\ub2e4", 0, 0, -4, 6, 0, "\uc9e7\uac8c \uc548\ubd80\ub97c \uc804\ud55c\ub2e4", 0, 0, -1, 2, 0, "\ub2e4\uc74c\uc5d0 \ud558\uaca0\ub2e4\uace0 \ubbf8\ub8ec\ub2e4", 0, 0, 2, -4, 0),
                 Make(
                     "Event_GroupChat_001",
                     "event_group_chat_001",
                     "\ub2e8\ud1a1\ubc29 \uba58\uc158",
-                    "\uc5c5\ubb34 \ub2e8\ud1a1\ubc29\uc5d0 \uba58\uc158\uc774 \uc794\ub729 \uc300\uc600\ub2e4.",
+                    "\uc5c5\ubb34 \ub2e8\ud1a1\ubc29\uc5d0 \uba58\uc158\uc774 \uc794\ub729 \uc313\uc600\ub2e4.",
                     EventCategory.Work,
                     "\ubc14\ub85c \ud655\uc778\ud55c\ub2e4", 0, 0, 3, -2, 2, "\uc911\uc694\ud55c \uac83\ub9cc \ubcf8\ub2e4", 0, 0, 1, 0, 1, "\ub0b4\uc77c \ubcf8\ub2e4", 0, 0, -2, 2, -3),
                 Make(
@@ -278,7 +278,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\ud68c\uc2dd \uc81c\uc548",
                     "\ud300 \ud68c\uc2dd \uc81c\uc548\uc774 \ub4e4\uc5b4\uc654\ub2e4.",
                     EventCategory.Relationship,
-                    "\ucc38\uc11d\ud55c\ub2e4", -45000, 0, -3, 6, 4, "\ud55c\uc794\ub9cc \ud558\uace0 \ub098\uc628\ub2e4", -20000, 0, 2, 2, 1, "\uc815\uc911\ud788 \uac70\uc808\ud55c\ub2e4", 0, 0, -2, -4, -3),
+                    "\ucc38\uc11d\ud55c\ub2e4", -45000, 0, -3, 6, 4, "\ud55c \uc794\ub9cc \ud558\uace0 \ub098\uc628\ub2e4", -20000, 0, 2, 2, 1, "\uc815\uc911\ud788 \uac70\uc808\ud55c\ub2e4", 0, 0, -2, -4, -3),
                 Make(
                     "Event_WeekendPlan_001",
                     "event_weekend_plan_001",
@@ -316,7 +316,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\ucde8\uc900 \ub3d9\uae30 \ub9cc\ub0a8",
                     "\uac19\uc740 \uc2dc\ud5d8\uc744 \uc900\ube44\ud558\ub294 \uce5c\uad6c\ub97c \ub9cc\ub0ac\ub2e4.",
                     EventCategory.Relationship,
-                    "\uc815\ubcf4 \uad50\ud658\ud55c\ub2e4", -20000, 0, -2, 4, 0, "\uc9e7\uac8c \uc778\uc0ac\ub9cc", 0, 0, 0, 1, 0, "\uac70\uc808\ud55c\ub2e4", 0, 0, 1, -2, 0),
+                    "\uc815\ubcf4\ub97c \uad50\ud658\ud55c\ub2e4", -20000, 0, -2, 4, 0, "\uc9e7\uac8c \uc778\uc0ac\ub9cc", 0, 0, 0, 1, 0, "\uac70\uc808\ud55c\ub2e4", 0, 0, 1, -2, 0),
                 MakeJob(
                     "Event_CivilLibrary_001",
                     "job_civil_prep",
@@ -332,7 +332,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\ubaa8\uc758\uace0\uc0ac",
                     "\uc8fc\ub9d0 \ubaa8\uc758\uace0\uc0ac \uc77c\uc815\uc774 \uc7a1\ud614\ub2e4.",
                     EventCategory.Special,
-                    "\uc751\uc2dc\ud55c\ub2e4", -15000, -2, 6, 2, 0, "\uc9d1\uc5d0\uc11c \ud63c\uc790 \ud478\ub2e4", 0, -1, 3, 1, 0, "\uac74\ub108\ub6f0\ub2e4", 0, 1, -2, -3, 0),
+                    "\uc751\uc2dc\ud55c\ub2e4", -15000, -2, 6, 2, 0, "\uc9d1\uc5d0\uc11c \ud63c\uc790 \ud47c\ub2e4", 0, -1, 3, 1, 0, "\uac74\ub108\ub6f4\ub2e4", 0, 1, -2, -3, 0),
                 MakeJob(
                     "Event_CivilPartTime_001",
                     "job_civil_prep",
@@ -346,7 +346,7 @@ namespace SurviveUntilPayday.EditorTools
                     "job_civil_prep",
                     "event_civil_sleep_001",
                     "\uc218\uba74 \ubd80\ucc44",
-                    "\uba87 \uce60\uc9f8 \uc218\uba74\uc774 \ubd80\uc871\ud558\ub2e4.",
+                    "\uba87\uc77c\uc9f8 \uc218\uba74\uc774 \ubd80\uc871\ud558\ub2e4.",
                     EventCategory.Health,
                     "\uc624\ub298\uc740 \uc77c\ucc0d \uc794\ub2e4", 0, 6, -4, 2, 0, "\ucee4\ud53c\ub85c \ubc84\ud2f4\ub2e4", -4000, -3, 2, -1, 0, "\uc218\uba74\uc81c\ub85c \uc870\uc808\ud574\ubcf8\ub2e4", -8000, 3, -2, 0, 0),
                 MakeJob(
@@ -377,7 +377,7 @@ namespace SurviveUntilPayday.EditorTools
                     "job_freelancer",
                     "event_freelance_cowork_001",
                     "\uacf5\uc720\uc624\ud53c\uc2a4",
-                    "\uc9d1\uc911\uc774 \uc548 \ub3fc \uacf5\uc720\uc624\ud53c\uc2a4 \ub370\uc774\ud328\uc2a4\uac00 \ub208\uc5d0 \ub744\ub2e4.",
+                    "\uc9d1\uc911\uc774 \uc548 \ub3fc \uacf5\uc720\uc624\ud53c\uc2a4 \ub370\uc774\ud328\uc2a4\uac00 \ub208\uc5d0 \ub714\ub2e4.",
                     EventCategory.Consumption,
                     "\ud558\ub8e8 \uc774\uc6a9\ud55c\ub2e4", -25000, 0, -2, 3, 1, "\uce74\ud398\ub85c \uac04\ub2e4", -12000, 0, 1, 2, 0, "\uc9d1\uc5d0\uc11c \ubc84\ud2f4\ub2e4", 0, 0, 3, -2, 0),
                 MakeJob(
@@ -395,7 +395,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\uc2e0\uaddc \uc81c\uc548\uc11c",
                     "\uc7a0\uc7ac \uace0\uac1d\uc5d0\uac8c \uc81c\uc548\uc11c\ub97c \ubcf4\ub0bc \ud0c0\uc774\ubc0d\uc774\ub2e4.",
                     EventCategory.Work,
-                    "\uacf5\ub4e4\uc5ec \ubcf4\ub0b8\ub2e4", 0, -2, 4, 1, 3, "\ud15c\ud50c\ub9bf\uc73c\ub85c \ube60\ub974\uac8c", 0, 0, 2, 0, 1, "\ub2e4\uc74c\uc73c\ub85c \ubbf8\ub8e8\ub2e4", 0, 1, -1, -1, -2),
+                    "\uacf5\ub4e4\uc5ec \ubcf4\ub0b8\ub2e4", 0, -2, 4, 1, 3, "\ud15c\ud50c\ub9bf\uc73c\ub85c \ube60\ub974\uac8c", 0, 0, 2, 0, 1, "\ub2e4\uc74c\uc73c\ub85c \ubbf8\ub8ec\ub2e4", 0, 1, -1, -1, -2),
                 MakeJob(
                     "Event_FreelancePortfolio_001",
                     "job_freelancer",
@@ -427,7 +427,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\uc138\uae08 \uc2e0\uace0 \uc54c\ub9bc",
                     "\uc138\uae08 \uc2e0\uace0 \ub9c8\uac10\uc774 \ub2e4\uac00\uc628\ub2e4.",
                     EventCategory.Consumption,
-                    "\uc138\ubb34\uc0ac\uc5d0\uac8c \ub9e1\uae34\ub2e4", -150000, 0, -3, 2, 0, "\uc9c1\uc811 \ucc98\ub9ac\ud55c\ub2e4", 0, -2, 6, -2, 0, "\ubbf8\ub8e8\ub2e4", 0, 0, 3, -3, 0)
+                    "\uc138\ubb34\uc0ac\uc5d0\uac8c \ub9e1\uae34\ub2e4", -150000, 0, -3, 2, 0, "\uc9c1\uc811 \ucc98\ub9ac\ud55c\ub2e4", 0, -2, 6, -2, 0, "\ubbf8\ub8ec\ub2e4", 0, 0, 3, -3, 0)
             };
         }
 

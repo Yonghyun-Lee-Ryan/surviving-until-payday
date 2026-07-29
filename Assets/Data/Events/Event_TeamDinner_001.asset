@@ -56,7 +56,7 @@ MonoBehaviour:
       value: 4
     randomOutcomes: []
   - choiceId: event_team_dinner_001_b
-    text: "한잔만 하고 나온다"
+    text: "한 잔만 하고 나온다"
     fixedEffects:
     - statType: 0
       value: -20000

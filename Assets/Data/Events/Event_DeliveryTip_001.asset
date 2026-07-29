@@ -69,7 +69,7 @@ MonoBehaviour:
     setFlags: []
     clearFlags: []
   - choiceId: event_delivery_tip_001_c
-    text: "굵는다"
+    text: "굶는다"
     fixedEffects:
     - statType: 1
       value: -3

@@ -41,7 +41,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: choice_phone_rebreak_repair
-    text: "\uB610 \uC0AC\uC124 \uC218\uB9AC\uC810\uC5D0 \uACE0\uCE5C\uB2E4"
+    text: "\uB610 \uC0AC\uC124 \uC218\uB9AC\uC810\uC5D0\uC11C \uACE0\uCE5C\uB2E4"
     fixedEffects:
     - statType: 0
       value: -110000

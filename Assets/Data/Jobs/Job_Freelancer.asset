@@ -15,7 +15,7 @@ MonoBehaviour:
   id: job_freelancer
   displayName: "\uD504\uB9AC\uB79C\uC11C"
   description: "\uC218\uC785 \uBCC0\uB3D9\uC774 \uD070 \uC790\uC720\uB85C\uC6B4 \uC77C.
-    \uD504\uB85C\uC81D\uD2B8\uC640 \uACE0\uAC1D \uAD00\uB9AC\uAC00 \uC0B6\uC744 \uC88B\uC74C."
+    \uD504\uB85C\uC81D\uD2B8\uC640 \uACE0\uAC1D \uAD00\uB9AC\uAC00 \uC0B6\uC744 \uC88C\uC6B0\uD568."
   unlockLevel: 3
   salary: 2200000
   startingCash: 2400000

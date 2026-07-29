@@ -44,7 +44,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_civil_friend_001_a
-    text: "정보 교환한다"
+    text: "정보를 교환한다"
     fixedEffects:
     - statType: 0
       value: -20000

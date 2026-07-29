@@ -124,7 +124,7 @@ namespace SurviveUntilPayday.EditorTools
                 "Trait_Thrifty.asset",
                 "trait_thrifty",
                 "짠돌이",
-                "생활비 현금 감소를 5%완화하고, 행복 획득은 줄어든다. 시작 현금 보너스.",
+                "생활비 현금 감소를 5% 완화하고, 행복 획득은 줄어든다. 시작 현금 보너스.",
                 0);
             SetStartingModifiers(
                 trait,
@@ -168,7 +168,7 @@ namespace SurviveUntilPayday.EditorTools
             var trait = CreateTrait(
                 "Trait_OvertimePro.asset",
                 "trait_overtime_pro",
-                "야근전문가",
+                "야근 전문가",
                 "야근(WORK)에서 스트레스 증가가 줄고, 시작 스트레스가 낮고 회사 평가가 높다.",
                 4);
             SetStartingModifiers(

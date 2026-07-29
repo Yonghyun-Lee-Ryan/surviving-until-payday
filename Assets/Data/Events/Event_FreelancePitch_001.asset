@@ -64,7 +64,7 @@ MonoBehaviour:
       value: 1
     randomOutcomes: []
   - choiceId: event_freelance_pitch_001_c
-    text: "다음으로 미루다"
+    text: "다음으로 미룬다"
     fixedEffects:
     - statType: 1
       value: 1

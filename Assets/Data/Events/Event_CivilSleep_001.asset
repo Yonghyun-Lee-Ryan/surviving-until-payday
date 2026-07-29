@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_civil_sleep_001
   title: "수면 부채"
-  description: "몇 칠째 수면이 부족하다."
+  description: "며칠째 수면이 부족하다."
   category: 2
   minDay: 1
   maxDay: 30

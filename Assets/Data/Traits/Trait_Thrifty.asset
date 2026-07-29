@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.TraitData
   id: trait_thrifty
   displayName: "\uC9E0\uB3CC\uC774"
-  description: "\uC0DD\uD65C\uBE44 \uC6D0\uAE08 \uAC10\uC18C\uB97C 5%\uC644\uD654\uD558\uACE0,
+  description: "\uC0DD\uD65C\uBE44 \uC6D0\uAE08 \uAC10\uC18C\uB97C 5% \uC644\uD654\uD558\uACE0,
     \uD589\uBCF5 \uD68D\uB4DD\uC740 \uC904\uC5B4\uB4E0\uB2E4. \uC2DC\uC791 \uD604\uAE08
     \uBCF4\uB108\uC2A4."
   unlockLevel: 0

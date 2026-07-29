@@ -62,7 +62,7 @@ MonoBehaviour:
       value: 1
     randomOutcomes: []
   - choiceId: event_civil_study_plan_001_c
-    text: "하루 쉮다"
+    text: "하루 쉰다"
     fixedEffects:
     - statType: 1
       value: 3

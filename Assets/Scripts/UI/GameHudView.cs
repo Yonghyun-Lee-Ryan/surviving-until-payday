@@ -43,12 +43,6 @@ namespace SurviveUntilPayday.UI
             }
         }
 
-        private void OnEnable()
-        {
-            // 다른 패널에 가려지지 않도록 HUD를 앞으로
-            transform.SetAsLastSibling();
-        }
-
         public void SetCrisis(bool active, string message)
         {
             if (crisisBanner != null)
@@ -198,7 +192,6 @@ namespace SurviveUntilPayday.UI
                 cashLabel = cash;
             }
 
-            transform.SetAsLastSibling();
             dayLabel?.transform.SetAsLastSibling();
             cashLabel?.transform.SetAsLastSibling();
         }
