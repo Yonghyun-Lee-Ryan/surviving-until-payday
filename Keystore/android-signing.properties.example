@@ -1,0 +1,7 @@
+# Keystore/android-signing.properties 로 복사한 뒤 비밀번호를 설정하세요.
+# Unity: Tools → Surviving Until Payday → Setup Android Release Signing
+
+keyAlias=release
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+distinguishedName=CN=Survive Until Payday, OU=Mobile, O=SurviveUntilPayday, L=Seoul, ST=Seoul, C=KR

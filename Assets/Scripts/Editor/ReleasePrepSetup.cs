@@ -35,9 +35,10 @@ namespace SurviveUntilPayday.EditorTools
             Debug.Log(
                 "[ReleasePrepSetup] Unit 15 ready.\n" +
                 "1) PrivacyPolicyConfig URL을 실제 방침 주소로 바꾸세요.\n" +
-                "2) Project Settings > Player > Android에서 아이콘(Adaptive Icon)을 지정하세요.\n" +
-                "3) File > Build Settings > Android > Build App Bundle을 켠 뒤 AAB를 빌드하세요.\n" +
-                "4) Play Console 내부 테스트 트랙에 업로드하세요.");
+                "2) Tools → Setup Android Release Signing 으로 Release Keystore를 연결하세요.\n" +
+                "3) Project Settings > Player > Android에서 아이콘(Adaptive Icon)을 지정하세요.\n" +
+                "4) Build Settings: Development Build OFF → Build App Bundle\n" +
+                "5) Play Console 내부 테스트 트랙에 업로드하세요.");
         }
 
         [MenuItem("Tools/Surviving Until Payday/Apply Android AAB PlayerSettings (Unit 15)")]
@@ -51,17 +52,43 @@ namespace SurviveUntilPayday.EditorTools
                 PlayerSettings.bundleVersion = "0.1.0";
             }
 
-            PlayerSettings.Android.bundleVersionCode = Mathf.Max(1, PlayerSettings.Android.bundleVersionCode);
+            var previousCode = Mathf.Max(0, PlayerSettings.Android.bundleVersionCode);
+            var nextCode = previousCode + 1;
+            PlayerSettings.Android.bundleVersionCode = nextCode;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, AndroidApplicationId);
             EditorUserBuildSettings.buildAppBundle = true;
+            EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.Android;
+
             // Unity 6 최소 지원 API 26 (Android 8.0)
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
+            PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
+            PlayerSettings.Android.appCategory = "game";
+            PlayerSettings.Android.fullscreenMode = FullScreenMode.FullScreenWindow;
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            PlayerSettings.allowedAutorotateToPortrait = true;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = false;
+            PlayerSettings.allowedAutorotateToLandscapeRight = false;
+            PlayerSettings.muteOtherAudioSources = true;
+
             var appId = PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.Android);
             Debug.Log(
                 $"[ReleasePrepSetup] Android AAB settings applied. " +
-                $"version={PlayerSettings.bundleVersion}, code={PlayerSettings.Android.bundleVersionCode}, " +
-                $"id={appId}, minSdk=26");
+                $"version={PlayerSettings.bundleVersion}, code={previousCode}→{nextCode}, " +
+                $"id={appId}, minSdk=26, backend=IL2CPP, arch=ARM64, aab={EditorUserBuildSettings.buildAppBundle}");
+        }
+
+        /// <summary>
+        /// Play Console 업로드용으로 Android versionCode를 1 올린다.
+        /// </summary>
+        public static int BumpAndroidBundleVersionCode()
+        {
+            var previous = Mathf.Max(0, PlayerSettings.Android.bundleVersionCode);
+            var next = previous + 1;
+            PlayerSettings.Android.bundleVersionCode = next;
+            return next;
         }
 
         private static PrivacyPolicyConfig EnsurePrivacyConfig()
