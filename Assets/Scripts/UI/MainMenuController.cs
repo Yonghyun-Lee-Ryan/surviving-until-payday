@@ -16,12 +16,10 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private Button continueButton;
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button dailyButton;
-        [SerializeField] private Button shopButton;
         [SerializeField] private CodexPanelView codexPanel;
         [SerializeField] private SettingsPanelView settingsPanel;
         [SerializeField] private RunStartPanelView runStartPanel;
         [SerializeField] private DailyPanelView dailyPanel;
-        [SerializeField] private ShopPanelView shopPanel;
         [SerializeField] private TutorialOverlayView tutorialOverlay;
         [SerializeField] private JobData defaultJob;
         [SerializeField] private List<JobData> jobCatalog = new List<JobData>();
@@ -63,12 +61,7 @@ namespace SurviveUntilPayday.UI
                 dailyButton.onClick.AddListener(OnDailyClicked);
             }
 
-            EnsureShopEntryPoints();
-            if (shopButton != null)
-            {
-                shopButton.onClick.AddListener(OnShopClicked);
-            }
-
+            DisableLegacyShopUi();
             ApplyMainMenuChromeLayout();
         }
 
@@ -109,11 +102,6 @@ namespace SurviveUntilPayday.UI
                 dailyButton.onClick.RemoveListener(OnDailyClicked);
             }
 
-            if (shopButton != null)
-            {
-                shopButton.onClick.RemoveListener(OnShopClicked);
-            }
-
             if (subscribedMeta != null)
             {
                 subscribedMeta.UnlockNotified -= OnUnlockNotified;
@@ -139,12 +127,6 @@ namespace SurviveUntilPayday.UI
             dailyButton = daily;
             dailyPanel = panel;
             dailyMissionPool = missions ?? new List<DailyMissionData>();
-        }
-
-        public void BindShop(Button shop, ShopPanelView panel)
-        {
-            shopButton = shop;
-            shopPanel = panel;
         }
 
         public void BindRunStart(RunStartPanelView panel, JobData job, List<TraitData> traits)
@@ -258,7 +240,7 @@ namespace SurviveUntilPayday.UI
                 var label = continueButton.GetComponentInChildren<Text>();
                 if (label != null)
                 {
-                    label.text = hasRun ? "이어하기" : "이어할 회차 없음";
+                    label.text = hasRun ? "이어하기" : "이어갈 회차 없음";
                     UiFont.Apply(label, bold: true);
                 }
 
@@ -614,21 +596,6 @@ namespace SurviveUntilPayday.UI
             dailyPanel.Toggle(daily, StartDailyChallenge);
         }
 
-        private void OnShopClicked()
-        {
-            AppRoot.EnsureCreated().Audio?.PlaySfx(SfxId.Click);
-            EnsureShopEntryPoints();
-            if (shopPanel == null)
-            {
-                Debug.LogWarning("[MainMenuController] Shop panel unavailable.");
-                return;
-            }
-
-            EnsureDefaultCatalog();
-            shopPanel.SetTraitCatalog(traitCatalog);
-            shopPanel.Toggle();
-        }
-
         private void RefreshDailyContent()
         {
             var appRoot = AppRoot.EnsureCreated();
@@ -745,54 +712,31 @@ namespace SurviveUntilPayday.UI
             }
         }
 
-        private void EnsureShopEntryPoints()
+        /// <summary>
+        /// 레거시 상점 버튼/패널이 씬에 남아 있으면 숨긴다.
+        /// </summary>
+        private void DisableLegacyShopUi()
         {
-            if (shopButton == null)
+            void Hide(Transform t)
             {
-                shopButton = transform.Find("ShopButton")?.GetComponent<Button>();
+                if (t != null)
+                {
+                    t.gameObject.SetActive(false);
+                }
             }
 
-            if (shopButton == null && startGameButton != null)
+            Hide(transform.Find("ShopButton"));
+            Hide(transform.Find("ShopPanel"));
+            if (startGameButton != null && startGameButton.transform.parent != null)
             {
-                var parent = startGameButton.transform.parent;
-                shopButton = parent != null
-                    ? parent.Find("ShopButton")?.GetComponent<Button>()
-                    : null;
+                Hide(startGameButton.transform.parent.Find("ShopButton"));
             }
 
-            if (shopButton == null && startGameButton != null)
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas != null)
             {
-                shopButton = CreateMenuButton(
-                    "ShopButton",
-                    "상점",
-                    startGameButton.transform.parent,
-                    startGameButton.transform as RectTransform,
-                    yOffset: 0f);
-            }
-
-            RelayoutPrimaryMenuButtons();
-
-            if (shopPanel == null)
-            {
-                shopPanel = FindAnyObjectByType<ShopPanelView>(FindObjectsInactive.Include);
-            }
-
-            if (shopPanel == null)
-            {
-                var canvas = GetComponentInParent<Canvas>();
-                var parent = canvas != null ? canvas.transform : transform;
-                var go = new GameObject(
-                    "ShopPanel",
-                    typeof(RectTransform),
-                    typeof(Image),
-                    typeof(ShopPanelView));
-                go.transform.SetParent(parent, false);
-                var rect = go.GetComponent<RectTransform>();
-                rect.anchorMin = Vector2.zero;
-                rect.anchorMax = Vector2.one;
-                rect.offsetMin = Vector2.zero;
-                rect.offsetMax = Vector2.zero;
-                shopPanel = go.GetComponent<ShopPanelView>();
+                Hide(canvas.transform.Find("ShopPanel"));
+                Hide(canvas.transform.Find("ShopButton"));
             }
         }
 
@@ -843,13 +787,12 @@ namespace SurviveUntilPayday.UI
         }
 
         /// <summary>
-        /// 새 게임 → 오늘의 직장인 → 상점 → 이어하기를 도감 패널 위 여백에 세로 배치한다.
+        /// 새 게임 → 오늘의 직장인 → 이어하기를 도감 패널 위 여백에 세로 배치한다.
         /// </summary>
         private void RelayoutPrimaryMenuButtons()
         {
             var startRect = startGameButton != null ? startGameButton.transform as RectTransform : null;
             var dailyRect = dailyButton != null ? dailyButton.transform as RectTransform : null;
-            var shopRect = shopButton != null ? shopButton.transform as RectTransform : null;
             var continueRect = continueButton != null ? continueButton.transform as RectTransform : null;
             if (startRect == null)
             {
@@ -879,13 +822,10 @@ namespace SurviveUntilPayday.UI
             row++;
             Place(dailyRect, startY - row * (height + gap));
             row++;
-            Place(shopRect, startY - row * (height + gap));
-            row++;
             Place(continueRect, startY - row * (height + gap));
 
             startRect.SetAsLastSibling();
             dailyRect?.SetAsLastSibling();
-            shopRect?.SetAsLastSibling();
             continueRect?.SetAsLastSibling();
         }
 

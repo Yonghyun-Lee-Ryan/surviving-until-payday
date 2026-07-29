@@ -63,7 +63,7 @@ namespace SurviveUntilPayday.Save
         // Unit 26 — 첫 실행 튜토리얼
         public bool firstRunTutorialCompleted;
 
-        // Unit 28 — 광고 제거 · 무료 상점 캘린더 쿼터
+        // 레거시: 광고 제거·상점 쿼터(상점 제거 후에도 세이브 호환용으로 유지)
         public bool hasNoAds;
         public string shopTraitAdDateKey = string.Empty;
         public int shopTraitAdUsesToday;

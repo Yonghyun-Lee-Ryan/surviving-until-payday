@@ -203,11 +203,11 @@ namespace SurviveUntilPayday.Tests
             var gateway = new RewardedAdGateway(mock, quota);
 
             AdRewardRequestResult? result = null;
-            gateway.Request(RewardedAdPlacement.TraitFragment, r => result = r);
+            gateway.Request(RewardedAdPlacement.ChoiceReroll, r => result = r);
 
             Assert.AreEqual(AdShowStatus.NotReady, result.Value.ShowResult.Status);
             Assert.IsFalse(result.Value.RewardGranted);
-            Assert.AreEqual(3, quota.GetRemaining(RewardedAdPlacement.TraitFragment));
+            Assert.AreEqual(2, quota.GetRemaining(RewardedAdPlacement.ChoiceReroll));
             Assert.AreEqual(0, mock.RewardedShowCount);
         }
 

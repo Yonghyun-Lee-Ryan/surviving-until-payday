@@ -44,16 +44,13 @@ namespace SurviveUntilPayday.Core
 
         public int TotalExperience { get; private set; }
 
-        /// <summary>업적·광고 등으로 쌓인 특성 조각.</summary>
+        /// <summary>업적·일일 미션 등으로 쌓인 특성 조각(표시·메타용).</summary>
         public int TraitFragmentCount { get; private set; }
-
-        /// <summary>레벨 미달 특성을 조각으로 조기 해금할 때 기본 비용.</summary>
-        public const int TraitUnlockFragmentCost = 3;
 
         /// <summary>Unit 26: 첫 실행 튜토리얼 완료/스킵 여부.</summary>
         public bool FirstRunTutorialCompleted { get; private set; }
 
-        /// <summary>Unit 28: 전면 광고 제거 소유(로컬).</summary>
+        /// <summary>전면 광고 제거 소유(레거시 세이브 호환). 상점 제거 후 신규 구매 경로는 없음.</summary>
         public bool HasNoAds { get; private set; }
 
         public int Level => PlayerLevel.GetLevel(TotalExperience);
@@ -103,48 +100,6 @@ namespace SurviveUntilPayday.Core
             }
 
             TraitFragmentCount += amount;
-        }
-
-        /// <summary>
-        /// 레벨 미달 특성을 조각으로 조기 해금한다. 이미 해금됐거나 조각이 부족하면 false.
-        /// </summary>
-        public bool TryUnlockTraitWithFragments(TraitData trait, out string failReason, int cost = TraitUnlockFragmentCost)
-        {
-            if (trait == null || string.IsNullOrWhiteSpace(trait.Id))
-            {
-                failReason = "특성이 없습니다.";
-                return false;
-            }
-
-            if (cost < 1)
-            {
-                failReason = "비용이 올바르지 않습니다.";
-                return false;
-            }
-
-            if (IsTraitUnlocked(trait))
-            {
-                failReason = "이미 해금된 특성입니다.";
-                return false;
-            }
-
-            if (TraitFragmentCount < cost)
-            {
-                failReason = $"특성 조각이 부족합니다. ({TraitFragmentCount}/{cost})";
-                return false;
-            }
-
-            TraitFragmentCount -= cost;
-            if (Traits.TryUnlock(trait.Id))
-            {
-                RaiseUnlock(
-                    "trait",
-                    trait.Id,
-                    string.IsNullOrWhiteSpace(trait.DisplayName) ? trait.Id : trait.DisplayName);
-            }
-
-            failReason = null;
-            return true;
         }
 
         public bool DiscoverEvent(string eventId, string displayName = null)

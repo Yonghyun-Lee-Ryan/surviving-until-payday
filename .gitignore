@@ -85,3 +85,7 @@ Desktop.ini
 *.env
 *.env.*
 !.env.example
+
+# Android release signing (keystore·비밀번호는 저장소에 올리지 않음)
+/Keystore/*.keystore
+/Keystore/android-signing.properties

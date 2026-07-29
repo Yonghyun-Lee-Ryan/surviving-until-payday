@@ -18,9 +18,6 @@ namespace SurviveUntilPayday.Ads
         DailySideJob = 3,
 
         /// <summary>회차 종료 인생 경험치 2배. 회차당 1회.</summary>
-        DoubleExperience = 4,
-
-        /// <summary>무료 상점 특성 조각. 하루 3회.</summary>
-        TraitFragment = 5
+        DoubleExperience = 4
     }
 }

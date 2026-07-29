@@ -10,7 +10,6 @@ namespace SurviveUntilPayday.Ads
         public bool DoubleExperience { get; }
         public bool ChoiceReroll { get; }
         public bool RetryOutcome { get; }
-        public int TraitFragments { get; }
         public string Description { get; }
 
         public AdRewardGrant(
@@ -19,7 +18,6 @@ namespace SurviveUntilPayday.Ads
             bool doubleExperience = false,
             bool choiceReroll = false,
             bool retryOutcome = false,
-            int traitFragments = 0,
             string description = null)
         {
             Placement = placement;
@@ -27,7 +25,6 @@ namespace SurviveUntilPayday.Ads
             DoubleExperience = doubleExperience;
             ChoiceReroll = choiceReroll;
             RetryOutcome = retryOutcome;
-            TraitFragments = traitFragments;
             Description = description ?? string.Empty;
         }
 
@@ -60,11 +57,6 @@ namespace SurviveUntilPayday.Ads
                         placement,
                         doubleExperience: true,
                         description: "인생 경험치 2배");
-                case RewardedAdPlacement.TraitFragment:
-                    return new AdRewardGrant(
-                        placement,
-                        traitFragments: 1,
-                        description: "특성 조각 1개");
                 default:
                     return new AdRewardGrant(placement, description: "unknown");
             }

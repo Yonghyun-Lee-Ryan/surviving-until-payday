@@ -1,7 +1,6 @@
 using SurviveUntilPayday.Ads;
 using SurviveUntilPayday.Analytics;
 using SurviveUntilPayday.Audio;
-using SurviveUntilPayday.Purchasing;
 using SurviveUntilPayday.Save;
 using SurviveUntilPayday.Services;
 using SurviveUntilPayday.Settings;
@@ -49,8 +48,6 @@ namespace SurviveUntilPayday.Core
         public IAudioService Audio { get; private set; }
 
         public IAdsConsentService AdsConsent { get; private set; }
-
-        public IPurchaseService Purchases { get; private set; }
 
         public PrivacyPolicyConfig PrivacyPolicy => privacyPolicyConfig;
 
@@ -217,11 +214,6 @@ namespace SurviveUntilPayday.Core
                 InterstitialAds = new InterstitialAdGateway(AdService, AdQuota, everyN);
             }
 
-            if (Purchases == null)
-            {
-                Purchases = new MockPurchaseService();
-            }
-
             RemoteConfig.FetchAndActivate(ok =>
             {
                 SdkComposition.ApplyRemoteConfigToAds(RemoteConfig, InterstitialAds);
@@ -237,21 +229,13 @@ namespace SurviveUntilPayday.Core
         }
 
         /// <summary>
-        /// NoAds·무료 상점 쿼터를 게이트웨이/쿼터에 반영한다.
+        /// 레거시 NoAds 플래그를 전면 광고 게이트에 반영한다.
         /// </summary>
         public void ApplyMonetizationFromMeta(MetaSaveData meta)
         {
             meta ??= new MetaSaveData();
             var hasNoAds = Session?.Meta != null ? Session.Meta.HasNoAds : meta.hasNoAds;
             InterstitialAds?.SetRemoveInterstitials(hasNoAds);
-
-            if (Purchases is MockPurchaseService mock && hasNoAds)
-            {
-                mock.SetOwned(PurchaseProductIds.RemoveInterstitial, true);
-            }
-
-            var today = DailyChallenge.LocalDateKey();
-            AdQuota?.SyncTraitFragmentCalendar(today, meta.shopTraitAdDateKey, meta.shopTraitAdUsesToday);
         }
 
         public void PersistSession(bool includeActiveRun, RunSaveData runOverride = null)
@@ -263,7 +247,6 @@ namespace SurviveUntilPayday.Core
 
             var save = Session.CachedSave ?? SaveRepository.CreateDefault();
             save.meta = SaveMapper.CaptureMeta(Session.Meta);
-            WriteShopQuotaToMeta(save.meta);
 
             if (includeActiveRun && runOverride != null)
             {
@@ -287,45 +270,8 @@ namespace SurviveUntilPayday.Core
 
             var save = Session.CachedSave ?? SaveRepository.CreateDefault();
             save.meta = SaveMapper.CaptureMeta(Session.Meta);
-            WriteShopQuotaToMeta(save.meta);
             SaveRepository.ClearRunAndSave(save);
             Session.CachedSave = save;
-        }
-
-        private void WriteShopQuotaToMeta(MetaSaveData meta)
-        {
-            if (meta == null || AdQuota == null)
-            {
-                return;
-            }
-
-            meta.shopTraitAdDateKey = AdQuota.TraitFragmentDateKey ?? string.Empty;
-            meta.shopTraitAdUsesToday = AdQuota.TraitFragmentUsedToday;
-        }
-
-        /// <summary>
-        /// Mock/실구매로 전면 광고 제거를 소유 처리하고 저장한다.
-        /// </summary>
-        public void PurchaseRemoveInterstitial(System.Action<PurchaseResult> onFinished)
-        {
-            if (Purchases == null)
-            {
-                onFinished?.Invoke(PurchaseResult.Fail(PurchaseProductIds.RemoveInterstitial, "purchase service missing"));
-                return;
-            }
-
-            Purchases.Purchase(PurchaseProductIds.RemoveInterstitial, result =>
-            {
-                if (result.IsSuccess)
-                {
-                    Session?.Meta?.SetHasNoAds(true);
-                    InterstitialAds?.SetRemoveInterstitials(true);
-                    PersistSession(includeActiveRun: Session != null && Session.HasActiveRun,
-                        runOverride: Session?.CachedSave?.run);
-                }
-
-                onFinished?.Invoke(result);
-            });
         }
 
         private void OnApplicationPause(bool pauseStatus)
@@ -405,12 +351,7 @@ namespace SurviveUntilPayday.Core
             Session.ApplyLoadedSave(SaveRepository.CreateDefault());
             Settings?.ResetToDefaultsKeepingConsent(keepConsent: true);
             AdQuota?.BeginRun();
-            AdQuota?.SyncTraitFragmentCalendar(DailyChallenge.LocalDateKey(), string.Empty, 0);
             InterstitialAds?.SetRemoveInterstitials(false);
-            if (Purchases is MockPurchaseService mockPurchases)
-            {
-                mockPurchases.SetOwned(PurchaseProductIds.RemoveInterstitial, false);
-            }
 
             PersistSession(includeActiveRun: false);
             Debug.Log("[AppRoot] All save data reset.");
