@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_CoworkerLunch_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_coworker_lunch_001
+  title: "\uB3D9\uB8CC \uC810\uC2EC \uC81C\uC548"
+  description: "\uAC19\uC740 \uD300 \uD6C4\uBC30\uAC00 \uC624\uB298\uC740 \uD3B8\uC758\uC810
+    \uB9D0\uACE0 \uBC25\uC744 \uBA39\uC790\uACE0 \uD55C\uB2E4."
+  category: 4
+  minDay: 1
+  maxDay: 30
+  weight: 28
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags:
+    - closeWithCoworker
+  choices:
+  - choiceId: event_coworker_lunch_001_a
+    text: "\uAC19\uC774 \uAC04\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -18000
+    - statType: 2
+      value: -3
+    - statType: 3
+      value: 6
+    - statType: 4
+      value: 1
+    randomOutcomes: []
+    setFlags:
+    - closeWithCoworker
+    clearFlags: []
+  - choiceId: event_coworker_lunch_001_b
+    text: "\uAE40\uBC25\uC73C\uB85C \uD0C0\uD611\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -6000
+    - statType: 2
+      value: -1
+    - statType: 3
+      value: 2
+    randomOutcomes: []
+    setFlags:
+    - closeWithCoworker
+    clearFlags: []
+  - choiceId: event_coworker_lunch_001_c
+    text: "\uC624\uB298\uC740 \uD63C\uC790 \uBA39\uB294\uB2E4"
+    fixedEffects:
+    - statType: 2
+      value: 1
+    - statType: 3
+      value: -3
+    - statType: 4
+      value: -1
+    randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 1
+  backgroundId: 3
+  overrideExpression: 0
+  expressionId: 0

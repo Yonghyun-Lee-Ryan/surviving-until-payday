@@ -56,11 +56,13 @@ namespace SurviveUntilPayday.EditorTools
             var codex = panel.GetComponent<CodexPanelView>();
             var endings = LoadEndings();
             var events = LoadEvents();
+            var traits = LoadTraits();
             var so = new SerializedObject(controller);
             so.FindProperty("codexPanel").objectReferenceValue = codex;
             so.FindProperty("totalEndingCount").intValue = Mathf.Max(12, endings.Count);
             so.FindProperty("totalEventCount").intValue = Mathf.Max(55, CountPlayableEvents(events));
-            so.FindProperty("totalTraitCount").intValue = 4;
+            so.FindProperty("totalTraitCount").intValue = Mathf.Max(4, traits.Count);
+            so.FindProperty("totalJobCount").intValue = Mathf.Max(3, LoadJobs().Count);
             so.FindProperty("totalAchievementCount").intValue = AchievementIds.CatalogCount;
             WireList(so.FindProperty("endingCatalog"), endings);
             WireList(so.FindProperty("eventCatalog"), events);
@@ -132,6 +134,33 @@ namespace SurviveUntilPayday.EditorTools
             }
 
             list.Sort((a, b) => string.CompareOrdinal(a.Id, b.Id));
+            return list;
+        }
+
+        private static System.Collections.Generic.List<TraitData> LoadTraits()
+        {
+            return LoadByType<TraitData>("Assets/Data/Traits");
+        }
+
+        private static System.Collections.Generic.List<JobData> LoadJobs()
+        {
+            return LoadByType<JobData>("Assets/Data/Jobs");
+        }
+
+        private static System.Collections.Generic.List<T> LoadByType<T>(string folder) where T : ScriptableObject
+        {
+            var list = new System.Collections.Generic.List<T>();
+            var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}", new[] { folder });
+            foreach (var guid in guids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+                if (asset != null)
+                {
+                    list.Add(asset);
+                }
+            }
+
             return list;
         }
     }

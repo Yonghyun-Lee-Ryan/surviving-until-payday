@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1b0d7ea4cb61f84ea99a3c83b8dcc5f, type: 3}
+  m_Name: Trait_NightOwl
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.TraitData
+  id: trait_night_owl
+  displayName: "\uC62C\uBE7C\uBBF8"
+  description: "\uC57C\uADFC \uC2A4\uD2B8\uB808\uC2A4\uAC00 \uC904\uC9C0\uB9CC \uC2DC\uC791
+    \uC2A4\uD2B8\uB808\uC2A4\uAC00 \uB192\uB2E4."
+  unlockLevel: 5
+  startingStatModifiers:
+  - statType: 2
+    value: 8
+  cashLossMultiplier: 1
+  happinessGainMultiplier: 1
+  workStressGainMultiplier: 0.85

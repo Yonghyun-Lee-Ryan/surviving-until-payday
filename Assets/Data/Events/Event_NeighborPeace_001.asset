@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_NeighborPeace_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_neighbor_peace_001
+  title: "\uC774\uC6C3 \uD654\uD574 \uC2DC\uB3C4"
+  description: "\uC18C\uC74C \uAC08\uB4F1\uC774 \uC77C\uC8FC\uC77C\uC9F8\uB2E4. \uD654\uD574\uD560\uC9C0,
+    \uACC4\uC18D \uBC84\uD2F8\uC9C0."
+  category: 4
+  minDay: 1
+  maxDay: 30
+  weight: 86
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: 
+    dayOfWeekConstraint: 0
+    requiredFlags:
+    - neighborFeud
+    forbiddenFlags: []
+  choices:
+  - choiceId: event_neighbor_peace_001_a
+    text: "\uAC04\uC2DD\uC744 \uB193\uACE0 \uC628\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -20000
+    - statType: 2
+      value: -8
+    - statType: 3
+      value: 3
+    randomOutcomes: []
+    setFlags: []
+    clearFlags:
+    - neighborFeud
+  - choiceId: event_neighbor_peace_001_b
+    text: "\uC2DC\uAC04\uC744 \uD569\uC758\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 2
+      value: -4
+    - statType: 3
+      value: 1
+    randomOutcomes: []
+    setFlags: []
+    clearFlags:
+    - neighborFeud
+  - choiceId: event_neighbor_peace_001_c
+    text: "\uACC4\uC18D \uCC38\uB294\uB2E4"
+    fixedEffects:
+    - statType: 1
+      value: -1
+    - statType: 2
+      value: 5
+    - statType: 3
+      value: -3
+    randomOutcomes: []
+    setFlags: []
+    clearFlags:
+    - neighborFeud
+  overrideBackground: 1
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

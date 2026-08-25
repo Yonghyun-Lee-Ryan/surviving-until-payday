@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c72ba2de8eaa243b13f7388bd0974a, type: 3}
+  m_Name: Event_CorpWorkshop_001
+  m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
+  id: event_corp_workshop_001
+  title: "\uAC15\uC81C \uD300 \uC6CC\uD06C\uC20D"
+  description: "\uC8FC\uB9D0 \uC6CC\uD06C\uC20D \uACF5\uC9C0\uAC00 \uB5B4\uB2E4.
+    \uBD88\uCC38\uC740 \uD3C9\uAC00\uC5D0 \uCC0D\uD78C\uB2E4\uB294 \uB9D0\uC774 \uB3C8\uB2E4."
+  category: 1
+  minDay: 1
+  maxDay: 30
+  weight: 72
+  isFixedEvent: 0
+  fixedDay: 0
+  conditions:
+    minHealth: 0
+    maxHealth: 100
+    minStress: 0
+    maxStress: 100
+    minHappiness: 0
+    maxHappiness: 100
+    minCompanyScore: 0
+    maxCompanyScore: 100
+    useMinCash: 0
+    minCash: 0
+    useMaxCash: 0
+    maxCash: 0
+    requiredJobId: job_corp_associate
+    dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
+  choices:
+  - choiceId: event_corp_workshop_001_a
+    text: "\uB05D\uAE4C\uC9C0 \uCC38\uC11D\uD55C\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -40000
+    - statType: 1
+      value: -4
+    - statType: 2
+      value: 6
+    - statType: 3
+      value: -2
+    - statType: 4
+      value: 6
+    randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  - choiceId: event_corp_workshop_001_b
+    text: "\uBC18\uB098\uC808\uB9CC \uC5BC\uAD74 \uBE44\uCD98\uB2E4"
+    fixedEffects:
+    - statType: 0
+      value: -18000
+    - statType: 1
+      value: -1
+    - statType: 2
+      value: 2
+    - statType: 4
+      value: 2
+    randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  - choiceId: event_corp_workshop_001_c
+    text: "\uD551\uACC4\uB97C \uB304\uB2E4"
+    fixedEffects:
+    - statType: 2
+      value: -3
+    - statType: 3
+      value: 2
+    - statType: 4
+      value: -8
+    randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 1
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

@@ -124,37 +124,29 @@ namespace SurviveUntilPayday.EditorTools
                 selected,
                 scroll);
 
-            var job = AssetDatabase.LoadAssetAtPath<JobData>("Assets/Data/Jobs/Job_JuniorOffice.asset");
-            var civil = AssetDatabase.LoadAssetAtPath<JobData>("Assets/Data/Jobs/Job_CivilPrep.asset");
-            var freelancer = AssetDatabase.LoadAssetAtPath<JobData>("Assets/Data/Jobs/Job_Freelancer.asset");
-            var jobs = new List<JobData>();
-            if (job != null)
-            {
-                jobs.Add(job);
-            }
+            var jobs = LoadAll<JobData>("Assets/Data/Jobs");
+            var traits = LoadAll<TraitData>("Assets/Data/Traits");
+            jobs.RemoveAll(j => j == null);
+            traits.RemoveAll(t => t == null);
+            jobs.Sort((a, b) => string.CompareOrdinal(a.Id, b.Id));
+            traits.Sort((a, b) => string.CompareOrdinal(a.Id, b.Id));
 
-            if (civil != null)
+            var job = jobs.Count > 0 ? jobs[0] : null;
+            for (var i = 0; i < jobs.Count; i++)
             {
-                jobs.Add(civil);
+                if (jobs[i] != null && jobs[i].Id == "job_junior_office")
+                {
+                    job = jobs[i];
+                    break;
+                }
             }
-
-            if (freelancer != null)
-            {
-                jobs.Add(freelancer);
-            }
-
-            var traits = new List<TraitData>
-            {
-                AssetDatabase.LoadAssetAtPath<TraitData>("Assets/Data/Traits/Trait_Thrifty.asset"),
-                AssetDatabase.LoadAssetAtPath<TraitData>("Assets/Data/Traits/Trait_Healthy.asset"),
-                AssetDatabase.LoadAssetAtPath<TraitData>("Assets/Data/Traits/Trait_Positive.asset"),
-                AssetDatabase.LoadAssetAtPath<TraitData>("Assets/Data/Traits/Trait_OvertimePro.asset")
-            };
 
             var so = new SerializedObject(controller);
             so.FindProperty("runStartPanel").objectReferenceValue = view;
             so.FindProperty("defaultJob").objectReferenceValue = job;
-            so.FindProperty("totalEventCount").intValue = 40;
+            so.FindProperty("totalEventCount").intValue = Mathf.Max(40, CountPlayableEvents());
+            so.FindProperty("totalJobCount").intValue = jobs.Count;
+            so.FindProperty("totalTraitCount").intValue = traits.Count;
             var jobCatalogProp = so.FindProperty("jobCatalog");
             jobCatalogProp.ClearArray();
             for (var i = 0; i < jobs.Count; i++)
@@ -176,7 +168,41 @@ namespace SurviveUntilPayday.EditorTools
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
 
-            Debug.Log("[MainMenuRunStartSetup] RunStartPanel + jobCatalog(3) 적용 완료.");
+            Debug.Log($"[MainMenuRunStartSetup] RunStartPanel + jobCatalog({jobs.Count}) traitCatalog({traits.Count}) 적용 완료.");
+        }
+
+        private static int CountPlayableEvents()
+        {
+            var count = 0;
+            var guids = AssetDatabase.FindAssets("t:EventData", new[] { "Assets/Data/Events" });
+            for (var i = 0; i < guids.Length; i++)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                var eventData = AssetDatabase.LoadAssetAtPath<EventData>(path);
+                if (eventData != null && eventData.Id != "event_rest_fallback")
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static List<T> LoadAll<T>(string folder) where T : ScriptableObject
+        {
+            var list = new List<T>();
+            var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}", new[] { folder });
+            for (var i = 0; i < guids.Length; i++)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+                if (asset != null)
+                {
+                    list.Add(asset);
+                }
+            }
+
+            return list;
         }
 
         private static Text CreateTopText(
