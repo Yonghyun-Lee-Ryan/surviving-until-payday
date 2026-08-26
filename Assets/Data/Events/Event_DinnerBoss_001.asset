@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 1
   minDay: 2
   maxDay: 29
-  weight: 105
+  weight: 155
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,6 +37,8 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 1
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_dinner_join
     text: "\uCC38\uC11D\uD574\uC11C \uBD84\uC704\uAE30\uB97C \uB9DE\uCD98\uB2E4"
@@ -50,6 +52,9 @@ MonoBehaviour:
     - statType: 4
       value: 8
     randomOutcomes: []
+    setFlags:
+    - promotionTrack
+    clearFlags: []
   - choiceId: choice_dinner_short
     text: "\uC9E7\uAC8C \uCC38\uC11D\uD558\uACE0 \uBA3C\uC800 \uC77C\uC5B4\uB09C\uB2E4"
     fixedEffects:
@@ -60,6 +65,8 @@ MonoBehaviour:
     - statType: 4
       value: 3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_dinner_decline
     text: "\uC120\uC57D\uC744 \uD551\uACC4\uB85C \uAC70\uC808\uD55C\uB2E4"
     fixedEffects:
@@ -70,3 +77,9 @@ MonoBehaviour:
     - statType: 2
       value: -3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

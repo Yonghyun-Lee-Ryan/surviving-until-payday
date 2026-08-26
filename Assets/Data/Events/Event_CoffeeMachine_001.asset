@@ -13,18 +13,15 @@ MonoBehaviour:
   m_Name: Event_CoffeeMachine_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_coffee_machine_001
-  title: "커피머신 고장"
-  description: "사무실 커피머신이 또 고장 났다."
+  title: "\uCEE4\uD53C\uBA38\uC2E0 \uACE0\uC7A5"
+  description: "\uC0AC\uBB34\uC2E4 \uCEE4\uD53C\uBA38\uC2E0\uC774 \uB610 \uACE0\uC7A5
+    \uB0AC\uB2E4."
   category: 1
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +41,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_coffee_machine_001_a
-    text: "카페에서 사 마신다"
+    text: "\uCE74\uD398\uC5D0\uC11C \uC0AC \uB9C8\uC2E0\uB2E4"
     fixedEffects:
     - statType: 0
       value: -6000
@@ -53,8 +50,10 @@ MonoBehaviour:
     - statType: 3
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_coffee_machine_001_b
-    text: "물을 마신다"
+    text: "\uBB3C\uC744 \uB9C8\uC2E0\uB2E4"
     fixedEffects:
     - statType: 1
       value: 1
@@ -63,8 +62,10 @@ MonoBehaviour:
     - statType: 3
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_coffee_machine_001_c
-    text: "동료와 투덜거리며 버틴다"
+    text: "\uB3D9\uB8CC\uC640 \uD22C\uB35C\uAC70\uB9AC\uBA70 \uBC84\uD2F4\uB2E4"
     fixedEffects:
     - statType: 2
       value: -3
@@ -73,3 +74,9 @@ MonoBehaviour:
     - statType: 4
       value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

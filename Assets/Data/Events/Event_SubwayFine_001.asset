@@ -37,6 +37,8 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 1
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_subway_taxi
     text: "\uD0DD\uC2DC\uB85C \uAC08\uC544\uD0C0 \uC81C\uC2DC\uAC04\uC5D0 \uB3C4\uCC29\uD55C\uB2E4"
@@ -48,6 +50,8 @@ MonoBehaviour:
     - statType: 4
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_subway_run
     text: "\uC5ED\uC5D0\uC11C\uBD80\uD130 \uB6F0\uC5B4\uAC00 \uC2DC\uAC04\uC5D0 \uB9DE\uCDB0\uBCF8\uB2E4"
     fixedEffects:
@@ -62,6 +66,9 @@ MonoBehaviour:
       effects:
       - statType: 4
         value: 1
+      setFlags: []
+      clearFlags: []
+      queueEventId: 
     - outcomeId: subway_late
       resultMessage: "\uACB0\uAD6D \uC9C0\uAC01\uD588\uB2E4."
       probabilityWeight: 40
@@ -70,6 +77,11 @@ MonoBehaviour:
         value: -6
       - statType: 2
         value: 3
+      setFlags: []
+      clearFlags: []
+      queueEventId: 
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_subway_giveup
     text: "\uADF8\uB0E5 \uD3EC\uAE30\uD558\uACE0 \uB2A6\uAC8C \uB3C4\uCC29\uD55C\uB2E4"
     fixedEffects:
@@ -80,3 +92,9 @@ MonoBehaviour:
     - statType: 3
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

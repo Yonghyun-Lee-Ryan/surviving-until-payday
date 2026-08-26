@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_ParkWalk_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_park_walk_001
-  title: "공원 산책"
-  description: "날씨가 좋아 산책이 당긴다."
+  title: "\uACF5\uC6D0 \uC0B0\uCC45"
+  description: "\uB0A0\uC528\uAC00 \uC88B\uC544 \uC0B0\uCC45\uC774 \uB2F9\uAE34\uB2E4."
   category: 2
   minDay: 1
   maxDay: 30
-  weight: 80
+  weight: 35
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,30 +40,40 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_park_walk_001_a
-    text: "한 시간 걷는다"
+    text: "\uD55C \uC2DC\uAC04 \uAC77\uB294\uB2E4"
     fixedEffects:
     - statType: 1
-      value: 5
+      value: 3
     - statType: 2
-      value: -5
+      value: -4
     - statType: 3
-      value: 4
+      value: 3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_park_walk_001_b
-    text: "짧게 산책한다"
+    text: "\uC9E7\uAC8C \uC0B0\uCC45\uD55C\uB2E4"
     fixedEffects:
     - statType: 1
-      value: 2
+      value: 1
     - statType: 2
       value: -2
     - statType: 3
-      value: 2
+      value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_park_walk_001_c
-    text: "집에 있는다"
+    text: "\uC9D1\uC5D0 \uC788\uB294\uB2E4"
     fixedEffects:
     - statType: 1
       value: -1
     - statType: 3
       value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

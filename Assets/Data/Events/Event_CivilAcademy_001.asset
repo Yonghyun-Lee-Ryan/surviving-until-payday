@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_CivilAcademy_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_civil_academy_001
-  title: "학원 특강"
-  description: "유명 강사 특강 신청이 열렸다."
+  title: "\uD559\uC6D0 \uD2B9\uAC15"
+  description: "\uC720\uBA85 \uAC15\uC0AC \uD2B9\uAC15 \uC2E0\uCCAD\uC774 \uC5F4\uB838\uB2E4."
   category: 5
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +40,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_civil_academy_001_a
-    text: "등록한다"
+    text: "\uB4F1\uB85D\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
       value: -120000
@@ -53,17 +49,27 @@ MonoBehaviour:
     - statType: 3
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_academy_001_b
-    text: "무료 자료만 본다"
+    text: "\uBB34\uB8CC \uC790\uB8CC\uB9CC \uBCF8\uB2E4"
     fixedEffects:
     - statType: 2
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_academy_001_c
-    text: "패스한다"
+    text: "\uD328\uC2A4\uD55C\uB2E4"
     fixedEffects:
     - statType: 2
       value: -1
     - statType: 3
       value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

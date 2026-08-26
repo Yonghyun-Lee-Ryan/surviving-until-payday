@@ -12,6 +12,22 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.google.ads.mobile",
+            "expression": "",
+            "define": "GOOGLE_MOBILE_ADS"
+        },
+        {
+            "name": "com.google.firebase.analytics",
+            "expression": "",
+            "define": "FIREBASE_ANALYTICS"
+        },
+        {
+            "name": "com.google.firebase.crashlytics",
+            "expression": "",
+            "define": "FIREBASE_CRASHLYTICS"
+        }
+    ],
     "noEngineReferences": false
 }

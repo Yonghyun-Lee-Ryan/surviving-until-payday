@@ -13,18 +13,15 @@ MonoBehaviour:
   m_Name: Event_FreelancePitch_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_freelance_pitch_001
-  title: "신규 제안서"
-  description: "잠재 고객에게 제안서를 보낼 타이밍이다."
+  title: "\uC2E0\uADDC \uC81C\uC548\uC11C"
+  description: "\uC7A0\uC7AC \uACE0\uAC1D\uC5D0\uAC8C \uC81C\uC548\uC11C\uB97C \uBCF4\uB0BC
+    \uD0C0\uC774\uBC0D\uC774\uB2E4."
   category: 1
   minDay: 1
   maxDay: 30
-  weight: 80
+  weight: 130
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +41,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_freelance_pitch_001_a
-    text: "공들여 보낸다"
+    text: "\uACF5\uB4E4\uC5EC \uBCF4\uB0B8\uB2E4"
     fixedEffects:
     - statType: 1
       value: -2
@@ -55,23 +52,31 @@ MonoBehaviour:
     - statType: 4
       value: 3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_freelance_pitch_001_b
-    text: "템플릿으로 빠르게"
+    text: "\uD15C\uD50C\uB9BF\uC73C\uB85C \uBE60\uB974\uAC8C"
     fixedEffects:
     - statType: 2
       value: 2
     - statType: 4
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_freelance_pitch_001_c
-    text: "다음으로 미룬다"
+    text: "\uB2E4\uC74C\uC73C\uB85C \uBBF8\uB8EC\uB2E4"
     fixedEffects:
-    - statType: 1
-      value: 1
-    - statType: 2
-      value: -1
+    - statType: 0
+      value: 130000
     - statType: 3
       value: -1
     - statType: 4
-      value: -2
+      value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

@@ -9,6 +9,9 @@
 | `Assets/Art/Backgrounds/` | 사건 배경 5+예비3 | 프로젝트용 생성 에셋 |
 | `Assets/Art/Expressions/` | 표정 6종 | 프로젝트용 생성 에셋 |
 | `Assets/Art/UI/` | 패널·메뉴 배경 | 프로젝트용 생성 에셋 |
+| `Assets/Art/Icons/` | Android Adaptive Icon (foreground/background) 및 레거시 아이콘 | 프로젝트용 생성 에셋 |
+
+인게임 설정 → **크레딧·라이선스**에서 짧은 요약을 볼 수 있습니다.
 
 애니메이션: `EventPanelView` 사건 카드 **페이드인**, 표정 변경 시 **쉐이크+펀치**.
 

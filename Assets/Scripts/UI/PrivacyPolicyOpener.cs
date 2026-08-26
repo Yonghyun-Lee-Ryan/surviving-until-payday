@@ -7,9 +7,9 @@ namespace SurviveUntilPayday.UI
     {
         public static void Open(PrivacyPolicyConfig config)
         {
-            if (config == null || string.IsNullOrWhiteSpace(config.PolicyUrl))
+            if (config == null || PrivacyPolicyUrls.IsPlaceholder(config.PolicyUrl))
             {
-                Debug.LogWarning("[PrivacyPolicy] URL이 비어 있습니다. PrivacyPolicyConfig를 설정하세요.");
+                Debug.LogWarning("[PrivacyPolicy] URL이 placeholder이거나 비어 있습니다. PrivacyPolicyConfig를 설정하세요.");
                 return;
             }
 

@@ -16,5 +16,12 @@ MonoBehaviour:
   interstitialEveryNRuns: 3
   rewardedCooldownSeconds: 2
   useTestAdsInEditor: 1
+  allowRealAdsInEditor: 0
+  useGoogleTestAdUnits: 1
+  androidAdMobAppId: ca-app-pub-3940256099942544~3347511713
+  rewardedAdUnitId: ca-app-pub-3940256099942544/5224354917
+  interstitialAdUnitId: ca-app-pub-3940256099942544/1033173712
+  testDeviceHashedIds: []
+  umpDebugForceEea: 0
   mirrorEventsToDebugConsole: 1
   enableCrashCapture: 1

@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_DeliveryTip_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_delivery_tip_001
-  title: "배달비 딜레마"
-  description: "배달비가 올랐다."
+  title: "\uBC30\uB2EC\uBE44 \uB51C\uB808\uB9C8"
+  description: "\uBC30\uB2EC\uBE44\uAC00 \uC62C\uB790\uB2E4."
   category: 3
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +40,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_delivery_tip_001_a
-    text: "그냥 시킨다"
+    text: "\uADF8\uB0E5 \uC2DC\uD0A8\uB2E4"
     fixedEffects:
     - statType: 0
       value: -22000
@@ -53,11 +49,10 @@ MonoBehaviour:
     - statType: 3
       value: 3
     randomOutcomes: []
-    setFlags:
-    - orderedDelivery
+    setFlags: []
     clearFlags: []
   - choiceId: event_delivery_tip_001_b
-    text: "직접 사러 간다"
+    text: "\uC9C1\uC811 \uC0AC\uB7EC \uAC04\uB2E4"
     fixedEffects:
     - statType: 0
       value: -12000
@@ -69,7 +64,7 @@ MonoBehaviour:
     setFlags: []
     clearFlags: []
   - choiceId: event_delivery_tip_001_c
-    text: "굶는다"
+    text: "\uAD81\uB294\uB2E4"
     fixedEffects:
     - statType: 1
       value: -3
@@ -80,3 +75,7 @@ MonoBehaviour:
     randomOutcomes: []
     setFlags: []
     clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

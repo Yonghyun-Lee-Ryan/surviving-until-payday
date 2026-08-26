@@ -37,17 +37,19 @@ namespace SurviveUntilPayday.UI
             UnwireButton();
         }
 
+        public Transform RootTransform => root != null ? root.transform : transform;
+
         public void Show(string title, string message, string changes, string nextButtonText)
         {
             if (root != null)
             {
                 root.SetActive(true);
-                root.transform.SetAsLastSibling();
+                UiModalLayer.BringToFront(root.transform);
             }
             else
             {
                 gameObject.SetActive(true);
-                transform.SetAsLastSibling();
+                UiModalLayer.BringToFront(transform);
             }
 
             if (titleLabel != null)
@@ -150,12 +152,30 @@ namespace SurviveUntilPayday.UI
             bool sideJobVisible,
             bool sideJobInteractable,
             bool loanVisible,
-            bool loanInteractable)
+            bool loanInteractable,
+            string retryLabel = null,
+            string sideJobLabel = null,
+            string loanLabel = null)
         {
             EnsureAdButtons();
-            SetButton(retryAdButton, retryAdLabel, retryVisible, retryInteractable, "광고: 결과 재시도");
-            SetButton(sideJobAdButton, sideJobAdLabel, sideJobVisible, sideJobInteractable, "광고: 부업(+30,000원)");
-            SetButton(loanAdButton, loanAdLabel, loanVisible, loanInteractable, "광고: 긴급 대출(+100,000원)");
+            SetButton(
+                retryAdButton,
+                retryAdLabel,
+                retryVisible,
+                retryInteractable,
+                retryLabel ?? "광고: 결과 재시도");
+            SetButton(
+                sideJobAdButton,
+                sideJobAdLabel,
+                sideJobVisible,
+                sideJobInteractable,
+                sideJobLabel ?? "광고: 부업(+30,000원)");
+            SetButton(
+                loanAdButton,
+                loanAdLabel,
+                loanVisible,
+                loanInteractable,
+                loanLabel ?? "광고: 긴급 대출(+100,000원)");
         }
 
         public void Bind(

@@ -64,6 +64,17 @@ namespace SurviveUntilPayday.Core
             var successEnding = PickBest(ending =>
                 !ending.IsFailureEnding && EndingConditionMatcher.Matches(ending.Condition, state));
 
+            if (successEnding != null
+                && EndingConditionMatcher.IsCashKingId(successEnding.Id)
+                && EndingConditionMatcher.IsCloseCallSurvival(state.Stats))
+            {
+                var alternative = PickBest(ending =>
+                    ending != successEnding
+                    && !ending.IsFailureEnding
+                    && EndingConditionMatcher.Matches(ending.Condition, state));
+                successEnding = alternative ?? fallbackSuccessEnding;
+            }
+
             return successEnding ?? fallbackSuccessEnding;
         }
 
@@ -145,6 +156,28 @@ namespace SurviveUntilPayday.Core
             }
 
             return true;
+        }
+
+        public static bool IsCashKingId(string endingId)
+        {
+            return endingId == "ending_cash_king" || endingId == "cash";
+        }
+
+        /// <summary>
+        /// 월급날은 왔지만 체력·스트레스·회사 평가가 아슬아슬한 구간 (R-QA-04).
+        /// cash_king보다 겨우 살아남았다/다른 성공 엔딩을 우선한다.
+        /// </summary>
+        public static bool IsCloseCallSurvival(PlayerStats stats)
+        {
+            if (stats == null)
+            {
+                return false;
+            }
+
+            return stats.Cash <= 900_000L
+                   || stats.Health <= 32
+                   || stats.Stress >= 75
+                   || stats.CompanyScore <= 20;
         }
 
         public static bool Matches(EndingCondition condition, PlayerStats stats)

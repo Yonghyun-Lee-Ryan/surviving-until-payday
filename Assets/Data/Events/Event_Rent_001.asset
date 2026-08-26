@@ -37,30 +37,36 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_rent_full
     text: "\uC81C\uB54C \uC804\uC561 \uB0A9\uBD80\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -580000
+      value: -950000
     - statType: 2
       value: -2
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_rent_tight
     text: "\uB2E4\uB978 \uC9C0\uCD9C\uC744 \uC904\uC5EC \uB9C8\uB828\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -500000
+      value: -830000
     - statType: 3
       value: -4
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_rent_loan
     text: "\uCE74\uB4DC \uB2E8\uAE30 \uB300\uCD9C\uB85C \uBA54\uAFBC\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -620000
+      value: -990000
     - statType: 2
       value: 8
     - statType: 3
@@ -69,3 +75,7 @@ MonoBehaviour:
     setFlags:
     - owesDebt
     clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

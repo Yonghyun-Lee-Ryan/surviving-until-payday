@@ -40,7 +40,9 @@ namespace SurviveUntilPayday.Ads
 
             if (!adService.IsRewardedReady(placement))
             {
-                reason = "Rewarded ad is not ready.";
+                reason = Application.internetReachability == NetworkReachability.NotReachable
+                    ? "offline"
+                    : "Rewarded ad is not ready.";
                 return false;
             }
 

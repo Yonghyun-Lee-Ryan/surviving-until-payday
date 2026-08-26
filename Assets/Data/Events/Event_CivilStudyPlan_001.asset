@@ -13,18 +13,15 @@ MonoBehaviour:
   m_Name: Event_CivilStudyPlan_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_civil_study_plan_001
-  title: "공부 계획 점검"
-  description: "이번 주 공부 계획이 밀리고 있다."
+  title: "\uACF5\uBD80 \uACC4\uD68D \uC810\uAC80"
+  description: "\uC774\uBC88 \uC8FC \uACF5\uBD80 \uACC4\uD68D\uC774 \uBC00\uB9AC\uACE0
+    \uC788\uB2E4."
   category: 8
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +41,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_civil_study_plan_001_a
-    text: "계획대로 밀고 간다"
+    text: "\uACC4\uD68D\uB300\uB85C \uBC00\uACE0 \uAC04\uB2E4"
     fixedEffects:
     - statType: 1
       value: -3
@@ -53,16 +50,20 @@ MonoBehaviour:
     - statType: 3
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_study_plan_001_b
-    text: "범위를 줄인다"
+    text: "\uBC94\uC704\uB97C \uC904\uC778\uB2E4"
     fixedEffects:
     - statType: 2
       value: 2
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_study_plan_001_c
-    text: "하루 쉰다"
+    text: "\uD558\uB8E8 \uC26E\uB2E4"
     fixedEffects:
     - statType: 1
       value: 3
@@ -71,3 +72,9 @@ MonoBehaviour:
     - statType: 3
       value: 3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

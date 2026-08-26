@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 2
   minDay: 1
   maxDay: 30
-  weight: 75
+  weight: 45
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,6 +37,8 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_cold_hospital
     text: "\uBCD1\uC6D0\uC5D0 \uAC00\uC11C \uC9C4\uB8CC\uB97C \uBC1B\uB294\uB2E4"
@@ -48,6 +50,9 @@ MonoBehaviour:
     - statType: 2
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags:
+    - neglectedHealth
   - choiceId: choice_cold_pharmacy
     text: "\uC57D\uAD6D\uC5D0\uC11C \uAC10\uAE30\uC57D\uB9CC \uC0AC \uBA39\uB294\uB2E4"
     fixedEffects:
@@ -56,6 +61,8 @@ MonoBehaviour:
     - statType: 1
       value: 4
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_cold_ignore
     text: "\uADF8\uB0E5 \uCC38\uACE0 \uCD9C\uADFC\uD55C\uB2E4"
     fixedEffects:
@@ -70,6 +77,9 @@ MonoBehaviour:
       effects:
       - statType: 1
         value: -3
+      setFlags: []
+      clearFlags: []
+      queueEventId: 
     - outcomeId: cold_worsen
       resultMessage: "\uC99D\uC0C1\uC774 \uC2EC\uD574\uC838 \uBAB8\uC0B4\uC774 \uB0AC\uB2E4."
       probabilityWeight: 40
@@ -78,3 +88,14 @@ MonoBehaviour:
         value: -12
       - statType: 2
         value: 5
+      setFlags:
+      - neglectedHealth
+      clearFlags: []
+      queueEventId: 
+    setFlags:
+    - neglectedHealth
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

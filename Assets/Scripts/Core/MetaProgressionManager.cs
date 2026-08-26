@@ -27,6 +27,9 @@ namespace SurviveUntilPayday.Core
         public List<string> NewlyUnlockedJobNames { get; } = new List<string>();
         public List<string> NewlyUnlockedAchievements { get; } = new List<string>();
         public int TraitFragmentsGained { get; set; }
+        public List<string> NewlyCompletedDailyMissionTitles { get; } = new List<string>();
+        public int DailyMissionExperienceGained { get; set; }
+        public int LoginStreak { get; set; }
     }
 
     /// <summary>
@@ -50,9 +53,6 @@ namespace SurviveUntilPayday.Core
         /// <summary>Unit 26: 첫 실행 튜토리얼 완료/스킵 여부.</summary>
         public bool FirstRunTutorialCompleted { get; private set; }
 
-        /// <summary>전면 광고 제거 소유(레거시 세이브 호환). 상점 제거 후 신규 구매 경로는 없음.</summary>
-        public bool HasNoAds { get; private set; }
-
         public int Level => PlayerLevel.GetLevel(TotalExperience);
 
         /// <summary>
@@ -68,13 +68,11 @@ namespace SurviveUntilPayday.Core
             IEnumerable<string> achievementIds,
             IEnumerable<string> jobIds = null,
             int traitFragmentCount = 0,
-            bool firstRunTutorialCompleted = false,
-            bool hasNoAds = false)
+            bool firstRunTutorialCompleted = false)
         {
             TotalExperience = Math.Max(0, totalExperience);
             TraitFragmentCount = Math.Max(0, traitFragmentCount);
             FirstRunTutorialCompleted = firstRunTutorialCompleted;
-            HasNoAds = hasNoAds;
             Endings.LoadFrom(endingIds);
             Events.LoadFrom(eventIds);
             Traits.LoadFrom(traitIds);
@@ -85,11 +83,6 @@ namespace SurviveUntilPayday.Core
         public void MarkFirstRunTutorialCompleted()
         {
             FirstRunTutorialCompleted = true;
-        }
-
-        public void SetHasNoAds(bool owned)
-        {
-            HasNoAds = owned;
         }
 
         public void AddTraitFragments(int amount)
@@ -279,15 +272,19 @@ namespace SurviveUntilPayday.Core
             }
 
             TotalExperience += amount;
-            if (allTraits != null)
-            {
-                UnlockEligibleTraits(allTraits, progress: null);
-            }
+            RefreshUnlocksFromLevel(allTraits, allJobs);
+        }
 
-            if (allJobs != null)
-            {
-                UnlockEligibleJobs(allJobs, progress: null);
-            }
+        /// <summary>
+        /// 현재 레벨로 해금 가능한 직업·특성을 도감에 반영한다.
+        /// </summary>
+        public void RefreshUnlocksFromLevel(
+            IEnumerable<TraitData> allTraits,
+            IEnumerable<JobData> allJobs,
+            MetaProgressResult progress = null)
+        {
+            UnlockEligibleTraits(allTraits, progress);
+            UnlockEligibleJobs(allJobs, progress);
         }
 
         private void UnlockEligibleTraits(IEnumerable<TraitData> allTraits, MetaProgressResult progress)

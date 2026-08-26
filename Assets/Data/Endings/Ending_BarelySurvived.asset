@@ -16,14 +16,14 @@ MonoBehaviour:
   title: "\uACA8\uC6B0 \uC0B4\uC544\uB0A8\uC558\uB2E4"
   description: "\uC544\uC2AC\uC544\uC2AC\uD588\uC9C0\uB9CC \uC6D4\uAE09\uB0A0\uAE4C\uC9C0
     \uBC84\uD17C\uB2E4."
-  priority: 1
+  priority: 8
   isFailureEnding: 0
   linkedFailureReason: 0
   condition:
     requireMinCash: 0
     minCash: 0
-    requireMaxCash: 0
-    maxCash: 0
+    requireMaxCash: 1
+    maxCash: 900000
     requireMinHealth: 0
     minHealth: 0
     requireMaxHealth: 0

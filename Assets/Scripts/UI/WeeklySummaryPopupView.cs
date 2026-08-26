@@ -50,17 +50,19 @@ namespace SurviveUntilPayday.UI
             continueButtonLabel = continueLabel;
         }
 
+        public Transform RootTransform => root != null ? root.transform : transform;
+
         public void Show(string title, string body, string warnings, string continueText = "계속")
         {
             if (root != null)
             {
                 root.SetActive(true);
-                root.transform.SetAsLastSibling();
+                UiModalLayer.BringToFront(root.transform);
             }
             else
             {
                 gameObject.SetActive(true);
-                transform.SetAsLastSibling();
+                UiModalLayer.BringToFront(transform);
             }
 
             if (titleLabel != null)

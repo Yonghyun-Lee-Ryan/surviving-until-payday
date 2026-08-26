@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_CivilLibrary_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_civil_library_001
-  title: "도서관 자리"
-  description: "도서관 인기 자리가 비었다."
+  title: "\uB3C4\uC11C\uAD00 \uC790\uB9AC"
+  description: "\uB3C4\uC11C\uAD00 \uC778\uAE30 \uC790\uB9AC\uAC00 \uBE44\uC5C8\uB2E4."
   category: 8
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,15 +40,17 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_civil_library_001_a
-    text: "바로 예약한다"
+    text: "\uBC14\uB85C \uC608\uC57D\uD55C\uB2E4"
     fixedEffects:
     - statType: 2
       value: 2
     - statType: 3
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_library_001_b
-    text: "카페로 간다"
+    text: "\uCE74\uD398\uB85C \uAC04\uB2E4"
     fixedEffects:
     - statType: 0
       value: -8000
@@ -61,9 +59,17 @@ MonoBehaviour:
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_library_001_c
-    text: "집에서 공부한다"
+    text: "\uC9D1\uC5D0\uC11C \uACF5\uBD80\uD55C\uB2E4"
     fixedEffects:
     - statType: 3
       value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

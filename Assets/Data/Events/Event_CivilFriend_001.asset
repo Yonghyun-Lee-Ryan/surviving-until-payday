@@ -13,18 +13,15 @@ MonoBehaviour:
   m_Name: Event_CivilFriend_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_civil_friend_001
-  title: "취준 동기 만남"
-  description: "같은 시험을 준비하는 친구를 만났다."
+  title: "\uCDE8\uC900 \uB3D9\uAE30 \uB9CC\uB0A8"
+  description: "\uAC19\uC740 \uC2DC\uD5D8\uC744 \uC900\uBE44\uD558\uB294 \uCE5C\uAD6C\uB97C
+    \uB9CC\uB0AC\uB2E4."
   category: 4
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +41,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_civil_friend_001_a
-    text: "정보를 교환한다"
+    text: "\uC815\uBCF4\uB97C \uAD50\uD658\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
       value: -20000
@@ -53,17 +50,27 @@ MonoBehaviour:
     - statType: 3
       value: 4
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_friend_001_b
-    text: "짧게 인사만"
+    text: "\uC9E7\uAC8C \uC778\uC0AC\uB9CC"
     fixedEffects:
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_friend_001_c
-    text: "거절한다"
+    text: "\uAC70\uC808\uD55C\uB2E4"
     fixedEffects:
     - statType: 2
       value: 1
     - statType: 3
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

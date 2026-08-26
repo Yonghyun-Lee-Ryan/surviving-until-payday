@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_NeighborNoise_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_neighbor_noise_001
-  title: "층간소음"
-  description: "위층 소음이 잠을 방해한다."
+  title: "\uCE35\uAC04\uC18C\uC74C"
+  description: "\uC704\uCE35 \uC18C\uC74C\uC774 \uC7A0\uC744 \uBC29\uD574\uD55C\uB2E4."
   category: 3
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,15 +40,17 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_neighbor_noise_001_a
-    text: "정중히 연락한다"
+    text: "\uC815\uC911\uD788 \uC5F0\uB77D\uD55C\uB2E4"
     fixedEffects:
     - statType: 2
       value: 3
     - statType: 3
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_neighbor_noise_001_b
-    text: "이어폰을 끼고 견딘다"
+    text: "\uC774\uC5B4\uD3F0\uC744 \uB07C\uACE0 \uACAC\uB518\uB2E4"
     fixedEffects:
     - statType: 1
       value: -2
@@ -61,11 +59,19 @@ MonoBehaviour:
     - statType: 3
       value: -3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_neighbor_noise_001_c
-    text: "관리실에 민원을 넣는다"
+    text: "\uAD00\uB9AC\uC2E4\uC5D0 \uBBFC\uC6D0\uC744 \uB123\uB294\uB2E4"
     fixedEffects:
     - statType: 2
       value: -2
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

@@ -20,6 +20,7 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private GameObject root;
         private Text dateLabel;
         private Text seedLabel;
+        private Text streakLabel;
         private Text bestLabel;
         private Text missionsLabel;
         private Button playButton;
@@ -93,7 +94,7 @@ namespace SurviveUntilPayday.UI
             {
                 if (!daily.HasBestRecord)
                 {
-                    bestLabel.text = "오늘의 베스트: 아직 없음";
+                    bestLabel.text = EmptyStateCopy.NoDailyBest;
                 }
                 else
                 {
@@ -104,6 +105,15 @@ namespace SurviveUntilPayday.UI
                 }
 
                 UiFont.Apply(bestLabel);
+            }
+
+            if (streakLabel != null)
+            {
+                var bonus = daily.LastVisitBonusExperience > 0
+                    ? $" · 오늘 출석 +{daily.LastVisitBonusExperience} XP"
+                    : string.Empty;
+                streakLabel.text = $"연속 접속 {daily.LoginStreak}일{bonus}";
+                UiFont.Apply(streakLabel, bold: true);
             }
 
             if (missionsLabel != null)
@@ -117,16 +127,13 @@ namespace SurviveUntilPayday.UI
         {
             if (missions == null || missions.Count == 0)
             {
-                return "오늘의 미션: 없음";
+                return EmptyStateCopy.NoDailyMissions;
             }
 
             var lines = new List<string> { "오늘의 미션" };
             for (var i = 0; i < missions.Count; i++)
             {
-                var slot = missions[i];
-                var title = slot.Definition != null ? slot.Definition.Title : slot.MissionId;
-                var mark = slot.Completed ? "[완료]" : "[진행]";
-                lines.Add($"{mark} {title}");
+                lines.Add(DailyMissionCopy.FormatLine(missions[i]));
             }
 
             return string.Join("\n", lines);
@@ -134,7 +141,7 @@ namespace SurviveUntilPayday.UI
 
         private void EnsureLayout()
         {
-            if (layoutReady && bestLabel != null && missionsLabel != null)
+            if (layoutReady && bestLabel != null && missionsLabel != null && streakLabel != null)
             {
                 return;
             }
@@ -168,7 +175,7 @@ namespace SurviveUntilPayday.UI
             cardRect.anchorMin = new Vector2(0.5f, 0.5f);
             cardRect.anchorMax = new Vector2(0.5f, 0.5f);
             cardRect.pivot = new Vector2(0.5f, 0.5f);
-            cardRect.sizeDelta = new Vector2(860f, 820f);
+            cardRect.sizeDelta = new Vector2(860f, 860f);
             card.GetComponent<Image>().color = CardColor;
 
             var layout = card.GetComponent<VerticalLayoutGroup>();
@@ -183,6 +190,7 @@ namespace SurviveUntilPayday.UI
             CreateLabel(card.transform, "Title", "오늘의 직장인", 34, 44f, bold: true);
             dateLabel = CreateLabel(card.transform, "Date", "오늘", 24, 32f, bold: true);
             seedLabel = CreateLabel(card.transform, "Seed", "시드", 20, 28f, bold: false);
+            streakLabel = CreateLabel(card.transform, "Streak", "연속 접속", 22, 30f, bold: true);
 
             bestLabel = CreateWrappedLabel(card.transform, "Best", "베스트", 120f);
             missionsLabel = CreateWrappedLabel(card.transform, "Missions", "미션", 220f);

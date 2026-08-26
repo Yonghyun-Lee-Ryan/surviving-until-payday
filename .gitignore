@@ -89,3 +89,11 @@ Desktop.ini
 # Android release signing (keystore·비밀번호는 저장소에 올리지 않음)
 /Keystore/*.keystore
 /Keystore/android-signing.properties
+
+# Firebase / AdMob 실키 (예시는 커밋)
+/[Aa]ssets/google-services.json
+/[Aa]ssets/GoogleService-Info.plist
+
+# IL2CPP/Burst 로컬 빌드 산출물 (저장소에 올리지 않음)
+/run_BackUpThisFolder_ButDontShipItWithYourGame/
+*_BurstDebugInformation_DoNotShip/

@@ -14,14 +14,15 @@ namespace SurviveUntilPayday.Tests
         private const string JobsFolder = "Assets/Data/Jobs";
 
         [Test]
-        public void JobsFolder_HasThreeJobsWithExpectedUnlockLevels()
+        public void JobsFolder_HasCoreJobsWithExpectedUnlockLevels()
         {
             var byId = LoadJobsById();
-            Assert.AreEqual(3, byId.Count);
+            Assert.GreaterOrEqual(byId.Count, 4, "Unit 23 직업 3 + R-QA-07 대기업");
 
             Assert.AreEqual(0, byId["job_junior_office"].UnlockLevel);
             Assert.AreEqual(2, byId["job_civil_prep"].UnlockLevel);
             Assert.AreEqual(3, byId["job_freelancer"].UnlockLevel);
+            Assert.AreEqual(5, byId["job_corp_associate"].UnlockLevel);
         }
 
         [Test]

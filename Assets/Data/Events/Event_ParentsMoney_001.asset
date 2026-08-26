@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 4
   minDay: 1
   maxDay: 30
-  weight: 80
+  weight: 75
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,17 +37,21 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_parents_generous
     text: "\uB109\uB109\uD558\uAC8C \uC6A9\uB3C8\uC744 \uBCF4\uB0B4\uB4DC\uB9B0\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -100000
+      value: -120000
     - statType: 3
       value: 10
     - statType: 2
       value: -3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_parents_moderate
     text: "\uD615\uD3B8\uC5D0 \uB9DE\uAC8C \uC870\uAE08\uB9CC \uBCF4\uB0B4\uB4DC\uB9B0\uB2E4"
     fixedEffects:
@@ -56,6 +60,8 @@ MonoBehaviour:
     - statType: 3
       value: 4
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_parents_decline
     text: "\uC774\uBC88\uC5D4 \uC0AC\uC815\uC744 \uB9D0\uC500\uB4DC\uB9AC\uACE0 \uB118\uC5B4\uAC04\uB2E4"
     fixedEffects:
@@ -64,3 +70,9 @@ MonoBehaviour:
     - statType: 2
       value: 3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

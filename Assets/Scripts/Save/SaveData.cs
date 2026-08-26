@@ -5,7 +5,7 @@ namespace SurviveUntilPayday.Save
 {
     public static class SaveVersion
     {
-        public const int Current = 7;
+        public const int Current = 8;
     }
 
     [Serializable]
@@ -59,14 +59,12 @@ namespace SurviveUntilPayday.Save
         public int dailyBestDaysSurvived;
         public bool dailyHasBestRecord;
         public List<DailyMissionSaveEntry> dailyMissions = new List<DailyMissionSaveEntry>();
+        public int dailyLoginStreak = 1;
+        public string dailyLastVisitDateKey = string.Empty;
+        public bool dailyStreakBonusGranted;
 
         // Unit 26 — 첫 실행 튜토리얼
         public bool firstRunTutorialCompleted;
-
-        // 레거시: 광고 제거·상점 쿼터(상점 제거 후에도 세이브 호환용으로 유지)
-        public bool hasNoAds;
-        public string shopTraitAdDateKey = string.Empty;
-        public int shopTraitAdUsesToday;
     }
 
     [Serializable]

@@ -8,6 +8,12 @@ namespace SurviveUntilPayday.Core
     /// </summary>
     public static class FailureEvaluator
     {
+        /// <summary>
+        /// 건강 방치 플래그가 있을 때 입원으로 보는 체력 상한 (R-QA-04).
+        /// 체력 0까지 깎이기 전에 감기/점심 거르기 경로가 입원으로 이어지게 한다.
+        /// </summary>
+        public const int NeglectedHealthHospitalMax = 35;
+
         public static FailureReason Evaluate(GameState state)
         {
             if (state == null)
@@ -15,10 +21,25 @@ namespace SurviveUntilPayday.Core
                 return FailureReason.None;
             }
 
-            return Evaluate(state.Stats);
+            return EvaluateCore(state.Stats, state);
         }
 
         public static FailureReason Evaluate(PlayerStats stats)
+        {
+            return EvaluateCore(stats, null);
+        }
+
+        public static List<FailureReason> GetAll(GameState state)
+        {
+            return GetAllCore(state?.Stats, state);
+        }
+
+        public static List<FailureReason> GetAll(PlayerStats stats)
+        {
+            return GetAllCore(stats, null);
+        }
+
+        private static FailureReason EvaluateCore(PlayerStats stats, GameState state)
         {
             if (stats == null)
             {
@@ -30,7 +51,7 @@ namespace SurviveUntilPayday.Core
                 return FailureReason.Bankruptcy;
             }
 
-            if (stats.Health <= StatLimits.MinGauge)
+            if (IsHospitalization(stats, state))
             {
                 return FailureReason.Hospitalization;
             }
@@ -48,7 +69,7 @@ namespace SurviveUntilPayday.Core
             return FailureReason.None;
         }
 
-        public static List<FailureReason> GetAll(PlayerStats stats)
+        private static List<FailureReason> GetAllCore(PlayerStats stats, GameState state)
         {
             var reasons = new List<FailureReason>(4);
             if (stats == null)
@@ -61,7 +82,7 @@ namespace SurviveUntilPayday.Core
                 reasons.Add(FailureReason.Bankruptcy);
             }
 
-            if (stats.Health <= StatLimits.MinGauge)
+            if (IsHospitalization(stats, state))
             {
                 reasons.Add(FailureReason.Hospitalization);
             }
@@ -77,6 +98,18 @@ namespace SurviveUntilPayday.Core
             }
 
             return reasons;
+        }
+
+        private static bool IsHospitalization(PlayerStats stats, GameState state)
+        {
+            if (stats.Health <= StatLimits.MinGauge)
+            {
+                return true;
+            }
+
+            return stats.Health <= NeglectedHealthHospitalMax
+                   && state != null
+                   && state.HasFlag(RunFlags.NeglectedHealth);
         }
 
         public static string ToDisplayName(FailureReason reason)

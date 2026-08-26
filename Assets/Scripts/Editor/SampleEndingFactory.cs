@@ -25,8 +25,8 @@ namespace SurviveUntilPayday.EditorTools
                     "ending_cash_king",
                     "통장 잔고의 제왕",
                     "월급날까지 현금을 든든히 남겼다.",
-                    priority: 100,
-                    cashMin: 1_000_000L),
+                    priority: 73,
+                    cashMin: 1_400_000L),
                 CreateHealthyWorker(),
                 CreatePromotionCandidate(),
                 CreateHappyConsumer(),
@@ -92,12 +92,13 @@ namespace SurviveUntilPayday.EditorTools
         {
             var ending = LoadOrCreate($"{Folder}/Ending_Promotion.asset");
             var condition = new EndingCondition();
-            condition.EditorSetCompanyScore(true, 80, false, 0);
+            condition.EditorSetCompanyScore(true, 60, false, 0);
+            condition.EditorSetFlags(new[] { RunFlags.PromotionTrack });
             ending.EditorSet(
                 "ending_promotion",
                 "승진 후보",
                 "회사에서의 평판이 탄탄하다.",
-                85,
+                95,
                 false,
                 FailureReason.None,
                 condition);
@@ -180,14 +181,16 @@ namespace SurviveUntilPayday.EditorTools
         private static EndingData CreateBarelySurvived()
         {
             var ending = LoadOrCreate($"{Folder}/Ending_BarelySurvived.asset");
+            var condition = new EndingCondition();
+            condition.EditorSetCash(false, 0, true, 900_000L);
             ending.EditorSet(
                 "ending_barely_survived",
                 "겨우 살아남았다",
                 "아슬아슬했지만 월급날까지 버텼다.",
-                1,
+                8,
                 false,
                 FailureReason.None,
-                new EndingCondition());
+                condition);
             EditorUtility.SetDirty(ending);
             return ending;
         }

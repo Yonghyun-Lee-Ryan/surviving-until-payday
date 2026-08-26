@@ -172,7 +172,7 @@ namespace SurviveUntilPayday.Core
 
             if (AdsConsent == null)
             {
-                AdsConsent = new LocalAdsConsentService(Settings);
+                AdsConsent = AdsConsentFactory.Create(Settings, sdkConfig);
             }
 
             var composed = SdkComposition.Create(this, sdkConfig);
@@ -225,17 +225,6 @@ namespace SurviveUntilPayday.Core
         {
             var save = SaveRepository.LoadOrCreate();
             Session.ApplyLoadedSave(save);
-            ApplyMonetizationFromMeta(save.meta);
-        }
-
-        /// <summary>
-        /// 레거시 NoAds 플래그를 전면 광고 게이트에 반영한다.
-        /// </summary>
-        public void ApplyMonetizationFromMeta(MetaSaveData meta)
-        {
-            meta ??= new MetaSaveData();
-            var hasNoAds = Session?.Meta != null ? Session.Meta.HasNoAds : meta.hasNoAds;
-            InterstitialAds?.SetRemoveInterstitials(hasNoAds);
         }
 
         public void PersistSession(bool includeActiveRun, RunSaveData runOverride = null)

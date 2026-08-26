@@ -34,15 +34,20 @@ namespace SurviveUntilPayday.EditorTools
             AssetDatabase.Refresh();
             Debug.Log(
                 "[ReleasePrepSetup] Unit 15 ready.\n" +
-                "1) PrivacyPolicyConfig URL을 실제 방침 주소로 바꾸세요.\n" +
+                "1) PrivacyPolicyConfig는 GitHub Pages Canonical URL입니다. Pages(Docs)를 켜세요.\n" +
                 "2) Tools → Setup Android Release Signing 으로 Release Keystore를 연결하세요.\n" +
-                "3) Project Settings > Player > Android에서 아이콘(Adaptive Icon)을 지정하세요.\n" +
+                "3) Tools → Assign Android Adaptive Icons (R-QA-08) 로 Adaptive Icon을 지정하세요.\n" +
                 "4) Build Settings: Development Build OFF → Build App Bundle\n" +
                 "5) Play Console 내부 테스트 트랙에 업로드하세요.");
         }
 
         [MenuItem("Tools/Surviving Until Payday/Apply Android AAB PlayerSettings (Unit 15)")]
         public static void ApplyAndroidReleasePlayerSettings()
+        {
+            ApplyAndroidReleasePlayerSettings(bumpVersionCode: true);
+        }
+
+        public static void ApplyAndroidReleasePlayerSettings(bool bumpVersionCode)
         {
             PlayerSettings.companyName = "SurviveUntilPayday";
             PlayerSettings.productName = "월급날까지 살아남기";
@@ -53,8 +58,11 @@ namespace SurviveUntilPayday.EditorTools
             }
 
             var previousCode = Mathf.Max(0, PlayerSettings.Android.bundleVersionCode);
-            var nextCode = previousCode + 1;
-            PlayerSettings.Android.bundleVersionCode = nextCode;
+            var nextCode = bumpVersionCode ? previousCode + 1 : previousCode;
+            if (bumpVersionCode)
+            {
+                PlayerSettings.Android.bundleVersionCode = nextCode;
+            }
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, AndroidApplicationId);
             EditorUserBuildSettings.buildAppBundle = true;
             EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.Android;
@@ -108,9 +116,16 @@ namespace SurviveUntilPayday.EditorTools
             {
                 config = ScriptableObject.CreateInstance<PrivacyPolicyConfig>();
                 config.EditorSet(
-                    "https://example.com/privacy",
-                    "본 게임은 광고·분석·크래시 수집을 위해 기기의 비식별 정보를 사용할 수 있습니다. 자세한 내용은 개인정보처리방침을 확인해 주세요.");
+                    PrivacyPolicyUrls.Canonical,
+                    "본 게임은 광고(AdMob)·분석·크래시 수집을 위해 기기의 비식별 정보를 사용할 수 있습니다. " +
+                    "EEA 등 일부 지역에서는 광고 동의(UMP) 화면이 이어서 표시됩니다. " +
+                    "자세한 내용은 개인정보처리방침을 확인해 주세요.");
                 AssetDatabase.CreateAsset(config, PrivacyPath);
+            }
+            else if (config.HasPlaceholderUrl)
+            {
+                config.EditorSet(PrivacyPolicyUrls.Canonical, config.SummaryText);
+                EditorUtility.SetDirty(config);
             }
 
             var appRoot = Object.FindAnyObjectByType<AppRoot>();

@@ -264,7 +264,8 @@ namespace SurviveUntilPayday.EditorTools
                     "\uacf5\uc6d0 \uc0b0\ucc45",
                     "\ub0a0\uc528\uac00 \uc88b\uc544 \uc0b0\ucc45\uc774 \ub2f9\uae34\ub2e4.",
                     EventCategory.Health,
-                    "\ud55c \uc2dc\uac04 \uac77\ub294\ub2e4", 0, 5, -5, 4, 0, "\uc9e7\uac8c \uc0b0\ucc45\ud55c\ub2e4", 0, 2, -2, 2, 0, "\uc9d1\uc5d0 \uc788\ub294\ub2e4", 0, -1, 0, -1, 0),
+                    "\ud55c \uc2dc\uac04 \uac77\ub294\ub2e4", 0, 3, -4, 3, 0, "\uc9e7\uac8c \uc0b0\ucc45\ud55c\ub2e4", 0, 1, -2, 1, 0, "\uc9d1\uc5d0 \uc788\ub294\ub2e4", 0, -1, 0, -1, 0,
+                    weight: 35),
                 Make(
                     "Event_Subscription_001",
                     "event_subscription_001",
@@ -371,7 +372,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\ubc88\uc544\uc6c3 \uc9d5\ud6c4",
                     "\uc5f0\uc18d \ub9c8\uac10\uc5d0 \ubab8\uc774 \uba3c\uc800 \ubc18\uc751\ud55c\ub2e4.",
                     EventCategory.Health,
-                    "\ud558\ub8e8 \uc26e\ub2e4", 0, 5, -6, 3, -1, "\uc2a4\ucf00\uc904\uc744 \uc904\uc778\ub2e4", 0, 2, -3, 1, 0, "\uce74\ud398\uc778\uc73c\ub85c \ubc84\ud2f4\ub2e4", -5000, -4, 3, -2, 1),
+                    "\ud558\ub8e8 \uc26e\ub2e4", 0, 5, -12, 3, -1, "\uc2a4\ucf00\uc904\uc744 \uc904\uc778\ub2e4", 0, 2, -3, 1, 0, "\uce74\ud398\uc778\uc73c\ub85c \ubc84\ud2f4\ub2e4", 0, -2, 1, -1, 1, weight: 130),
                 MakeJob(
                     "Event_FreelanceCowork_001",
                     "job_freelancer",
@@ -379,7 +380,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\uacf5\uc720\uc624\ud53c\uc2a4",
                     "\uc9d1\uc911\uc774 \uc548 \ub3fc \uacf5\uc720\uc624\ud53c\uc2a4 \ub370\uc774\ud328\uc2a4\uac00 \ub208\uc5d0 \ub714\ub2e4.",
                     EventCategory.Consumption,
-                    "\ud558\ub8e8 \uc774\uc6a9\ud55c\ub2e4", -25000, 0, -2, 3, 1, "\uce74\ud398\ub85c \uac04\ub2e4", -12000, 0, 1, 2, 0, "\uc9d1\uc5d0\uc11c \ubc84\ud2f4\ub2e4", 0, 0, 3, -2, 0),
+                    "\ud558\ub8e8 \uc774\uc6a9\ud55c\ub2e4", -25000, 0, -2, 3, 1, "\uce74\ud398\ub85c \uac04\ub2e4", -12000, 0, 1, 2, 0, "\uc9d1\uc5d0\uc11c \ubc84\ud2f4\ub2e4", 70000, 0, 1, -1, 0, weight: 130),
                 MakeJob(
                     "Event_FreelanceInvoice_001",
                     "job_freelancer",
@@ -387,7 +388,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\ub300\uae08 \uc785\uae08 \uc9c0\uc5f0",
                     "\uc9c0\ub09c \ud504\ub85c\uc81d\ud2b8 \ub300\uae08\uc774 \ub2a6\uc5b4\uc9c4\ub2e4.",
                     EventCategory.Consumption,
-                    "\ub3c5\ucd09 \uba54\uc77c\uc744 \ubcf4\ub0b8\ub2e4", 0, 0, 4, -2, 1, "\ud558\ub8e8 \ub354 \uae30\ub2e4\ub9b0\ub2e4", 0, 0, 2, -1, 0, "\ud560\uc778\ud574\uc11c\ub77c\ub3c4 \ubc1b\uaca0\ub2e4\uace0 \ud55c\ub2e4", -50000, 0, -2, 1, -1),
+                    "\ub3c5\ucd09 \uba54\uc77c\uc744 \ubcf4\ub0b8\ub2e4", 0, 0, 4, -2, 1, "\ud558\ub8e8 \ub354 \uae30\ub2e4\ub9b0\ub2e4", 130000, 0, 1, -1, 0, "\ud560\uc778\ud574\uc11c\ub77c\ub3c4 \ubc1b\uaca0\ub2e4\uace0 \ud55c\ub2e4", -30000, 0, -1, 1, -1, weight: 130),
                 MakeJob(
                     "Event_FreelancePitch_001",
                     "job_freelancer",
@@ -395,7 +396,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\uc2e0\uaddc \uc81c\uc548\uc11c",
                     "\uc7a0\uc7ac \uace0\uac1d\uc5d0\uac8c \uc81c\uc548\uc11c\ub97c \ubcf4\ub0bc \ud0c0\uc774\ubc0d\uc774\ub2e4.",
                     EventCategory.Work,
-                    "\uacf5\ub4e4\uc5ec \ubcf4\ub0b8\ub2e4", 0, -2, 4, 1, 3, "\ud15c\ud50c\ub9bf\uc73c\ub85c \ube60\ub974\uac8c", 0, 0, 2, 0, 1, "\ub2e4\uc74c\uc73c\ub85c \ubbf8\ub8ec\ub2e4", 0, 1, -1, -1, -2),
+                    "\uacf5\ub4e4\uc5ec \ubcf4\ub0b8\ub2e4", 0, -2, 4, 1, 3, "\ud15c\ud50c\ub9bf\uc73c\ub85c \ube60\ub974\uac8c", 0, 0, 2, 0, 1, "\ub2e4\uc74c\uc73c\ub85c \ubbf8\ub8ec\ub2e4", 130000, 0, 0, -1, -1, weight: 130),
                 MakeJob(
                     "Event_FreelancePortfolio_001",
                     "job_freelancer",
@@ -411,7 +412,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\ub2e8\uac00 \ud611\uc0c1",
                     "\uc0c8 \ud504\ub85c\uc81d\ud2b8 \ub2e8\uac00 \ud611\uc0c1 \uc790\ub9ac\ub2e4.",
                     EventCategory.Consumption,
-                    "\ub2e8\uac00\ub97c \uc62c\ub9b0\ub2e4", 0, 0, 4, 1, 2, "\ud604\ud589\uc744 \uc720\uc9c0\ud55c\ub2e4", 0, 0, 1, 0, 1, "\uc2f8\uac8c \uc218\uc8fc\ud55c\ub2e4", 0, 0, -2, 2, -1),
+                    "\ub2e8\uac00\ub97c \uc62c\ub9b0\ub2e4", 0, 0, 4, 1, 2, "\ud604\ud589\uc744 \uc720\uc9c0\ud55c\ub2e4", 0, 0, 1, 0, 1, "\uc2f8\uac8c \uc218\uc8fc\ud55c\ub2e4", 80000, 0, -1, 2, -1, weight: 130),
                 MakeJob(
                     "Event_FreelanceScope_001",
                     "job_freelancer",
@@ -419,7 +420,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\ubc94\uc704 \ucd94\uac00 \uc694\uccad",
                     "\uace0\uac1d\uc774 \uacc4\uc57d \ubc94\uc704\ub97c \ub118\ub294 \uc218\uc815\uc744 \uc694\uccad\ud55c\ub2e4.",
                     EventCategory.Work,
-                    "\ucd94\uac00 \uacac\uc801\uc744 \ub0b8\ub2e4", 0, 0, 3, 0, 2, "\uc774\ubc88\ub9cc \ud574\uc900\ub2e4", 0, -3, 2, -1, 1, "\uac70\uc808\ud55c\ub2e4", 0, 0, 1, -2, -2),
+                    "\ucd94\uac00 \uacac\uc801\uc744 \ub0b8\ub2e4", 0, 0, 3, 0, 2, "\uc774\ubc88\ub9cc \ud574\uc900\ub2e4", 0, -3, 2, -1, 1, "\uac70\uc808\ud55c\ub2e4", 50000, 0, 0, -1, -1, weight: 130),
                 MakeJob(
                     "Event_FreelanceTax_001",
                     "job_freelancer",
@@ -427,7 +428,7 @@ namespace SurviveUntilPayday.EditorTools
                     "\uc138\uae08 \uc2e0\uace0 \uc54c\ub9bc",
                     "\uc138\uae08 \uc2e0\uace0 \ub9c8\uac10\uc774 \ub2e4\uac00\uc628\ub2e4.",
                     EventCategory.Consumption,
-                    "\uc138\ubb34\uc0ac\uc5d0\uac8c \ub9e1\uae34\ub2e4", -150000, 0, -3, 2, 0, "\uc9c1\uc811 \ucc98\ub9ac\ud55c\ub2e4", 0, -2, 6, -2, 0, "\ubbf8\ub8ec\ub2e4", 0, 0, 3, -3, 0)
+                    "\uc138\ubb34\uc0ac\uc5d0\uac8c \ub9e1\uae34\ub2e4", -125000, 0, -3, 2, 0, "\uc9c1\uc811 \ucc98\ub9ac\ud55c\ub2e4", 0, -2, 6, -2, 0, "\ubbf8\ub8ec\ub2e4", 0, 0, 0, -2, 0, weight: 110)
             };
         }
 
@@ -439,13 +440,15 @@ namespace SurviveUntilPayday.EditorTools
             EventCategory category,
             string c1, long cash1, int hp1, int st1, int hap1, int co1,
             string c2, long cash2, int hp2, int st2, int hap2, int co2,
-            string c3, long cash3, int hp3, int st3, int hap3, int co3)
+            string c3, long cash3, int hp3, int st3, int hap3, int co3,
+            int weight = 80)
         {
             return MakeInternal(
                 file, id, title, description, category, string.Empty,
                 c1, cash1, hp1, st1, hap1, co1,
                 c2, cash2, hp2, st2, hap2, co2,
-                c3, cash3, hp3, st3, hap3, co3);
+                c3, cash3, hp3, st3, hap3, co3,
+                weight);
         }
 
         private static EventData MakeJob(
@@ -457,13 +460,15 @@ namespace SurviveUntilPayday.EditorTools
             EventCategory category,
             string c1, long cash1, int hp1, int st1, int hap1, int co1,
             string c2, long cash2, int hp2, int st2, int hap2, int co2,
-            string c3, long cash3, int hp3, int st3, int hap3, int co3)
+            string c3, long cash3, int hp3, int st3, int hap3, int co3,
+            int weight = 80)
         {
             return MakeInternal(
                 file, id, title, description, category, requiredJobId,
                 c1, cash1, hp1, st1, hap1, co1,
                 c2, cash2, hp2, st2, hap2, co2,
-                c3, cash3, hp3, st3, hap3, co3);
+                c3, cash3, hp3, st3, hap3, co3,
+                weight);
         }
 
         private static EventData MakeInternal(
@@ -475,7 +480,8 @@ namespace SurviveUntilPayday.EditorTools
             string requiredJobId,
             string c1, long cash1, int hp1, int st1, int hap1, int co1,
             string c2, long cash2, int hp2, int st2, int hap2, int co2,
-            string c3, long cash3, int hp3, int st3, int hap3, int co3)
+            string c3, long cash3, int hp3, int st3, int hap3, int co3,
+            int weight)
         {
             var path = $"{EventsFolder}/{file}.asset";
             var eventData = LoadOrCreate<EventData>(path);
@@ -492,7 +498,7 @@ namespace SurviveUntilPayday.EditorTools
                 Choice(id + "_c", c3, cash3, hp3, st3, hap3, co3)
             };
 
-            eventData.EditorSetCore(id, title, description, category, 1, 30, 80, conditions, choices);
+            eventData.EditorSetCore(id, title, description, category, 1, 30, weight, conditions, choices);
             EditorUtility.SetDirty(eventData);
             return eventData;
         }

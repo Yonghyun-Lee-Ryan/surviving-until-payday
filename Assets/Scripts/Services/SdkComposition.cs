@@ -38,13 +38,16 @@ namespace SurviveUntilPayday.Services
             var remote = new LocalRemoteConfigService(config);
 
             IAdService adsFallback =
-                Application.isEditor && config.UseTestAdsInEditor
+                Application.isEditor && config.UseTestAdsInEditor && !config.AllowRealAdsInEditor
                     ? new TestDeviceAdService(host)
                     : (IAdService)new MockAdService();
 
             var preferReal = remote.GetBool(RemoteConfigKeys.UseRealAds, config.PreferRealAds);
-            IAdService ads = preferReal
-                ? new AdMobAdService(adsFallback)
+            var useRealWrapper = Application.isEditor
+                ? preferReal && config.AllowRealAdsInEditor
+                : preferReal || SdkDefines.HasGoogleMobileAds;
+            IAdService ads = useRealWrapper
+                ? new AdMobAdService(adsFallback, config)
                 : adsFallback;
 
             // Firebase 심볼이 없어도 Debug로 폴백되어 Console에서 이벤트를 확인한다.

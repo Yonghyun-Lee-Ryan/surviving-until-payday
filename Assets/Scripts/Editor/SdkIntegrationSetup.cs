@@ -37,6 +37,14 @@ namespace SurviveUntilPayday.EditorTools
                     testInEditor: true,
                     mirrorDebug: true,
                     crashCapture: true);
+                existing.EditorSetAdUnits(
+                    googleTestUnits: true,
+                    appId: SdkIntegrationConfig.GoogleTestAppId,
+                    rewardedUnit: SdkIntegrationConfig.GoogleTestRewardedUnitId,
+                    interstitialUnit: SdkIntegrationConfig.GoogleTestInterstitialUnitId,
+                    testDevices: System.Array.Empty<string>(),
+                    umpForceEea: false,
+                    allowRealInEditor: false);
                 AssetDatabase.CreateAsset(existing, AssetPath);
             }
 
@@ -54,8 +62,9 @@ namespace SurviveUntilPayday.EditorTools
                 "[SdkIntegrationSetup] SdkIntegrationConfig ready at " + AssetPath + "\n" +
                 "1) Bootstrap AppRoot Inspector에서 sdkConfig를 할당하세요.\n" +
                 "2) interstitialEveryNRuns로 전면 광고 빈도를 조절할 수 있습니다.\n" +
-                "3) 실제 AdMob/Firebase: 패키지 설치 후 Scripting Define에 " +
-                "GOOGLE_MOBILE_ADS / FIREBASE_ANALYTICS / FIREBASE_CRASHLYTICS 추가.");
+                "3) 실제 AdMob/Firebase: com.google.ads.mobile / Firebase UPM 설치 시 asmdef versionDefines가 심볼을 켭니다. " +
+                ".unitypackage면 Player Settings Scripting Define에 GOOGLE_MOBILE_ADS / FIREBASE_ANALYTICS / FIREBASE_CRASHLYTICS. " +
+                "테스트 기기 hashed ID는 SdkIntegrationConfig.testDeviceHashedIds.");
         }
     }
 }

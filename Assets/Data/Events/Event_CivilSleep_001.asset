@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_CivilSleep_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_civil_sleep_001
-  title: "수면 부채"
-  description: "며칠째 수면이 부족하다."
+  title: "\uC218\uBA74 \uBD80\uCC44"
+  description: "\uBA87\uC77C\uC9F8 \uC218\uBA74\uC774 \uBD80\uC871\uD558\uB2E4."
   category: 2
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +40,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_civil_sleep_001_a
-    text: "오늘은 일찍 잔다"
+    text: "\uC624\uB298\uC740 \uC77C\uCC0D \uC794\uB2E4"
     fixedEffects:
     - statType: 1
       value: 6
@@ -53,8 +49,10 @@ MonoBehaviour:
     - statType: 3
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_sleep_001_b
-    text: "커피로 버틴다"
+    text: "\uCEE4\uD53C\uB85C \uBC84\uD2F4\uB2E4"
     fixedEffects:
     - statType: 0
       value: -4000
@@ -65,8 +63,10 @@ MonoBehaviour:
     - statType: 3
       value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_sleep_001_c
-    text: "수면제로 조절해본다"
+    text: "\uC218\uBA74\uC81C\uB85C \uC870\uC808\uD574\uBCF8\uB2E4"
     fixedEffects:
     - statType: 0
       value: -8000
@@ -75,3 +75,9 @@ MonoBehaviour:
     - statType: 2
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

@@ -2,23 +2,35 @@ using System;
 using SurviveUntilPayday.Ads;
 using UnityEngine;
 
+#if GOOGLE_MOBILE_ADS
+using GoogleMobileAds.Api;
+#endif
+
 namespace SurviveUntilPayday.Services
 {
     /// <summary>
-    /// AdMob 연동 지점. 심볼 GOOGLE_MOBILE_ADS가 없으면 테스트/Mock으로 폴백한다.
-    /// 광고 로딩 실패 시에도 예외를 밖으로 던지지 않는다.
+    /// AdMob 연동. GOOGLE_MOBILE_ADS가 없으면 Test/Mock으로 폴백한다.
+    /// 로드·표시 실패 시 예외를 밖으로 던지지 않고 Failed를 돌려 게임을 진행한다.
     /// </summary>
     public sealed class AdMobAdService : IAdService
     {
         private readonly IAdService fallback;
+        private readonly SdkIntegrationConfig config;
         private bool loggedMissingSdk;
+        private static bool initializeStarted;
 
-        public AdMobAdService(IAdService fallback)
+#if GOOGLE_MOBILE_ADS
+        private RewardedAd rewardedAd;
+        private InterstitialAd interstitialAd;
+#endif
+
+        public AdMobAdService(IAdService fallback, SdkIntegrationConfig config = null)
         {
             this.fallback = fallback ?? throw new ArgumentNullException(nameof(fallback));
+            this.config = config;
 #if GOOGLE_MOBILE_ADS
+            EnsureInitialized();
             Debug.Log("[AdMobAdService] GOOGLE_MOBILE_ADS enabled.");
-            // MobileAds.Initialize(_ => { });
 #else
             LogMissingOnce();
 #endif
@@ -29,8 +41,7 @@ namespace SurviveUntilPayday.Services
 #if GOOGLE_MOBILE_ADS
             try
             {
-                // return rewardedAd != null && rewardedAd.CanShowAd();
-                return fallback.IsRewardedReady(placement);
+                return rewardedAd != null && rewardedAd.CanShowAd();
             }
             catch (Exception ex)
             {
@@ -47,7 +58,7 @@ namespace SurviveUntilPayday.Services
 #if GOOGLE_MOBILE_ADS
             try
             {
-                return fallback.IsInterstitialReady();
+                return interstitialAd != null && interstitialAd.CanShowAd();
             }
             catch (Exception ex)
             {
@@ -69,8 +80,7 @@ namespace SurviveUntilPayday.Services
             try
             {
 #if GOOGLE_MOBILE_ADS
-                // rewardedAd.Show(reward => onFinished(AdShowResult.Completed()));
-                fallback.ShowRewardedAd(placement, onFinished);
+                ShowRewardedInternal(onFinished);
 #else
                 LogMissingOnce();
                 fallback.ShowRewardedAd(placement, onFinished);
@@ -93,7 +103,7 @@ namespace SurviveUntilPayday.Services
             try
             {
 #if GOOGLE_MOBILE_ADS
-                fallback.ShowInterstitial(onFinished);
+                ShowInterstitialInternal(onFinished);
 #else
                 LogMissingOnce();
                 fallback.ShowInterstitial(onFinished);
@@ -106,6 +116,139 @@ namespace SurviveUntilPayday.Services
             }
         }
 
+#if GOOGLE_MOBILE_ADS
+        private void EnsureInitialized()
+        {
+            if (initializeStarted)
+            {
+                return;
+            }
+
+            initializeStarted = true;
+            try
+            {
+                MobileAds.Initialize(_ =>
+                {
+                    PreloadRewarded();
+                    PreloadInterstitial();
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[AdMobAdService] Initialize failed: {ex.Message}");
+            }
+        }
+
+        private string RewardedUnitId =>
+            config != null ? config.RewardedAdUnitId : SdkIntegrationConfig.GoogleTestRewardedUnitId;
+
+        private string InterstitialUnitId =>
+            config != null ? config.InterstitialAdUnitId : SdkIntegrationConfig.GoogleTestInterstitialUnitId;
+
+        private void PreloadRewarded()
+        {
+            RewardedAd.Load(RewardedUnitId, new AdRequest(), (ad, error) =>
+            {
+                if (error != null || ad == null)
+                {
+                    Debug.LogWarning($"[AdMobAdService] Rewarded load failed: {error?.GetMessage()}");
+                    return;
+                }
+
+                rewardedAd = ad;
+            });
+        }
+
+        private void PreloadInterstitial()
+        {
+            InterstitialAd.Load(InterstitialUnitId, new AdRequest(), (ad, error) =>
+            {
+                if (error != null || ad == null)
+                {
+                    Debug.LogWarning($"[AdMobAdService] Interstitial load failed: {error?.GetMessage()}");
+                    return;
+                }
+
+                interstitialAd = ad;
+            });
+        }
+
+        private void ShowRewardedInternal(Action<AdShowResult> onFinished)
+        {
+            if (rewardedAd == null || !rewardedAd.CanShowAd())
+            {
+                RewardedAd.Load(RewardedUnitId, new AdRequest(), (ad, error) =>
+                {
+                    if (error != null || ad == null)
+                    {
+                        onFinished(AdShowResult.Failed(error != null ? error.GetMessage() : "rewarded not ready"));
+                        return;
+                    }
+
+                    rewardedAd = ad;
+                    PresentRewarded(onFinished);
+                });
+                return;
+            }
+
+            PresentRewarded(onFinished);
+        }
+
+        private void PresentRewarded(Action<AdShowResult> onFinished)
+        {
+            var granted = false;
+            rewardedAd.OnAdFullScreenContentClosed += () =>
+            {
+                PreloadRewarded();
+                onFinished(granted ? AdShowResult.Completed() : AdShowResult.Cancelled());
+            };
+            rewardedAd.OnAdFullScreenContentFailed += adError =>
+            {
+                PreloadRewarded();
+                onFinished(AdShowResult.Failed(adError != null ? adError.GetMessage() : "rewarded show failed"));
+            };
+
+            rewardedAd.Show(_ => granted = true);
+        }
+
+        private void ShowInterstitialInternal(Action<AdShowResult> onFinished)
+        {
+            if (interstitialAd == null || !interstitialAd.CanShowAd())
+            {
+                InterstitialAd.Load(InterstitialUnitId, new AdRequest(), (ad, error) =>
+                {
+                    if (error != null || ad == null)
+                    {
+                        onFinished(AdShowResult.Failed(error != null ? error.GetMessage() : "interstitial not ready"));
+                        return;
+                    }
+
+                    interstitialAd = ad;
+                    PresentInterstitial(onFinished);
+                });
+                return;
+            }
+
+            PresentInterstitial(onFinished);
+        }
+
+        private void PresentInterstitial(Action<AdShowResult> onFinished)
+        {
+            interstitialAd.OnAdFullScreenContentClosed += () =>
+            {
+                PreloadInterstitial();
+                onFinished(AdShowResult.Completed());
+            };
+            interstitialAd.OnAdFullScreenContentFailed += adError =>
+            {
+                PreloadInterstitial();
+                onFinished(AdShowResult.Failed(adError != null ? adError.GetMessage() : "interstitial show failed"));
+            };
+
+            interstitialAd.Show();
+        }
+#endif
+
         private void LogMissingOnce()
         {
             if (loggedMissingSdk)
@@ -116,7 +259,8 @@ namespace SurviveUntilPayday.Services
             loggedMissingSdk = true;
             Debug.Log(
                 "[AdMobAdService] GOOGLE_MOBILE_ADS 미정의. Test/Mock 광고로 폴백합니다. " +
-                "Google Mobile Ads Unity 플러그인 설치 후 Scripting Define Symbols에 GOOGLE_MOBILE_ADS를 추가하세요.");
+                "com.google.ads.mobile 설치 또는 Scripting Define에 GOOGLE_MOBILE_ADS를 추가하세요. " +
+                $"테스트 유닛: {SdkIntegrationConfig.GoogleTestRewardedUnitId}");
         }
     }
 }

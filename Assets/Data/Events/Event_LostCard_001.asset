@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_LostCard_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_lost_card_001
-  title: "카드 분실 의심"
-  description: "지갑에 카드가 안 보인다."
+  title: "\uCE74\uB4DC \uBD84\uC2E4 \uC758\uC2EC"
+  description: "\uC9C0\uAC11\uC5D0 \uCE74\uB4DC\uAC00 \uC548 \uBCF4\uC778\uB2E4."
   category: 3
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,26 +40,36 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_lost_card_001_a
-    text: "즉시 정지한다"
+    text: "\uC989\uC2DC \uC815\uC9C0\uD55C\uB2E4"
     fixedEffects:
     - statType: 2
       value: 4
     - statType: 3
       value: -3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_lost_card_001_b
-    text: "집을 뒤져본다"
+    text: "\uC9D1\uC744 \uB4A4\uC838\uBCF8\uB2E4"
     fixedEffects:
     - statType: 2
       value: 3
     - statType: 3
       value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_lost_card_001_c
-    text: "하루만 더 기다려본다"
+    text: "\uD558\uB8E8\uB9CC \uB354 \uAE30\uB2E4\uB824\uBCF8\uB2E4"
     fixedEffects:
     - statType: 2
       value: 2
     - statType: 3
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

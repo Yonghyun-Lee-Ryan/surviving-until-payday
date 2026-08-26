@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 1
   minDay: 2
   maxDay: 27
-  weight: 100
+  weight: 180
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,6 +37,8 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_overtime_do
     text: "\uC57C\uADFC\uD558\uACE0 \uB05D\uB0B8\uB2E4"
@@ -44,12 +46,15 @@ MonoBehaviour:
     - statType: 1
       value: -5
     - statType: 2
-      value: 12
+      value: 30
     - statType: 3
       value: -5
     - statType: 4
       value: 10
     randomOutcomes: []
+    setFlags:
+    - promotionTrack
+    clearFlags: []
   - choiceId: choice_overtime_delay
     text: "\uB0B4\uC77C \uD558\uACA0\uB2E4\uACE0 \uB9D0\uD55C\uB2E4"
     fixedEffects:
@@ -60,6 +65,8 @@ MonoBehaviour:
     - statType: 4
       value: -8
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_overtime_help
     text: "\uB3D9\uB8CC\uC5D0\uAC8C \uB3C4\uC6C0\uC744 \uC694\uCCAD\uD55C\uB2E4"
     fixedEffects:
@@ -74,3 +81,9 @@ MonoBehaviour:
     - statType: 4
       value: 3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

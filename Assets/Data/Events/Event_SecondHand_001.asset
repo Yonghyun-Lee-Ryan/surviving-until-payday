@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 5
   minDay: 1
   maxDay: 30
-  weight: 75
+  weight: 45
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,6 +37,8 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_secondhand_fair
     text: "\uC801\uB2F9\uD55C \uAC00\uACA9\uC5D0 \uC548\uC804\uD558\uAC8C \uAC70\uB798\uD55C\uB2E4"
@@ -46,6 +48,8 @@ MonoBehaviour:
     - statType: 3
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_secondhand_quick
     text: "\uAC00\uACA9\uC744 \uB0AE\uCDB0 \uBE60\uB974\uAC8C \uCC98\uBD84\uD55C\uB2E4"
     fixedEffects:
@@ -54,6 +58,8 @@ MonoBehaviour:
     - statType: 2
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_secondhand_risky
     text: "\uC9C1\uAC70\uB798 \uC57D\uC18D\uC744 \uC7A1\uACE0 \uBE44\uC2F8\uAC8C
       \uD314\uC544\uBCF8\uB2E4"
@@ -69,6 +75,9 @@ MonoBehaviour:
         value: 60000
       - statType: 3
         value: 4
+      setFlags: []
+      clearFlags: []
+      queueEventId: 
     - outcomeId: secondhand_noshow
       resultMessage: "\uC0C1\uB300\uBC29\uC774 \uB178\uC1FC\uB97C \uD574\uC11C \uC2DC\uAC04\uB9CC
         \uBC84\uB838\uB2E4."
@@ -78,3 +87,12 @@ MonoBehaviour:
         value: -5
       - statType: 2
         value: 5
+      setFlags: []
+      clearFlags: []
+      queueEventId: 
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

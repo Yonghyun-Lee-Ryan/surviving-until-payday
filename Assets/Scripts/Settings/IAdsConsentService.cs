@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SurviveUntilPayday.Settings
 {
     /// <summary>
-    /// 광고 동의(UMP 대체 스텁). 실제 UMP SDK는 이후 심볼로 교체한다.
+    /// 광고 동의. 실기기는 UMP(`GOOGLE_MOBILE_ADS`), Editor/미설치는 Local 스텁.
     /// </summary>
     public interface IAdsConsentService
     {
@@ -30,14 +30,8 @@ namespace SurviveUntilPayday.Settings
 
         public void EnsureConsent(Action<bool> onCompleted)
         {
-            if (HasCompletedFlow)
-            {
-                onCompleted?.Invoke(CanRequestAds);
-                return;
-            }
-
-            // UI(ConsentPanel)가 CompleteConsent를 호출한 뒤 다시 EnsureConsent를 호출한다.
-            onCompleted?.Invoke(false);
+            // 1차 동의 UI를 이미 통과한 뒤 호출된다. Mock 경로에서는 광고 요청을 허용한다.
+            onCompleted?.Invoke(true);
         }
     }
 }

@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_GymTrial_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_gym_trial_001
-  title: "헬스장 체험"
-  description: "헬스장 무료 체험권이 도착했다."
+  title: "\uD5EC\uC2A4\uC7A5 \uCCB4\uD5D8"
+  description: "\uD5EC\uC2A4\uC7A5 \uBB34\uB8CC \uCCB4\uD5D8\uAD8C\uC774 \uB3C4\uCC29\uD588\uB2E4."
   category: 2
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +40,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_gym_trial_001_a
-    text: "체험하고 등록한다"
+    text: "\uCCB4\uD5D8\uD558\uACE0 \uB4F1\uB85D\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
       value: -89000
@@ -55,8 +51,10 @@ MonoBehaviour:
     - statType: 3
       value: 3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_gym_trial_001_b
-    text: "체험만 한다"
+    text: "\uCCB4\uD5D8\uB9CC \uD55C\uB2E4"
     fixedEffects:
     - statType: 1
       value: 4
@@ -65,11 +63,19 @@ MonoBehaviour:
     - statType: 3
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_gym_trial_001_c
-    text: "무시한다"
+    text: "\uBB34\uC2DC\uD55C\uB2E4"
     fixedEffects:
     - statType: 1
       value: -2
     - statType: 3
       value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

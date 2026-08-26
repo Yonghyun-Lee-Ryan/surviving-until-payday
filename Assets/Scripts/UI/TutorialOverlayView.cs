@@ -1,6 +1,5 @@
 using System;
 using SurviveUntilPayday.Core;
-using SurviveUntilPayday.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,27 +14,8 @@ namespace SurviveUntilPayday.UI
         private static readonly Color CardColor = new Color(0.14f, 0.16f, 0.2f, 1f);
         private static readonly Color Accent = new Color(0.28f, 0.48f, 0.62f, 1f);
 
-        private static readonly string[] StepTitles =
-        {
-            "월급날까지 살아남기",
-            "능력치를 챙기세요",
-            "선택은 트레이드오프",
-            "위기를 미리 읽기",
-            "준비됐다면 시작"
-        };
-
-        private static readonly string[] StepBodies =
-        {
-            "30일 동안 현금·건강·스트레스·행복·회사 평가를 관리하며 월급날까지 버티는 게임입니다.",
-            $"{StatCopy.GetDisplayName(StatType.Cash)}: {StatCopy.GetDescription(StatType.Cash)}\n" +
-            $"{StatCopy.GetDisplayName(StatType.Health)}: {StatCopy.GetDescription(StatType.Health)}\n" +
-            $"{StatCopy.GetDisplayName(StatType.Stress)}: {StatCopy.GetDescription(StatType.Stress)}\n" +
-            $"{StatCopy.GetDisplayName(StatType.Happiness)}: {StatCopy.GetDescription(StatType.Happiness)}\n" +
-            $"{StatCopy.GetDisplayName(StatType.CompanyScore)}: {StatCopy.GetDescription(StatType.CompanyScore)}",
-            "한 선택으로 돈을 벌면 건강·스트레스가 나빠질 수 있습니다. 당장의 이득과 다음 날을 함께 보세요.",
-            "건강·스트레스·회사 평가·현금이 위험 구간에 들어오면 상단에 경고가 뜹니다. 파산·입원·번아웃·해고를 피하세요.",
-            "새 게임으로 직업을 고르거나, 오늘의 직장인으로 같은 시드에 도전해 보세요. 이 안내는 다시 보지 않습니다."
-        };
+        private static readonly string[] StepTitles = TutorialCopy.Titles;
+        private static readonly string[] StepBodies = TutorialCopy.Bodies;
 
         [SerializeField] private GameObject root;
         private Text titleLabel;
@@ -67,7 +47,7 @@ namespace SurviveUntilPayday.UI
             if (root != null)
             {
                 root.SetActive(true);
-                root.transform.SetAsLastSibling();
+                UiModalLayer.BringToFront(root.transform);
             }
         }
 

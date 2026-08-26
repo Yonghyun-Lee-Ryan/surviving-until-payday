@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using SurviveUntilPayday.Analytics;
 using UnityEngine;
 
+#if FIREBASE_ANALYTICS
+using Firebase.Analytics;
+#endif
+
 namespace SurviveUntilPayday.Services
 {
     /// <summary>
-    /// Firebase Analytics 연동 지점. 패키지/심볼이 없으면 Debug로 폴백한다.
-    /// 정의 심볼: FIREBASE_ANALYTICS (Firebase SDK import 후)
+    /// Firebase Analytics. FIREBASE_ANALYTICS가 없으면 Debug로 폴백한다.
     /// </summary>
     public sealed class FirebaseAnalyticsService : IAnalyticsService
     {
@@ -28,6 +31,8 @@ namespace SurviveUntilPayday.Services
 #endif
         }
 
+        public bool IsSdkAvailable => sdkAvailable;
+
         public void LogEvent(string eventName, IReadOnlyDictionary<string, object> parameters = null)
         {
             if (string.IsNullOrWhiteSpace(eventName))
@@ -35,23 +40,53 @@ namespace SurviveUntilPayday.Services
                 return;
             }
 
-#if FIREBASE_ANALYTICS
             try
             {
-                // Firebase.Analytics.FirebaseAnalytics.LogEvent(eventName, ConvertParams(parameters));
-                // 패키지 설치 후 위 호출을 활성화한다.
-                fallback?.LogEvent(eventName, parameters);
+#if FIREBASE_ANALYTICS
+                if (parameters == null || parameters.Count == 0)
+                {
+                    FirebaseAnalytics.LogEvent(eventName);
+                }
+                else
+                {
+                    var list = new List<Parameter>(parameters.Count);
+                    foreach (var pair in parameters)
+                    {
+                        if (string.IsNullOrEmpty(pair.Key) || pair.Value == null)
+                        {
+                            continue;
+                        }
+
+                        switch (pair.Value)
+                        {
+                            case long l:
+                                list.Add(new Parameter(pair.Key, l));
+                                break;
+                            case int i:
+                                list.Add(new Parameter(pair.Key, i));
+                                break;
+                            case double d:
+                                list.Add(new Parameter(pair.Key, d));
+                                break;
+                            case float f:
+                                list.Add(new Parameter(pair.Key, f));
+                                break;
+                            default:
+                                list.Add(new Parameter(pair.Key, pair.Value.ToString()));
+                                break;
+                        }
+                    }
+
+                    FirebaseAnalytics.LogEvent(eventName, list.ToArray());
+                }
+#endif
             }
             catch (Exception ex)
             {
                 Debug.LogWarning($"[FirebaseAnalyticsService] LogEvent failed: {ex.Message}");
-                fallback?.LogEvent(eventName, parameters);
             }
-#else
-            fallback?.LogEvent(eventName, parameters);
-#endif
-        }
 
-        public bool IsSdkAvailable => sdkAvailable;
+            fallback?.LogEvent(eventName, parameters);
+        }
     }
 }

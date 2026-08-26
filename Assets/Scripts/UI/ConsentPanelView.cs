@@ -74,7 +74,7 @@ namespace SurviveUntilPayday.UI
             if (root != null)
             {
                 root.SetActive(true);
-                root.transform.SetAsLastSibling();
+                UiModalLayer.BringToFront(root.transform);
             }
         }
 
@@ -111,10 +111,32 @@ namespace SurviveUntilPayday.UI
         private void OnAcceptClicked()
         {
             var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
-            appRoot.Settings?.CompleteConsent(privacyAccepted: true, adsConsentGranted: true);
             appRoot.Settings?.TryVibrate();
-            Hide();
-            onAccepted?.Invoke();
+            if (acceptButton != null)
+            {
+                acceptButton.interactable = false;
+            }
+
+            void Finish(bool adsGranted)
+            {
+                appRoot.Settings?.CompleteConsent(privacyAccepted: true, adsConsentGranted: adsGranted);
+                if (acceptButton != null)
+                {
+                    acceptButton.interactable = true;
+                }
+
+                Hide();
+                onAccepted?.Invoke();
+            }
+
+            if (appRoot.AdsConsent != null)
+            {
+                appRoot.AdsConsent.EnsureConsent(Finish);
+            }
+            else
+            {
+                Finish(true);
+            }
         }
 
         private void OpenPrivacyPolicy()

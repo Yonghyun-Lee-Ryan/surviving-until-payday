@@ -75,8 +75,8 @@ namespace SurviveUntilPayday.Core
             }
 
             return warnings.Count == 0
-                ? "큰 위험 신호는 없습니다. 다음 주도 버텨 봅시다."
-                : string.Join("\n", warnings);
+                ? "큰 위험 신호는 없습니다. 안전만 고르면 월급날은 오지만, 한 번은 위험한 선택을 시험해 보세요."
+                : string.Join("\n", warnings) + "\n실패해도 다음 주가 있습니다. 회복 쪽을 섞어 보세요.";
         }
     }
 }

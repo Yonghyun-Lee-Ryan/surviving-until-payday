@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 7
   minDay: 1
   maxDay: 30
-  weight: 50
+  weight: 3
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,28 +37,40 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: rest_home
     text: "\uC9D1\uC5D0\uC11C \uC270\uB2E4"
     fixedEffects:
     - statType: 2
-      value: -5
+      value: -1
     - statType: 3
-      value: 3
+      value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: rest_walk
     text: "\uC0B0\uCC45\uD55C\uB2E4"
     fixedEffects:
     - statType: 1
-      value: 3
+      value: 1
     - statType: 2
-      value: -3
+      value: 0
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: rest_hobby
     text: "\uCDE8\uBBF8\uB97C \uC990\uAE34\uB2E4"
     fixedEffects:
     - statType: 3
-      value: 6
+      value: 2
     - statType: 0
-      value: -8000
+      value: -20000
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

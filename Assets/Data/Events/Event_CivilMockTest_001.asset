@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_CivilMockTest_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_civil_mock_test_001
-  title: "모의고사"
-  description: "주말 모의고사 일정이 잡혔다."
+  title: "\uBAA8\uC758\uACE0\uC0AC"
+  description: "\uC8FC\uB9D0 \uBAA8\uC758\uACE0\uC0AC \uC77C\uC815\uC774 \uC7A1\uD614\uB2E4."
   category: 8
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +40,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_civil_mock_test_001_a
-    text: "응시한다"
+    text: "\uC751\uC2DC\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
       value: -15000
@@ -55,8 +51,10 @@ MonoBehaviour:
     - statType: 3
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_mock_test_001_b
-    text: "집에서 혼자 푼다"
+    text: "\uC9D1\uC5D0\uC11C \uD63C\uC790 \uD47C\uB2E4"
     fixedEffects:
     - statType: 1
       value: -1
@@ -65,8 +63,10 @@ MonoBehaviour:
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_civil_mock_test_001_c
-    text: "건너뛴다"
+    text: "\uAC74\uB108\uB6F4\uB2E4"
     fixedEffects:
     - statType: 1
       value: 1
@@ -75,3 +75,9 @@ MonoBehaviour:
     - statType: 3
       value: -3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

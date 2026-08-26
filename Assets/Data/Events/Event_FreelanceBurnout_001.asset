@@ -13,18 +13,14 @@ MonoBehaviour:
   m_Name: Event_FreelanceBurnout_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_freelance_burnout_001
-  title: "번아웃 징후"
-  description: "연속 마감에 몸이 먼저 반응한다."
+  title: "\uBC88\uC544\uC6C3 \uC9D5\uD6C4"
+  description: "\uC5F0\uC18D \uB9C8\uAC10\uC5D0 \uBAB8\uC774 \uBA3C\uC800 \uBC18\uC751\uD55C\uB2E4."
   category: 2
   minDay: 1
   maxDay: 30
-  weight: 80
+  weight: 130
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,19 +40,21 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_freelance_burnout_001_a
-    text: "하루 쉰다"
+    text: "\uD558\uB8E8 \uC26E\uB2E4"
     fixedEffects:
     - statType: 1
       value: 5
     - statType: 2
-      value: -6
+      value: -12
     - statType: 3
       value: 3
     - statType: 4
       value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_freelance_burnout_001_b
-    text: "스케줄을 줄인다"
+    text: "\uC2A4\uCF00\uC904\uC744 \uC904\uC778\uB2E4"
     fixedEffects:
     - statType: 1
       value: 2
@@ -65,17 +63,23 @@ MonoBehaviour:
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_freelance_burnout_001_c
-    text: "카페인으로 버틴다"
+    text: "\uCE74\uD398\uC778\uC73C\uB85C \uBC84\uD2F4\uB2E4"
     fixedEffects:
-    - statType: 0
-      value: -5000
     - statType: 1
-      value: -4
-    - statType: 2
-      value: 3
-    - statType: 3
       value: -2
+    - statType: 2
+      value: 1
+    - statType: 3
+      value: -1
     - statType: 4
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

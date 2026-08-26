@@ -94,6 +94,14 @@ namespace SurviveUntilPayday.DebugTools
 #endif
         }
 
+        /// <summary>Editor/Development에서만 살아 남는다. Release 플레이어는 Awake에서 제거된다.</summary>
+        public static bool IsIncludedInThisBuild =>
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            true;
+#else
+            false;
+#endif
+
         public bool HasRequiredBindings()
         {
             return eventFilterInput != null

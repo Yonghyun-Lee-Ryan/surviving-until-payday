@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 8
   minDay: 20
   maxDay: 30
-  weight: 95
+  weight: 150
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,37 +37,49 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_quit_endure
     text: "\uB9C8\uC74C\uC744 \uB2E4\uC7A1\uACE0 \uD558\uB8E8 \uB354 \uBC84\uD2F4\uB2E4"
     fixedEffects:
     - statType: 2
-      value: -8
+      value: -4
     - statType: 3
-      value: 3
+      value: 2
     - statType: 4
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_quit_vacation
     text: "\uD734\uAC00\uB97C \uB0B4\uACE0 \uC7AC\uCDA9\uC804\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -20000
+      value: -25000
     - statType: 2
-      value: -12
+      value: -8
     - statType: 3
-      value: 8
+      value: 6
     - statType: 1
-      value: 3
+      value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_quit_venting
     text: "\uD667\uAE40\uC5D0 \uC0AC\uC9C1\uC11C\uB97C \uB9CC\uC9C0\uC791\uAC70\uB9AC\uBA70
       \uD654\uB97C \uD47C\uB2E4"
     fixedEffects:
     - statType: 3
-      value: 10
+      value: 4
     - statType: 2
-      value: -15
+      value: 5
     - statType: 4
-      value: -20
+      value: -10
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

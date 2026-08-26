@@ -23,6 +23,8 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private Text tipLabel;
         [SerializeField] private Button backToMenuButton;
         [SerializeField] private Button doubleXpAdButton;
+        [SerializeField] private Button shareEndingButton;
+        [SerializeField] private Text shareStatusLabel;
 
         private bool runCompletionNotified;
         private bool navigatingToMenu;
@@ -41,6 +43,11 @@ namespace SurviveUntilPayday.UI
             {
                 doubleXpAdButton.onClick.AddListener(OnDoubleXpAdClicked);
             }
+
+            if (shareEndingButton != null)
+            {
+                shareEndingButton.onClick.AddListener(OnShareEndingClicked);
+            }
         }
 
         private void OnDestroy()
@@ -53,6 +60,11 @@ namespace SurviveUntilPayday.UI
             if (doubleXpAdButton != null)
             {
                 doubleXpAdButton.onClick.RemoveListener(OnDoubleXpAdClicked);
+            }
+
+            if (shareEndingButton != null)
+            {
+                shareEndingButton.onClick.RemoveListener(OnShareEndingClicked);
             }
         }
 
@@ -135,7 +147,7 @@ namespace SurviveUntilPayday.UI
                 }
                 else
                 {
-                    endingDescriptionLabel.text = "엔딩 데이터가 없습니다.";
+                    endingDescriptionLabel.text = EmptyStateCopy.NoEndingData;
                 }
             }
 
@@ -159,11 +171,18 @@ namespace SurviveUntilPayday.UI
 
             if (experienceLabel != null)
             {
-                experienceLabel.text = $"인생 경험치 +{result.ExperienceGained}";
+                var dailyXp = result.MetaProgress != null
+                    ? result.MetaProgress.DailyMissionExperienceGained
+                    : 0;
+                experienceLabel.text = $"인생 경험치 +{result.ExperienceGained + dailyXp}";
                 if (result.MetaProgress != null)
                 {
                     experienceLabel.text +=
                         $"\nLv.{result.MetaProgress.LevelBefore} → Lv.{result.MetaProgress.LevelAfter}";
+                    if (dailyXp > 0)
+                    {
+                        experienceLabel.text += $"\n일일 미션 +{dailyXp} XP";
+                    }
                 }
 
                 experienceLabel.alignment = TextAnchor.UpperCenter;
@@ -181,9 +200,13 @@ namespace SurviveUntilPayday.UI
 
             PopulateEventUnlocks(result);
             EnsureTipLabel();
+            EnsureShareButton();
             if (tipLabel != null)
             {
-                tipLabel.text = FailureTipCatalog.GetTip(result.FailureReason, result.IsSuccess);
+                tipLabel.text = FailureTipCatalog.GetTip(
+                    result.FailureReason,
+                    result.IsSuccess,
+                    result.Ending != null ? result.Ending.Id : null);
                 tipLabel.alignment = TextAnchor.UpperCenter;
                 tipLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
                 tipLabel.verticalOverflow = VerticalWrapMode.Overflow;
@@ -423,7 +446,7 @@ namespace SurviveUntilPayday.UI
 
             if (tipLabel != null && !string.IsNullOrWhiteSpace(tipLabel.text))
             {
-                var tipHeight = Mathf.Clamp(tipLabel.preferredHeight + 8f, 40f, 100f);
+                var tipHeight = Mathf.Clamp(tipLabel.preferredHeight + 8f, 40f, 160f);
                 tipLabel.rectTransform.anchoredPosition = new Vector2(0f, cursorY);
                 tipLabel.rectTransform.sizeDelta = new Vector2(width, tipHeight);
                 tipLabel.rectTransform.pivot = new Vector2(0.5f, 1f);
@@ -433,11 +456,13 @@ namespace SurviveUntilPayday.UI
             // 버튼은 SafeArea 중앙 앵커 기준. 해금 블록 아래에 두고 하단과 겹치지 않게 클램핑.
             var buttonTop = Mathf.Min(cursorY - 8f, -200f);
             var doubleXpY = buttonTop - 45f;
-            var backY = doubleXpY - 110f;
+            var shareY = doubleXpY - 100f;
+            var backY = shareY - 110f;
             if (backY < -820f)
             {
                 var shift = -820f - backY;
                 doubleXpY += shift;
+                shareY += shift;
                 backY += shift;
             }
 
@@ -447,6 +472,15 @@ namespace SurviveUntilPayday.UI
                 if (rect != null)
                 {
                     rect.anchoredPosition = new Vector2(0f, doubleXpY);
+                }
+            }
+
+            if (shareEndingButton != null)
+            {
+                var rect = shareEndingButton.transform as RectTransform;
+                if (rect != null)
+                {
+                    rect.anchoredPosition = new Vector2(0f, shareY);
                 }
             }
 
@@ -548,6 +582,17 @@ namespace SurviveUntilPayday.UI
                 parts.Add("★ 업적: " + string.Join(", ", names) + suffix);
             }
 
+            if (meta.NewlyCompletedDailyMissionTitles != null
+                && meta.NewlyCompletedDailyMissionTitles.Count > 0)
+            {
+                var maxMissions = Mathf.Min(meta.NewlyCompletedDailyMissionTitles.Count, 3);
+                var missionNames = meta.NewlyCompletedDailyMissionTitles.GetRange(0, maxMissions);
+                var missionSuffix = meta.NewlyCompletedDailyMissionTitles.Count > maxMissions
+                    ? $" 외 {meta.NewlyCompletedDailyMissionTitles.Count - maxMissions}개"
+                    : string.Empty;
+                parts.Add("★ 일일 미션: " + string.Join(", ", missionNames) + missionSuffix);
+            }
+
             if (meta.TraitFragmentsGained > 0)
             {
                 parts.Add($"특성 조각 +{meta.TraitFragmentsGained}");
@@ -609,12 +654,12 @@ namespace SurviveUntilPayday.UI
 
             if (endingTitleLabel != null)
             {
-                endingTitleLabel.text = "결과 데이터 없음";
+                endingTitleLabel.text = EmptyStateCopy.NoResultData;
             }
 
             if (endingDescriptionLabel != null)
             {
-                endingDescriptionLabel.text = "Game Scene에서 회차를 완료하면 결과가 표시됩니다.";
+                endingDescriptionLabel.text = EmptyStateCopy.NoResultBody;
             }
 
             EnsureTipLabel();
@@ -714,6 +759,87 @@ namespace SurviveUntilPayday.UI
             runCompletionNotified = true;
         }
 
+        private void EnsureShareButton()
+        {
+            if (shareEndingButton != null)
+            {
+                return;
+            }
+
+            var parent = backToMenuButton != null
+                ? backToMenuButton.transform.parent
+                : (titleLabel != null ? titleLabel.transform.parent : transform);
+            if (parent == null)
+            {
+                return;
+            }
+
+            var existing = parent.Find("ShareEndingButton")?.GetComponent<Button>();
+            if (existing != null)
+            {
+                shareEndingButton = existing;
+                shareEndingButton.onClick.RemoveListener(OnShareEndingClicked);
+                shareEndingButton.onClick.AddListener(OnShareEndingClicked);
+                shareStatusLabel = existing.transform.Find("Label")?.GetComponent<Text>();
+                return;
+            }
+
+            var go = new GameObject("ShareEndingButton", typeof(RectTransform), typeof(Image), typeof(Button));
+            go.transform.SetParent(parent, false);
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = new Vector2(480f, 90f);
+            go.GetComponent<Image>().color = new Color(0.32f, 0.52f, 0.72f, 1f);
+            shareEndingButton = go.GetComponent<Button>();
+            shareEndingButton.targetGraphic = go.GetComponent<Image>();
+
+            var labelGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            labelGo.transform.SetParent(go.transform, false);
+            var labelRect = labelGo.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+            shareStatusLabel = labelGo.GetComponent<Text>();
+            shareStatusLabel.text = "엔딩 기록 복사";
+            shareStatusLabel.font = UiFont.Regular;
+            shareStatusLabel.fontSize = 28;
+            shareStatusLabel.alignment = TextAnchor.MiddleCenter;
+            shareStatusLabel.color = Color.white;
+            UiFont.Apply(shareStatusLabel, bold: true);
+
+            shareEndingButton.onClick.AddListener(OnShareEndingClicked);
+        }
+
+        private void OnShareEndingClicked()
+        {
+            var result = AppRoot.Instance?.Session?.LastResult;
+            var text = EndingShareCopy.Build(result);
+            GUIUtility.systemCopyBuffer = text;
+            if (shareStatusLabel != null)
+            {
+                shareStatusLabel.text = "클립보드에 복사됨";
+                UiFont.Apply(shareStatusLabel, bold: true);
+            }
+        }
+
+        private void SetDoubleXpButtonLabel(string text)
+        {
+            if (doubleXpAdButton == null)
+            {
+                return;
+            }
+
+            var label = doubleXpAdButton.GetComponentInChildren<Text>();
+            if (label != null)
+            {
+                label.text = text;
+                UiFont.Apply(label, bold: true);
+            }
+        }
+
         private void RefreshDoubleXpButton(GameSession session)
         {
             if (doubleXpAdButton == null)
@@ -721,15 +847,38 @@ namespace SurviveUntilPayday.UI
                 return;
             }
 
-            var canShow = session?.LastResult != null
-                          && !session.DoubleExperienceClaimedForLastResult
-                          && AppRoot.Instance?.RewardedAds != null
-                          && AppRoot.Instance.RewardedAds.CanRequest(
-                              RewardedAdPlacement.DoubleExperience,
-                              out _);
+            var hasResult = session?.LastResult != null;
+            doubleXpAdButton.gameObject.SetActive(hasResult);
+            if (!hasResult)
+            {
+                return;
+            }
 
-            doubleXpAdButton.gameObject.SetActive(session?.LastResult != null);
-            doubleXpAdButton.interactable = canShow;
+            if (session.DoubleExperienceClaimedForLastResult)
+            {
+                doubleXpAdButton.interactable = false;
+                SetDoubleXpButtonLabel(AdBlockReasonCopy.AlreadyClaimed);
+                return;
+            }
+
+            var rewarded = AppRoot.Instance?.RewardedAds;
+            if (rewarded == null)
+            {
+                doubleXpAdButton.interactable = false;
+                SetDoubleXpButtonLabel(AdBlockReasonCopy.ServiceUnavailable);
+                return;
+            }
+
+            if (!rewarded.CanRequest(RewardedAdPlacement.DoubleExperience, out var reason))
+            {
+                doubleXpAdButton.interactable = false;
+                SetDoubleXpButtonLabel(
+                    AdBlockReasonCopy.FromGatewayReason(reason, RewardedAdPlacement.DoubleExperience));
+                return;
+            }
+
+            doubleXpAdButton.interactable = true;
+            SetDoubleXpButtonLabel("광고로 경험치 2배");
         }
     }
 }

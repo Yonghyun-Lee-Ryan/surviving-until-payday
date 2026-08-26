@@ -40,8 +40,11 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private Text eventRateLabel;
         [SerializeField] private Text traitRateLabel;
         [SerializeField] private Text achievementRateLabel;
+        [SerializeField] private Text jobRateLabel;
         [SerializeField] private Text unlockToastLabel;
         [SerializeField] private Text fragmentLabel;
+        [SerializeField] private Text nextGoalLabel;
+        [SerializeField] private Text overallRateLabel;
         [SerializeField] private Text listTitleLabel;
         [SerializeField] private Transform listContentRoot;
         [SerializeField] private Button endingTabButton;
@@ -57,6 +60,7 @@ namespace SurviveUntilPayday.UI
         private int totalEndings;
         private int totalEvents;
         private int totalTraits;
+        private int totalJobs;
         private int totalAchievements;
         private IReadOnlyList<EndingData> endingCatalog = Array.Empty<EndingData>();
         private IReadOnlyList<EventData> eventCatalog = Array.Empty<EventData>();
@@ -74,7 +78,10 @@ namespace SurviveUntilPayday.UI
             Text eventRate,
             Text traitRate,
             Text achievementRate,
-            Text unlockToast)
+            Text unlockToast,
+            Text jobRate = null,
+            Text nextGoal = null,
+            Text overallRate = null)
         {
             levelLabel = level;
             experienceLabel = experience;
@@ -83,6 +90,20 @@ namespace SurviveUntilPayday.UI
             traitRateLabel = traitRate;
             achievementRateLabel = achievementRate;
             unlockToastLabel = unlockToast;
+            if (jobRate != null)
+            {
+                jobRateLabel = jobRate;
+            }
+
+            if (nextGoal != null)
+            {
+                nextGoalLabel = nextGoal;
+            }
+
+            if (overallRate != null)
+            {
+                overallRateLabel = overallRate;
+            }
         }
 
         public void BindExtended(
@@ -130,7 +151,9 @@ namespace SurviveUntilPayday.UI
             int traitsTotal,
             int achievementsTotal,
             IReadOnlyList<EndingData> endings = null,
-            IReadOnlyList<EventData> events = null)
+            IReadOnlyList<EventData> events = null,
+            int jobsTotal = 0,
+            string nextGoal = null)
         {
             EnsureCleanLayout();
             cachedMeta = meta;
@@ -138,6 +161,7 @@ namespace SurviveUntilPayday.UI
             totalEvents = eventsTotal;
             totalTraits = traitsTotal;
             totalAchievements = achievementsTotal;
+            totalJobs = jobsTotal;
             endingCatalog = endings ?? Array.Empty<EndingData>();
             eventCatalog = events ?? Array.Empty<EventData>();
 
@@ -153,12 +177,28 @@ namespace SurviveUntilPayday.UI
                 toNext > 0
                     ? $"인생 경험치 {meta.TotalExperience}  ({into}/{toNext})"
                     : $"인생 경험치 {meta.TotalExperience}  (MAX)");
-            SetText(fragmentLabel, $"특성 조각  {meta.TraitFragmentCount}");
+            SetText(fragmentLabel, $"특성 조각  {meta.TraitFragmentCount}  (수집 실적)");
+            SetText(nextGoalLabel, string.IsNullOrWhiteSpace(nextGoal)
+                ? MetaGrowthHint.BuildNextGoal(meta, null, null)
+                : nextGoal);
 
             SetRate(endingRateLabel, "엔딩", meta.Endings.UnlockedCount, totalEndings);
             SetRate(eventRateLabel, "사건", meta.Events.UnlockedCount, totalEvents);
             SetRate(traitRateLabel, "특성", meta.Traits.UnlockedCount, totalTraits);
             SetRate(achievementRateLabel, "업적", meta.Achievements.UnlockedCount, totalAchievements);
+            SetRate(jobRateLabel, "직업", meta.Jobs.UnlockedCount, totalJobs);
+            var overall = MetaGrowthHint.OverallPercent(
+                meta.Endings.UnlockedCount,
+                totalEndings,
+                meta.Events.UnlockedCount,
+                totalEvents,
+                meta.Traits.UnlockedCount,
+                totalTraits,
+                meta.Jobs.UnlockedCount,
+                totalJobs,
+                meta.Achievements.UnlockedCount,
+                totalAchievements);
+            SetText(overallRateLabel, $"전체 해금률  {overall}%");
             RefreshList();
             HighlightChrome();
         }
@@ -193,6 +233,9 @@ namespace SurviveUntilPayday.UI
             levelLabel = EnsureLabel(root, "Level", levelLabel, 34, true, 40f);
             experienceLabel = EnsureLabel(root, "XP", experienceLabel, 22, false, 30f);
             fragmentLabel = EnsureLabel(root, "Fragments", fragmentLabel, 20, false, 28f);
+            nextGoalLabel = EnsureLabel(root, "NextGoal", nextGoalLabel, 20, true, 48f);
+            nextGoalLabel.color = new Color(0.22f, 0.4f, 0.55f, 1f);
+            overallRateLabel = EnsureLabel(root, "OverallRate", overallRateLabel, 22, true, 30f);
 
             var rateBlock = new GameObject("RateBlock", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(LayoutElement));
             rateBlock.transform.SetParent(root, false);
@@ -203,8 +246,8 @@ namespace SurviveUntilPayday.UI
             rateBlockLayout.childForceExpandWidth = true;
             rateBlockLayout.childForceExpandHeight = false;
             var rateBlockElement = rateBlock.GetComponent<LayoutElement>();
-            rateBlockElement.minHeight = 84f;
-            rateBlockElement.preferredHeight = 88f;
+            rateBlockElement.minHeight = 118f;
+            rateBlockElement.preferredHeight = 122f;
 
             var ratesTop = CreateRow(rateBlock.transform, "RateRowTop", 34f, 12f);
             endingRateLabel = EnsureLabel(ratesTop, "EndingRate", endingRateLabel, 20, false, 32f);
@@ -212,6 +255,8 @@ namespace SurviveUntilPayday.UI
             var ratesBottom = CreateRow(rateBlock.transform, "RateRowBottom", 34f, 12f);
             traitRateLabel = EnsureLabel(ratesBottom, "TraitRate", traitRateLabel, 20, false, 32f);
             achievementRateLabel = EnsureLabel(ratesBottom, "AchievementRate", achievementRateLabel, 20, false, 32f);
+            var ratesJobs = CreateRow(rateBlock.transform, "RateRowJobs", 34f, 12f);
+            jobRateLabel = EnsureLabel(ratesJobs, "JobRate", jobRateLabel, 20, false, 32f);
 
             var tabs = CreateRow(root, "TabRow", 44f, 10f);
             endingTabButton = EnsureButton(tabs, "TabEnding", endingTabButton, "엔딩");
@@ -590,7 +635,7 @@ namespace SurviveUntilPayday.UI
             var entries = BuildEntries();
             if (entries.Count == 0)
             {
-                listRows.Add(CreateEmptyRow("아직 표시할 항목이 없습니다.\n플레이로 도감을 채워 보세요."));
+                listRows.Add(CreateEmptyRow(EmptyStateCopy.CodexEmptyList));
                 return;
             }
 
@@ -836,7 +881,7 @@ namespace SurviveUntilPayday.UI
             descRect.offsetMax = new Vector2(-14f, 0f);
             var desc = descGo.AddComponent<Text>();
             desc.font = title.font;
-            desc.fontSize = 16;
+            desc.fontSize = AccessibilityCopy.MinBodyFontSize;
             desc.alignment = TextAnchor.UpperLeft;
             desc.color = entry.Unlocked ? TextMuted : new Color(0.92f, 0.92f, 0.94f, 1f);
             desc.text = Truncate(entry.Description, 48);
@@ -854,7 +899,7 @@ namespace SurviveUntilPayday.UI
         {
             if (!entry.Unlocked)
             {
-                ShowUnlockToast("아직 해금되지 않은 항목입니다.");
+                ShowUnlockToast(EmptyStateCopy.CodexLocked);
                 return;
             }
 
@@ -877,7 +922,7 @@ namespace SurviveUntilPayday.UI
             if (detailBodyLabel != null)
             {
                 detailBodyLabel.text = string.IsNullOrWhiteSpace(body)
-                    ? "설명이 없습니다."
+                    ? EmptyStateCopy.NoDescription
                     : body;
             }
 

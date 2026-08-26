@@ -132,6 +132,82 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void EndingEvaluator_Rqa04_PromotionBeatsCashKing_WhenTrackAndCompanyMet()
+        {
+            var cashKing = CreateSuccessEnding("ending_cash_king", "통장 잔고의 제왕", 73, 1_400_000L);
+            var promotion = CreateSuccessEnding("ending_promotion", "승진 후보", 95, null);
+            promotion.Condition.EditorSetCompanyScore(true, 60, false, 0);
+            promotion.Condition.EditorSetFlags(new[] { RunFlags.PromotionTrack });
+            var barely = CreateSuccessEnding("ending_barely_survived", "겨우", 8, null);
+            barely.Condition.EditorSetCash(false, 0, true, 900_000L);
+
+            var evaluator = new EndingEvaluator(new[] { barely, promotion, cashKing }, barely);
+            var state = CreateState(cash: 2_200_000L, health: 55, stress: 45, happiness: 50, company: 62);
+            state.SetFlag(RunFlags.PromotionTrack);
+
+            Assert.AreEqual("ending_promotion", evaluator.Evaluate(state, true, FailureReason.None).Id);
+        }
+
+        [Test]
+        public void EndingEvaluator_Rqa04_CashKing_RequiresHighCashAndLosesCloseCall()
+        {
+            var cashKing = CreateSuccessEnding("ending_cash_king", "통장 잔고의 제왕", 73, 1_400_000L);
+            var barely = CreateSuccessEnding("ending_barely_survived", "겨우", 8, null);
+            barely.Condition.EditorSetCash(false, 0, true, 900_000L);
+
+            var evaluator = new EndingEvaluator(new[] { barely, cashKing }, barely);
+
+            var midCash = CreateState(cash: 1_100_000L, health: 55, stress: 45, happiness: 50, company: 50);
+            Assert.AreEqual("ending_barely_survived", evaluator.Evaluate(midCash, true, FailureReason.None).Id);
+
+            var closeCallRich = CreateState(cash: 2_200_000L, health: 28, stress: 45, happiness: 50, company: 50);
+            Assert.AreEqual("ending_barely_survived", evaluator.Evaluate(closeCallRich, true, FailureReason.None).Id);
+
+            var comfortableRich = CreateState(cash: 1_600_000L, health: 60, stress: 40, happiness: 50, company: 50);
+            Assert.AreEqual("ending_cash_king", evaluator.Evaluate(comfortableRich, true, FailureReason.None).Id);
+        }
+
+        [Test]
+        public void EndingEvaluator_Rqa04_Barely_MatchesLowCashBand()
+        {
+            var barely = CreateSuccessEnding("ending_barely_survived", "겨우", 8, null);
+            barely.Condition.EditorSetCash(false, 0, true, 900_000L);
+            var cashKing = CreateSuccessEnding("ending_cash_king", "통장", 73, 1_400_000L);
+            var evaluator = new EndingEvaluator(new[] { cashKing, barely }, barely);
+            var state = CreateState(cash: 420_000L, health: 48, stress: 55, happiness: 45, company: 50);
+
+            Assert.AreEqual("ending_barely_survived", evaluator.Evaluate(state, true, FailureReason.None).Id);
+            Assert.IsTrue(EndingConditionMatcher.IsCloseCallSurvival(state.Stats));
+        }
+
+        [Test]
+        public void FailureEvaluator_Rqa04_NeglectedHealth_TriggersHospital()
+        {
+            var state = CreateState(cash: 200_000L, health: 28, stress: 40, happiness: 50, company: 50);
+            Assert.AreEqual(FailureReason.None, FailureEvaluator.Evaluate(state));
+
+            state.SetFlag(RunFlags.NeglectedHealth);
+            Assert.AreEqual(FailureReason.Hospitalization, FailureEvaluator.Evaluate(state));
+            Assert.AreEqual(FailureReason.Hospitalization, state.EvaluateFailure());
+        }
+
+        [Test]
+        public void FailureEvaluator_Rqa04_NeglectedHealth_DoesNotTriggerWhenHealthy()
+        {
+            var state = CreateState(cash: 200_000L, health: 50, stress: 40, happiness: 50, company: 50);
+            state.SetFlag(RunFlags.NeglectedHealth);
+            Assert.AreEqual(FailureReason.None, FailureEvaluator.Evaluate(state));
+        }
+
+        [Test]
+        public void FailureEvaluator_Rqa04_BankruptcyStillBeatsNeglectedHospital()
+        {
+            var state = CreateState(cash: -1L, health: 20, stress: 40, happiness: 50, company: 50);
+            state.SetFlag(RunFlags.NeglectedHealth);
+            Assert.AreEqual(FailureReason.Bankruptcy, state.EvaluateFailure());
+        }
+
+        [Test]
         public void EndingCodex_UnlocksOnce()
         {
             var codex = new EndingCodex();

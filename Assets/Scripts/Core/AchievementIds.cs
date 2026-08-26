@@ -56,15 +56,8 @@ namespace SurviveUntilPayday.Core
 
         public static string GetDisplayName(string id)
         {
-            for (var i = 0; i < Catalog.Count; i++)
-            {
-                if (Catalog[i].Id == id)
-                {
-                    return Catalog[i].Title;
-                }
-            }
-
-            return id ?? string.Empty;
+            var resolved = AchievementCatalog.Get(id);
+            return string.IsNullOrWhiteSpace(resolved.Title) ? (id ?? string.Empty) : resolved.Title;
         }
     }
 

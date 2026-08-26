@@ -30,9 +30,11 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private int totalEndingCount = 12;
         [SerializeField] private int totalEventCount = 55;
         [SerializeField] private int totalTraitCount = 4;
+        [SerializeField] private int totalJobCount = 3;
         [SerializeField] private int totalAchievementCount = AchievementIds.CatalogCount;
 
         private MetaProgressionManager subscribedMeta;
+        private string pendingVisitToast;
 
         private void Awake()
         {
@@ -61,7 +63,6 @@ namespace SurviveUntilPayday.UI
                 dailyButton.onClick.AddListener(OnDailyClicked);
             }
 
-            DisableLegacyShopUi();
             ApplyMainMenuChromeLayout();
         }
 
@@ -70,14 +71,12 @@ namespace SurviveUntilPayday.UI
             EnsureDefaultCatalog();
             ApplyMainMenuChromeLayout();
             RefreshContinueButton();
-            RefreshCodex();
-            RefreshDailyContent();
             SubscribeUnlockNotifications();
+            RefreshDailyContent();
+            RefreshCodex();
             ShowLastRunUnlockToast();
             TryShowFirstRunTutorial();
             AppRoot.EnsureCreated().Audio?.SetBgm(BgmId.Main);
-            AppRoot.EnsureCreated().ApplyMonetizationFromMeta(
-                AppRoot.Instance?.Session?.CachedSave?.meta);
         }
 
         private void OnDestroy()
@@ -240,7 +239,7 @@ namespace SurviveUntilPayday.UI
                 var label = continueButton.GetComponentInChildren<Text>();
                 if (label != null)
                 {
-                    label.text = hasRun ? "이어하기" : "이어갈 회차 없음";
+                    label.text = hasRun ? EmptyStateCopy.ContinueAvailable : EmptyStateCopy.ContinueUnavailable;
                     UiFont.Apply(label, bold: true);
                 }
 
@@ -320,14 +319,41 @@ namespace SurviveUntilPayday.UI
             var events = eventCatalog != null && eventCatalog.Count > 0
                 ? eventCatalog
                 : null;
+            var jobsTotal = jobCatalog != null && jobCatalog.Count > 0 ? jobCatalog.Count : totalJobCount;
+            var eventsTotal = events != null && events.Count > 0
+                ? CountPlayableEvents(events)
+                : totalEventCount;
+            var traitsTotal = traitCatalog != null && traitCatalog.Count > 0
+                ? traitCatalog.Count
+                : totalTraitCount;
+            var nextGoal = MetaGrowthHint.BuildNextGoal(
+                appRoot.Session?.Meta,
+                jobCatalog,
+                traitCatalog);
             codexPanel.Refresh(
                 appRoot.Session.Meta,
                 totalEndingCount,
-                totalEventCount,
-                totalTraitCount,
+                eventsTotal,
+                traitsTotal,
                 totalAchievementCount > 0 ? totalAchievementCount : AchievementIds.CatalogCount,
                 endings,
-                events);
+                events,
+                jobsTotal,
+                nextGoal);
+        }
+
+        private static int CountPlayableEvents(IReadOnlyList<EventData> events)
+        {
+            var count = 0;
+            for (var i = 0; i < events.Count; i++)
+            {
+                if (events[i] != null && events[i].Id != "event_rest_fallback")
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private void SubscribeUnlockNotifications()
@@ -350,15 +376,16 @@ namespace SurviveUntilPayday.UI
 
             var appRoot = AppRoot.Instance ?? AppRoot.EnsureCreated();
             var metaProgress = appRoot.Session?.LastResult?.MetaProgress;
-            if (metaProgress == null)
-            {
-                return;
-            }
-
             var message = BuildUnlockToast(metaProgress);
             if (!string.IsNullOrEmpty(message))
             {
                 codexPanel.ShowUnlockToast(message);
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(pendingVisitToast))
+            {
+                codexPanel.ShowUnlockToast(pendingVisitToast);
             }
         }
 
@@ -376,6 +403,11 @@ namespace SurviveUntilPayday.UI
 
         private static string BuildUnlockToast(MetaProgressResult progress)
         {
+            if (progress == null)
+            {
+                return string.Empty;
+            }
+
             var parts = new List<string>();
             if (progress.NewlyUnlockedEndings.Count > 0)
             {
@@ -400,6 +432,22 @@ namespace SurviveUntilPayday.UI
             if (progress.NewlyUnlockedAchievements.Count > 0)
             {
                 parts.Add($"업적 {progress.NewlyUnlockedAchievements.Count}");
+            }
+
+            if (progress.NewlyCompletedDailyMissionTitles != null
+                && progress.NewlyCompletedDailyMissionTitles.Count > 0)
+            {
+                parts.Add($"미션 {progress.NewlyCompletedDailyMissionTitles.Count}");
+            }
+
+            if (progress.DailyMissionExperienceGained > 0)
+            {
+                parts.Add($"미션 XP +{progress.DailyMissionExperienceGained}");
+            }
+
+            if (progress.LoginStreak > 1)
+            {
+                parts.Add($"접속 {progress.LoginStreak}일");
             }
 
             if (progress.TraitFragmentsGained > 0)
@@ -466,7 +514,17 @@ namespace SurviveUntilPayday.UI
             }
 
             var unlockedTraits = CollectUnlockedTraits(AppRoot.EnsureCreated().Session?.Meta);
-            runStartPanel.Show(unlockedJobs, defaultJob, unlockedTraits, StartNewRun, () => { });
+            var nextGoal = MetaGrowthHint.BuildNextGoal(
+                AppRoot.EnsureCreated().Session?.Meta,
+                jobCatalog,
+                traitCatalog);
+            runStartPanel.Show(
+                unlockedJobs,
+                defaultJob,
+                unlockedTraits,
+                StartNewRun,
+                () => { },
+                nextGoal);
         }
 
         private List<JobData> CollectUnlockedJobs(MetaProgressionManager meta)
@@ -585,6 +643,7 @@ namespace SurviveUntilPayday.UI
             AppRoot.EnsureCreated().Audio?.PlaySfx(SfxId.Click);
             EnsureDailyEntryPoints();
             RefreshDailyContent();
+            RefreshCodex();
             var appRoot = AppRoot.EnsureCreated();
             var daily = appRoot.Session?.Meta?.Daily;
             if (dailyPanel == null || daily == null)
@@ -609,6 +668,18 @@ namespace SurviveUntilPayday.UI
             session.SetDailyMissionPool(dailyMissionPool);
             session.Meta.Daily.EnsureForLocalDate(dailyMissionPool);
             session.Meta.Daily.BindMissionDefinitions(dailyMissionPool);
+            pendingVisitToast = null;
+            var visitXp = session.Meta.Daily.TryGrantVisitBonus(
+                session.Meta,
+                traitCatalog,
+                jobCatalog);
+            session.Meta.RefreshUnlocksFromLevel(traitCatalog, jobCatalog);
+            if (visitXp > 0)
+            {
+                pendingVisitToast =
+                    $"연속 접속 {session.Meta.Daily.LoginStreak}일 · 출석 +{visitXp} XP";
+            }
+
             appRoot.PersistSession(includeActiveRun: session.HasActiveRun);
         }
 
@@ -709,34 +780,6 @@ namespace SurviveUntilPayday.UI
                 rect.offsetMin = Vector2.zero;
                 rect.offsetMax = Vector2.zero;
                 dailyPanel = go.GetComponent<DailyPanelView>();
-            }
-        }
-
-        /// <summary>
-        /// 레거시 상점 버튼/패널이 씬에 남아 있으면 숨긴다.
-        /// </summary>
-        private void DisableLegacyShopUi()
-        {
-            void Hide(Transform t)
-            {
-                if (t != null)
-                {
-                    t.gameObject.SetActive(false);
-                }
-            }
-
-            Hide(transform.Find("ShopButton"));
-            Hide(transform.Find("ShopPanel"));
-            if (startGameButton != null && startGameButton.transform.parent != null)
-            {
-                Hide(startGameButton.transform.parent.Find("ShopButton"));
-            }
-
-            var canvas = GetComponentInParent<Canvas>();
-            if (canvas != null)
-            {
-                Hide(canvas.transform.Find("ShopPanel"));
-                Hide(canvas.transform.Find("ShopButton"));
             }
         }
 

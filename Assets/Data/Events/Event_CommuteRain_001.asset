@@ -13,18 +13,15 @@ MonoBehaviour:
   m_Name: Event_CommuteRain_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_commute_rain_001
-  title: "빗속 출근"
-  description: "갑자기 쏟아진 비에 우산도 없이 출근해야 한다."
+  title: "\uBE57\uC18D \uCD9C\uADFC"
+  description: "\uAC11\uC790\uAE30 \uC3DF\uC544\uC9C4 \uBE44\uC5D0 \uC6B0\uC0B0\uB3C4
+    \uC5C6\uC774 \uCD9C\uADFC\uD574\uC57C \uD55C\uB2E4."
   category: 3
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,7 +41,7 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_commute_rain_001_a
-    text: "택시로 간다"
+    text: "\uD0DD\uC2DC\uB85C \uAC04\uB2E4"
     fixedEffects:
     - statType: 0
       value: -25000
@@ -55,8 +52,10 @@ MonoBehaviour:
     - statType: 4
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_commute_rain_001_b
-    text: "뛰어서 간다"
+    text: "\uB6F0\uC5B4\uC11C \uAC04\uB2E4"
     fixedEffects:
     - statType: 1
       value: -5
@@ -65,8 +64,10 @@ MonoBehaviour:
     - statType: 3
       value: -3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_commute_rain_001_c
-    text: "지각을 감수한다"
+    text: "\uC9C0\uAC01\uC744 \uAC10\uC218\uD55C\uB2E4"
     fixedEffects:
     - statType: 2
       value: 6
@@ -75,3 +76,9 @@ MonoBehaviour:
     - statType: 4
       value: -8
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

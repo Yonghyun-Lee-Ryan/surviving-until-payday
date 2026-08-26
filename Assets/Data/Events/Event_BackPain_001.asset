@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 2
   minDay: 1
   maxDay: 30
-  weight: 70
+  weight: 15
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,6 +37,8 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_backpain_therapy
     text: "\uBCD1\uC6D0\uC5D0\uC11C \uBB3C\uB9AC\uCE58\uB8CC\uB97C \uBC1B\uB294\uB2E4"
@@ -48,6 +50,9 @@ MonoBehaviour:
     - statType: 2
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags:
+    - neglectedHealth
   - choiceId: choice_backpain_selfcare
     text: "\uC548\uB9C8\uC758\uC790\xB7\uD30C\uC2A4\uB85C \uBC84\uD2F4\uB2E4"
     fixedEffects:
@@ -56,6 +61,8 @@ MonoBehaviour:
     - statType: 1
       value: 3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_backpain_ignore
     text: "\uBB34\uC2DC\uD558\uACE0 \uACC4\uC18D \uC77C\uD55C\uB2E4"
     fixedEffects:
@@ -66,3 +73,10 @@ MonoBehaviour:
     - statType: 4
       value: 2
     randomOutcomes: []
+    setFlags:
+    - neglectedHealth
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

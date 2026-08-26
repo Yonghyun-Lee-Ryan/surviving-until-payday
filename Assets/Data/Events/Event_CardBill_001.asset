@@ -21,7 +21,7 @@ MonoBehaviour:
   maxDay: 30
   weight: 100
   isFixedEvent: 1
-  fixedDay: 15
+  fixedDay: 8
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -37,22 +37,26 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_card_full
     text: "\uC804\uC561 \uACB0\uC81C\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -200000
+      value: -420000
     - statType: 2
       value: -3
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_card_partial
     text: "\uC77C\uBD80\uB9CC \uACB0\uC81C\uD558\uACE0 \uB098\uBA38\uC9C0\uB294 \uC774\uC6D4\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -100000
+      value: -210000
     - statType: 2
       value: 5
     randomOutcomes: []
@@ -63,10 +67,14 @@ MonoBehaviour:
     text: "\uB9AC\uBCFC\uBE59\uC73C\uB85C \uCD5C\uC18C \uAE08\uC561\uB9CC \uACB0\uC81C\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -40000
+      value: -90000
     - statType: 2
       value: 10
     randomOutcomes: []
     setFlags:
     - owesDebt
     clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

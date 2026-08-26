@@ -16,6 +16,9 @@ namespace SurviveUntilPayday.EditorTools
     {
         public const int DefaultIterations = 1000;
         public const int DefaultBaseSeed = 1;
+
+        public static SimulationSummary LastRandomSummary { get; private set; }
+        public static string LastReportPath { get; private set; }
         private const string JobPath = "Assets/Data/Jobs/Job_JuniorOffice.asset";
         private const string FallbackEventPath = "Assets/Data/Events/Event_Rest_Fallback.asset";
         private const string FallbackEndingPath = "Assets/Data/Endings/Ending_BarelySurvived.asset";
@@ -36,6 +39,24 @@ namespace SurviveUntilPayday.EditorTools
         {
             var path = RunAndSaveReport();
             Debug.Log($"[BalancePass] 완료. 리포트: {path}");
+        }
+
+        /// <summary>
+        /// batchmode: -executeMethod SurviveUntilPayday.EditorTools.BalancePassRunner.RunFromBatch
+        /// </summary>
+        public static void RunFromBatch()
+        {
+            try
+            {
+                var path = RunAndSaveReport();
+                Debug.Log($"[BalancePass] batch OK: {path}");
+                EditorApplication.Exit(0);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[BalancePass] batch FAIL: {ex}");
+                EditorApplication.Exit(1);
+            }
         }
 
         public static string RunAndSaveReport(
@@ -108,6 +129,9 @@ namespace SurviveUntilPayday.EditorTools
             var fileName = $"balance_pass_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
             var reportPath = Path.Combine(logsDir, fileName);
             File.WriteAllText(reportPath, report.ToString(), Encoding.UTF8);
+
+            LastRandomSummary = randomSummary;
+            LastReportPath = reportPath;
 
             AppendBalanceNotes(randomSummary, reportPath);
             Debug.Log(report.ToString());

@@ -13,18 +13,15 @@ MonoBehaviour:
   m_Name: Event_Subscription_001
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_subscription_001
-  title: "구독 정리"
-  description: "안 쓰는 구독이 카드 명세에 찍혀 있다."
+  title: "\uAD6C\uB3C5 \uC815\uB9AC"
+  description: "\uC548 \uC4F0\uB294 \uAD6C\uB3C5\uC774 \uCE74\uB4DC \uBA85\uC138\uC5D0
+    \uCC0D\uD600 \uC788\uB2E4."
   category: 3
   minDay: 1
   maxDay: 30
   weight: 80
   isFixedEvent: 0
   fixedDay: 0
-  overrideBackground: 0
-  backgroundId: 0
-  overrideExpression: 0
-  expressionId: 0
   conditions:
     minHealth: 0
     maxHealth: 100
@@ -44,26 +41,36 @@ MonoBehaviour:
     forbiddenFlags: []
   choices:
   - choiceId: event_subscription_001_a
-    text: "전부 해지한다"
+    text: "\uC804\uBD80 \uD574\uC9C0\uD55C\uB2E4"
     fixedEffects:
     - statType: 2
       value: -1
     - statType: 3
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_subscription_001_b
-    text: "하나만 남긴다"
+    text: "\uD558\uB098\uB9CC \uB0A8\uAE34\uB2E4"
     fixedEffects:
     - statType: 0
       value: -9000
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: event_subscription_001_c
-    text: "나중에 본다"
+    text: "\uB098\uC911\uC5D0 \uBCF8\uB2E4"
     fixedEffects:
     - statType: 2
       value: 1
     - statType: 3
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 0
+  overrideExpression: 0
+  expressionId: 0

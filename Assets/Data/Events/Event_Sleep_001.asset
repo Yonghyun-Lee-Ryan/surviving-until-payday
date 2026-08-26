@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 2
   minDay: 1
   maxDay: 30
-  weight: 75
+  weight: 15
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,17 +37,21 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_sleep_early
     text: "\uC77C\uCC0D \uC7A0\uC790\uB9AC\uC5D0 \uB4E0\uB2E4"
     fixedEffects:
     - statType: 1
-      value: 6
+      value: 5
     - statType: 2
-      value: -4
+      value: -3
     - statType: 3
       value: 1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_sleep_coffee
     text: "\uCEE4\uD53C\uB85C \uBC84\uD2F4\uB2E4"
     fixedEffects:
@@ -58,6 +62,8 @@ MonoBehaviour:
     - statType: 1
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_sleep_allnight
     text: "\uBC24\uC0C8 \uD558\uACE0 \uC2F6\uC740 \uAC78 \uD558\uBA70 \uBC84\uD2F4\uB2E4"
     fixedEffects:
@@ -68,3 +74,9 @@ MonoBehaviour:
     - statType: 2
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

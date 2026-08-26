@@ -18,7 +18,7 @@ MonoBehaviour:
   category: 5
   minDay: 7
   maxDay: 26
-  weight: 70
+  weight: 55
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -82,7 +82,7 @@ MonoBehaviour:
     text: "\uAC00\uC9C4 \uB3C8\uC744 \uD06C\uAC8C \uB123\uB294\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -200000
+      value: -300000
     randomOutcomes:
     - outcomeId: stock_allin_up
       resultMessage: "\uAE09\uB4F1\uD574\uC11C \uD06C\uAC8C \uBC8C\uC5C8\uB2E4."
@@ -108,3 +108,7 @@ MonoBehaviour:
     setFlags:
     - hasBoughtStock
     clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

@@ -324,14 +324,14 @@ namespace SurviveUntilPayday.Data
         /// </summary>
         public FailureReason EvaluateFailure()
         {
-            return FailureEvaluator.Evaluate(Stats);
+            return FailureEvaluator.Evaluate(this);
         }
 
         public bool HasFailed => EvaluateFailure() != FailureReason.None;
 
         public List<FailureReason> GetAllFailureReasons()
         {
-            return FailureEvaluator.GetAll(Stats);
+            return FailureEvaluator.GetAll(this);
         }
 
         private StatChangeResult ApplySingleEffect(StatEffect effect)

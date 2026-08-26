@@ -162,10 +162,12 @@ namespace SurviveUntilPayday.EditorTools
                     new List<StatEffect>
                     {
                         new StatEffect(StatType.Health, -5),
-                        new StatEffect(StatType.Stress, 12),
+                        new StatEffect(StatType.Stress, 30),
                         new StatEffect(StatType.Happiness, -5),
                         new StatEffect(StatType.CompanyScore, 10)
-                    }),
+                    },
+                    null,
+                    new List<string> { RunFlags.PromotionTrack }),
                 new EventChoiceData(
                     "choice_overtime_delay",
                     "내일 하겠다고 말한다",
@@ -195,7 +197,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Work,
                 2,
                 27,
-                100,
+                180,
                 conditions,
                 choices);
 
@@ -218,7 +220,7 @@ namespace SurviveUntilPayday.EditorTools
                     "넉넉하게 축의금을 낸다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -150_000L),
+                        new StatEffect(StatType.Cash, -185_000L),
                         new StatEffect(StatType.Happiness, 8),
                         new StatEffect(StatType.Stress, -3)
                     }),
@@ -227,7 +229,7 @@ namespace SurviveUntilPayday.EditorTools
                     "적당한 금액만 낸다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -70_000L),
+                        new StatEffect(StatType.Cash, -80_000L),
                         new StatEffect(StatType.Happiness, 3)
                     }),
                 new EventChoiceData(
@@ -235,7 +237,7 @@ namespace SurviveUntilPayday.EditorTools
                     "바빠서 참석하지 못하고 축의금만 보낸다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -50_000L),
+                        new StatEffect(StatType.Cash, -58_000L),
                         new StatEffect(StatType.Happiness, -5),
                         new StatEffect(StatType.Stress, 4)
                     })
@@ -248,7 +250,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Relationship,
                 5,
                 28,
-                105,
+                155,
                 conditions,
                 choices);
 
@@ -395,7 +397,7 @@ namespace SurviveUntilPayday.EditorTools
                     "동료와 함께 근사한 식당에서 먹는다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -18_000L),
+                        new StatEffect(StatType.Cash, -38_000L),
                         new StatEffect(StatType.Happiness, 5),
                         new StatEffect(StatType.Stress, -2)
                     }),
@@ -404,7 +406,7 @@ namespace SurviveUntilPayday.EditorTools
                     "편의점 도시락으로 해결한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -4_000L),
+                        new StatEffect(StatType.Cash, -10_000L),
                         new StatEffect(StatType.Happiness, -1)
                     }),
                 new EventChoiceData(
@@ -412,10 +414,12 @@ namespace SurviveUntilPayday.EditorTools
                     "다이어트 겸 점심을 거른다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Health, -4),
-                        new StatEffect(StatType.Stress, 3),
-                        new StatEffect(StatType.Happiness, -2)
-                    })
+                        new StatEffect(StatType.Health, -12),
+                        new StatEffect(StatType.Stress, 15),
+                        new StatEffect(StatType.Happiness, -3)
+                    },
+                    null,
+                    new List<string> { RunFlags.NeglectedHealth })
             };
 
             eventData.EditorSetCore(
@@ -425,7 +429,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Consumption,
                 1,
                 30,
-                120,
+                240,
                 new EventCondition(),
                 choices);
 
@@ -452,7 +456,9 @@ namespace SurviveUntilPayday.EditorTools
                         new StatEffect(StatType.Stress, 6),
                         new StatEffect(StatType.Health, -2),
                         new StatEffect(StatType.CompanyScore, 8)
-                    }),
+                    },
+                    null,
+                    new List<string> { RunFlags.PromotionTrack }),
                 new EventChoiceData(
                     "choice_dinner_short",
                     "짧게 참석하고 먼저 일어난다",
@@ -480,7 +486,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Work,
                 2,
                 29,
-                105,
+                155,
                 conditions,
                 choices);
 
@@ -503,7 +509,10 @@ namespace SurviveUntilPayday.EditorTools
                         new StatEffect(StatType.Cash, -30_000L),
                         new StatEffect(StatType.Health, 10),
                         new StatEffect(StatType.Stress, -2)
-                    }),
+                    },
+                    null,
+                    null,
+                    new List<string> { RunFlags.NeglectedHealth }),
                 new EventChoiceData(
                     "choice_cold_pharmacy",
                     "약국에서 감기약만 사 먹는다",
@@ -531,9 +540,16 @@ namespace SurviveUntilPayday.EditorTools
                             "cold_worsen",
                             "증상이 심해져 몸살이 났다.",
                             40,
-                            new StatEffect(StatType.Health, -12),
-                            new StatEffect(StatType.Stress, 5))
-                    })
+                            new StatEffect[]
+                            {
+                                new StatEffect(StatType.Health, -12),
+                                new StatEffect(StatType.Stress, 5)
+                            },
+                            new[] { RunFlags.NeglectedHealth },
+                            null,
+                            null)
+                    },
+                    new List<string> { RunFlags.NeglectedHealth })
             };
 
             eventData.EditorSetCore(
@@ -543,7 +559,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Health,
                 1,
                 30,
-                75,
+                45,
                 new EventCondition(),
                 choices);
 
@@ -563,7 +579,7 @@ namespace SurviveUntilPayday.EditorTools
                     "필요한 만큼만 구매한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -40_000L),
+                        new StatEffect(StatType.Cash, -72_000L),
                         new StatEffect(StatType.Happiness, 6)
                     }),
                 new EventChoiceData(
@@ -578,7 +594,7 @@ namespace SurviveUntilPayday.EditorTools
                     "한도까지 왕창 구매한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -150_000L),
+                        new StatEffect(StatType.Cash, -420_000L),
                         new StatEffect(StatType.Happiness, 12),
                         new StatEffect(StatType.Stress, -3)
                     })
@@ -591,7 +607,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Consumption,
                 5,
                 30,
-                110,
+                175,
                 new EventCondition(),
                 choices);
 
@@ -611,7 +627,7 @@ namespace SurviveUntilPayday.EditorTools
                     "꾸준히 할 수 있는 만큼만 수락한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, 60_000L),
+                        new StatEffect(StatType.Cash, 15_000L),
                         new StatEffect(StatType.Stress, 4),
                         new StatEffect(StatType.Health, -2)
                     }),
@@ -620,7 +636,7 @@ namespace SurviveUntilPayday.EditorTools
                     "짧게 한 번만 도와준다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, 25_000L),
+                        new StatEffect(StatType.Cash, 6_000L),
                         new StatEffect(StatType.Stress, 1)
                     }),
                 new EventChoiceData(
@@ -628,7 +644,7 @@ namespace SurviveUntilPayday.EditorTools
                     "무리해서 최대한 많이 맡는다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, 120_000L),
+                        new StatEffect(StatType.Cash, 25_000L),
                         new StatEffect(StatType.Stress, 10),
                         new StatEffect(StatType.Health, -8)
                     })
@@ -641,7 +657,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Opportunity,
                 3,
                 27,
-                70,
+                18,
                 new EventCondition(),
                 choices);
 
@@ -661,7 +677,7 @@ namespace SurviveUntilPayday.EditorTools
                     "넉넉하게 용돈을 보내드린다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -100_000L),
+                        new StatEffect(StatType.Cash, -120_000L),
                         new StatEffect(StatType.Happiness, 10),
                         new StatEffect(StatType.Stress, -3)
                     }),
@@ -690,7 +706,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Relationship,
                 1,
                 30,
-                80,
+                75,
                 new EventCondition(),
                 choices);
 
@@ -747,7 +763,7 @@ namespace SurviveUntilPayday.EditorTools
                     "가진 돈을 크게 넣는다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -200_000L)
+                        new StatEffect(StatType.Cash, -300_000L)
                     },
                     new List<RandomOutcome>
                     {
@@ -782,7 +798,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Opportunity,
                 7,
                 26,
-                70,
+                55,
                 new EventCondition(),
                 choices);
 
@@ -864,7 +880,7 @@ namespace SurviveUntilPayday.EditorTools
                     "제때 전액 납부한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -580_000L),
+                        new StatEffect(StatType.Cash, -950_000L),
                         new StatEffect(StatType.Stress, -2),
                         new StatEffect(StatType.Happiness, 1)
                     }),
@@ -873,7 +889,7 @@ namespace SurviveUntilPayday.EditorTools
                     "다른 지출을 줄여 마련한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -500_000L),
+                        new StatEffect(StatType.Cash, -830_000L),
                         new StatEffect(StatType.Happiness, -4)
                     }),
                 new EventChoiceData(
@@ -881,7 +897,7 @@ namespace SurviveUntilPayday.EditorTools
                     "카드 단기 대출로 메꾼다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -620_000L),
+                        new StatEffect(StatType.Cash, -990_000L),
                         new StatEffect(StatType.Stress, 8),
                         new StatEffect(StatType.Happiness, -2)
                     },
@@ -917,7 +933,7 @@ namespace SurviveUntilPayday.EditorTools
                     "바로 납부한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -95_000L),
+                        new StatEffect(StatType.Cash, -195_000L),
                         new StatEffect(StatType.Stress, -1)
                     }),
                 new EventChoiceData(
@@ -925,7 +941,7 @@ namespace SurviveUntilPayday.EditorTools
                     "아껴 쓴 만큼 절약해 납부한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -75_000L),
+                        new StatEffect(StatType.Cash, -162_000L),
                         new StatEffect(StatType.Happiness, -2)
                     }),
                 new EventChoiceData(
@@ -933,7 +949,7 @@ namespace SurviveUntilPayday.EditorTools
                     "납부를 미루고 연체료를 감수한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -110_000L),
+                        new StatEffect(StatType.Cash, -225_000L),
                         new StatEffect(StatType.Stress, 6)
                     })
             };
@@ -948,7 +964,7 @@ namespace SurviveUntilPayday.EditorTools
                 100,
                 new EventCondition(),
                 choices);
-            eventData.EditorSetFixed(true, 10);
+            eventData.EditorSetFixed(true, 4);
 
             EditorUtility.SetDirty(eventData);
             return eventData;
@@ -966,7 +982,7 @@ namespace SurviveUntilPayday.EditorTools
                     "전액 결제한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -200_000L),
+                        new StatEffect(StatType.Cash, -420_000L),
                         new StatEffect(StatType.Stress, -3),
                         new StatEffect(StatType.Happiness, 1)
                     }),
@@ -975,7 +991,7 @@ namespace SurviveUntilPayday.EditorTools
                     "일부만 결제하고 나머지는 이월한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -100_000L),
+                        new StatEffect(StatType.Cash, -210_000L),
                         new StatEffect(StatType.Stress, 5)
                     },
                     null,
@@ -985,7 +1001,7 @@ namespace SurviveUntilPayday.EditorTools
                     "리볼빙으로 최소 금액만 결제한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -40_000L),
+                        new StatEffect(StatType.Cash, -90_000L),
                         new StatEffect(StatType.Stress, 10)
                     },
                     null,
@@ -1002,7 +1018,7 @@ namespace SurviveUntilPayday.EditorTools
                 100,
                 new EventCondition(),
                 choices);
-            eventData.EditorSetFixed(true, 15);
+            eventData.EditorSetFixed(true, 8);
 
             EditorUtility.SetDirty(eventData);
             return eventData;
@@ -1020,8 +1036,8 @@ namespace SurviveUntilPayday.EditorTools
                     "일찍 잠자리에 든다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Health, 6),
-                        new StatEffect(StatType.Stress, -4),
+                        new StatEffect(StatType.Health, 5),
+                        new StatEffect(StatType.Stress, -3),
                         new StatEffect(StatType.Happiness, 1)
                     }),
                 new EventChoiceData(
@@ -1051,7 +1067,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Health,
                 1,
                 30,
-                75,
+                15,
                 new EventCondition(),
                 choices);
 
@@ -1074,7 +1090,10 @@ namespace SurviveUntilPayday.EditorTools
                         new StatEffect(StatType.Cash, -50_000L),
                         new StatEffect(StatType.Health, 10),
                         new StatEffect(StatType.Stress, -2)
-                    }),
+                    },
+                    null,
+                    null,
+                    new List<string> { RunFlags.NeglectedHealth }),
                 new EventChoiceData(
                     "choice_backpain_selfcare",
                     "안마의자·파스로 버틴다",
@@ -1091,7 +1110,9 @@ namespace SurviveUntilPayday.EditorTools
                         new StatEffect(StatType.Health, -10),
                         new StatEffect(StatType.Stress, 4),
                         new StatEffect(StatType.CompanyScore, 2)
-                    })
+                    },
+                    null,
+                    new List<string> { RunFlags.NeglectedHealth })
             };
 
             eventData.EditorSetCore(
@@ -1101,7 +1122,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Health,
                 1,
                 30,
-                70,
+                15,
                 new EventCondition(),
                 choices);
 
@@ -1124,7 +1145,7 @@ namespace SurviveUntilPayday.EditorTools
                     "약속 장소에서 즐겁게 논다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -35_000L),
+                        new StatEffect(StatType.Cash, -52_000L),
                         new StatEffect(StatType.Happiness, 10),
                         new StatEffect(StatType.Stress, -6)
                     }),
@@ -1133,7 +1154,7 @@ namespace SurviveUntilPayday.EditorTools
                     "집 근처에서 가볍게 만난다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -12_000L),
+                        new StatEffect(StatType.Cash, -15_000L),
                         new StatEffect(StatType.Happiness, 6),
                         new StatEffect(StatType.Stress, -3)
                     }),
@@ -1155,7 +1176,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Relationship,
                 1,
                 30,
-                115,
+                160,
                 conditions,
                 choices);
 
@@ -1217,7 +1238,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Opportunity,
                 1,
                 30,
-                75,
+                45,
                 new EventCondition(),
                 choices);
 
@@ -1304,24 +1325,24 @@ namespace SurviveUntilPayday.EditorTools
                     "집에서 쉰다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Stress, -5),
-                        new StatEffect(StatType.Happiness, 3)
+                        new StatEffect(StatType.Stress, -1),
+                        new StatEffect(StatType.Happiness, 1)
                     }),
                 new EventChoiceData(
                     "rest_walk",
                     "산책한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Health, 3),
-                        new StatEffect(StatType.Stress, -3)
+                        new StatEffect(StatType.Health, 1),
+                        new StatEffect(StatType.Stress, 0)
                     }),
                 new EventChoiceData(
                     "rest_hobby",
                     "취미를 즐긴다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Happiness, 6),
-                        new StatEffect(StatType.Cash, -8_000L)
+                        new StatEffect(StatType.Happiness, 2),
+                        new StatEffect(StatType.Cash, -20_000L)
                     })
             };
 
@@ -1332,7 +1353,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Rest,
                 1,
                 30,
-                50,
+                3,
                 new EventCondition(),
                 choices);
 
@@ -1352,8 +1373,8 @@ namespace SurviveUntilPayday.EditorTools
                     "마음을 다잡고 하루 더 버틴다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Stress, -8),
-                        new StatEffect(StatType.Happiness, 3),
+                        new StatEffect(StatType.Stress, -4),
+                        new StatEffect(StatType.Happiness, 2),
                         new StatEffect(StatType.CompanyScore, 2)
                     }),
                 new EventChoiceData(
@@ -1361,19 +1382,19 @@ namespace SurviveUntilPayday.EditorTools
                     "휴가를 내고 재충전한다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Cash, -20_000L),
-                        new StatEffect(StatType.Stress, -12),
-                        new StatEffect(StatType.Happiness, 8),
-                        new StatEffect(StatType.Health, 3)
+                        new StatEffect(StatType.Cash, -25_000L),
+                        new StatEffect(StatType.Stress, -8),
+                        new StatEffect(StatType.Happiness, 6),
+                        new StatEffect(StatType.Health, 2)
                     }),
                 new EventChoiceData(
                     "choice_quit_venting",
                     "홧김에 사직서를 만지작거리며 화를 푼다",
                     new List<StatEffect>
                     {
-                        new StatEffect(StatType.Happiness, 10),
-                        new StatEffect(StatType.Stress, -15),
-                        new StatEffect(StatType.CompanyScore, -20)
+                        new StatEffect(StatType.Happiness, 4),
+                        new StatEffect(StatType.Stress, 5),
+                        new StatEffect(StatType.CompanyScore, -10)
                     })
             };
 
@@ -1384,7 +1405,7 @@ namespace SurviveUntilPayday.EditorTools
                 EventCategory.Special,
                 20,
                 30,
-                95,
+                150,
                 new EventCondition(),
                 choices);
 

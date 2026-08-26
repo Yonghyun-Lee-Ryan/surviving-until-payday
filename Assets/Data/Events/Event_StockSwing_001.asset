@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurviveUntilPayday.Runtime::SurviveUntilPayday.Data.EventData
   id: event_stock_swing_001
   title: "\uC8FC\uC2DD \uAE09\uB4F1\uB77D"
-  description: "\uC608\uC804\uC5D0 \uC0BC \uC885\uBAA9\uC774 \uC694\uB3D9\uCE5C\uB2E4."
+  description: "\uC608\uC804\uC5D0 \uC0B0 \uC885\uBAA9\uC774 \uC694\uB3D9\uCE5C\uB2E4."
   category: 5
   minDay: 8
   maxDay: 28
@@ -76,3 +76,7 @@ MonoBehaviour:
     setFlags: []
     clearFlags:
     - hasBoughtStock
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

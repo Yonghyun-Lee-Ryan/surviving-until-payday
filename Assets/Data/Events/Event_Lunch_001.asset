@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 3
   minDay: 1
   maxDay: 30
-  weight: 120
+  weight: 240
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,33 +37,46 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 0
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_lunch_restaurant
     text: "\uB3D9\uB8CC\uC640 \uD568\uAED8 \uADFC\uC0AC\uD55C \uC2DD\uB2F9\uC5D0\uC11C
       \uBA39\uB294\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -18000
+      value: -38000
     - statType: 3
       value: 5
     - statType: 2
       value: -2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_lunch_convenience
     text: "\uD3B8\uC758\uC810 \uB3C4\uC2DC\uB77D\uC73C\uB85C \uD574\uACB0\uD55C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -4000
+      value: -10000
     - statType: 3
       value: -1
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_lunch_skip
     text: "\uB2E4\uC774\uC5B4\uD2B8 \uACB8 \uC810\uC2EC\uC744 \uAC70\uB978\uB2E4"
     fixedEffects:
     - statType: 1
-      value: -4
+      value: -12
     - statType: 2
-      value: 3
+      value: 15
     - statType: 3
-      value: -2
+      value: -3
     randomOutcomes: []
+    setFlags:
+    - neglectedHealth
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

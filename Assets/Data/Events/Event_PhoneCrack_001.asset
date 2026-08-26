@@ -98,3 +98,7 @@ MonoBehaviour:
     setFlags:
     - phoneStillCracked
     clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

@@ -104,6 +104,17 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void EvaluateFailure_NeglectedHealthAndLowHealth_IsHospitalization()
+        {
+            var state = CreateState(cash: 80_000L, health: 32, stress: 20, happiness: 40, companyScore: 50);
+            Assert.AreEqual(FailureReason.None, state.EvaluateFailure());
+
+            state.SetFlag(RunFlags.NeglectedHealth);
+            Assert.AreEqual(FailureReason.Hospitalization, state.EvaluateFailure());
+            CollectionAssert.Contains(state.GetAllFailureReasons(), FailureReason.Hospitalization);
+        }
+
+        [Test]
         public void EvaluateFailure_UsesPriority_BankruptcyOverHospitalization()
         {
             var state = CreateState(cash: -1L, health: 0, stress: 100, happiness: 0, companyScore: 0);

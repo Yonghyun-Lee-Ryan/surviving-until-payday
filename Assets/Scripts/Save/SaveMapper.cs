@@ -99,8 +99,7 @@ namespace SurviveUntilPayday.Save
                 meta.unlockedAchievementIds,
                 meta.unlockedJobIds,
                 meta.traitFragmentCount,
-                meta.firstRunTutorialCompleted,
-                meta.hasNoAds);
+                meta.firstRunTutorialCompleted);
             progression.Daily.Load(
                 meta.dailyDateKey,
                 meta.dailyBestCash,
@@ -109,7 +108,10 @@ namespace SurviveUntilPayday.Save
                 meta.dailyBestCompanyScore,
                 meta.dailyBestDaysSurvived,
                 meta.dailyHasBestRecord,
-                meta.dailyMissions);
+                meta.dailyMissions,
+                meta.dailyLoginStreak,
+                meta.dailyLastVisitDateKey,
+                meta.dailyStreakBonusGranted);
         }
 
         public static MetaSaveData CaptureMeta(MetaProgressionManager progression)
@@ -118,8 +120,7 @@ namespace SurviveUntilPayday.Save
             {
                 totalExperience = progression != null ? progression.TotalExperience : 0,
                 traitFragmentCount = progression != null ? progression.TraitFragmentCount : 0,
-                firstRunTutorialCompleted = progression != null && progression.FirstRunTutorialCompleted,
-                hasNoAds = progression != null && progression.HasNoAds
+                firstRunTutorialCompleted = progression != null && progression.FirstRunTutorialCompleted
             };
 
             if (progression == null)
@@ -144,6 +145,9 @@ namespace SurviveUntilPayday.Save
                 meta.dailyBestDaysSurvived = daily.BestDaysSurvived;
                 meta.dailyHasBestRecord = daily.HasBestRecord;
                 meta.dailyMissions = daily.CaptureEntries();
+                meta.dailyLoginStreak = daily.LoginStreak;
+                meta.dailyLastVisitDateKey = daily.LastVisitDateKey ?? string.Empty;
+                meta.dailyStreakBonusGranted = daily.StreakBonusGrantedToday;
             }
 
             return meta;

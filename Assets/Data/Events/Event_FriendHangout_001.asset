@@ -19,7 +19,7 @@ MonoBehaviour:
   category: 4
   minDay: 1
   maxDay: 30
-  weight: 115
+  weight: 160
   isFixedEvent: 0
   fixedDay: 0
   conditions:
@@ -37,27 +37,33 @@ MonoBehaviour:
     maxCash: 0
     requiredJobId: 
     dayOfWeekConstraint: 2
+    requiredFlags: []
+    forbiddenFlags: []
   choices:
   - choiceId: choice_hangout_full
     text: "\uC57D\uC18D \uC7A5\uC18C\uC5D0\uC11C \uC990\uAC81\uAC8C \uB17C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -35000
+      value: -52000
     - statType: 3
       value: 10
     - statType: 2
       value: -6
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_hangout_nearby
     text: "\uC9D1 \uADFC\uCC98\uC5D0\uC11C \uAC00\uBCCD\uAC8C \uB9CC\uB09C\uB2E4"
     fixedEffects:
     - statType: 0
-      value: -12000
+      value: -15000
     - statType: 3
       value: 6
     - statType: 2
       value: -3
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
   - choiceId: choice_hangout_cancel
     text: "\uD53C\uACE4\uD574\uC11C \uC57D\uC18D\uC744 \uCDE8\uC18C\uD55C\uB2E4"
     fixedEffects:
@@ -68,3 +74,9 @@ MonoBehaviour:
     - statType: 1
       value: 2
     randomOutcomes: []
+    setFlags: []
+    clearFlags: []
+  overrideBackground: 0
+  backgroundId: 1
+  overrideExpression: 0
+  expressionId: 0

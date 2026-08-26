@@ -15,7 +15,7 @@ MonoBehaviour:
   id: ending_promotion
   title: "\uC2B9\uC9C4 \uD6C4\uBCF4"
   description: "\uD68C\uC0AC\uC5D0\uC11C\uC758 \uD3C9\uD310\uC774 \uD0C4\uD0C4\uD558\uB2E4."
-  priority: 85
+  priority: 95
   isFailureEnding: 0
   linkedFailureReason: 0
   condition:
@@ -36,6 +36,9 @@ MonoBehaviour:
     requireMaxHappiness: 0
     maxHappiness: 0
     requireMinCompanyScore: 1
-    minCompanyScore: 80
+    minCompanyScore: 60
     requireMaxCompanyScore: 0
     maxCompanyScore: 0
+    requiredFlags:
+    - promotionTrack
+    forbiddenFlags: []
