@@ -42,7 +42,26 @@ namespace SurviveUntilPayday.Tests
             var settings = new AppSettingsService(store);
             Assert.AreEqual(0.35f, settings.BgmVolume, 0.001f);
             Assert.AreEqual(0.35f, settings.SfxVolume, 0.001f);
-            Assert.AreEqual(2, settings.Current.schemaVersion);
+            Assert.AreEqual(4, settings.Current.schemaVersion);
+            Assert.IsFalse(settings.ShowChoicePreview);
+        }
+
+        [Test]
+        public void AppSettings_MigratesSchema3_DisablesChoicePreviewByDefault()
+        {
+            var store = new MemoryAppSettingsStore();
+            store.Save(new AppSettingsData
+            {
+                schemaVersion = 3,
+                soundEnabled = true,
+                bgmVolume = 1f,
+                sfxVolume = 1f,
+                showChoicePreview = true
+            });
+
+            var settings = new AppSettingsService(store);
+            Assert.IsFalse(settings.ShowChoicePreview);
+            Assert.AreEqual(4, settings.Current.schemaVersion);
         }
 
         [Test]
@@ -79,9 +98,18 @@ namespace SurviveUntilPayday.Tests
         public void PrivacyPolicyConfig_ExposesUrl()
         {
             var config = ScriptableObject.CreateInstance<PrivacyPolicyConfig>();
-            config.EditorSet("https://example.com/policy", "요약");
-            Assert.AreEqual("https://example.com/policy", config.PolicyUrl);
+            config.EditorSet(PrivacyPolicyUrls.Canonical, "요약");
+            Assert.AreEqual(PrivacyPolicyUrls.Canonical, config.PolicyUrl);
             Assert.AreEqual("요약", config.SummaryText);
+            Assert.IsFalse(config.HasPlaceholderUrl);
+        }
+
+        [Test]
+        public void PrivacyPolicyUrls_ExampleCom_IsPlaceholder()
+        {
+            Assert.IsTrue(PrivacyPolicyUrls.IsPlaceholder("https://example.com/privacy"));
+            Assert.IsFalse(PrivacyPolicyUrls.IsHttpsPublicUrl("https://example.com/privacy"));
+            Assert.IsTrue(PrivacyPolicyUrls.IsHttpsPublicUrl(PrivacyPolicyUrls.Canonical));
         }
 
         private sealed class MemoryAppSettingsStore : IAppSettingsStore

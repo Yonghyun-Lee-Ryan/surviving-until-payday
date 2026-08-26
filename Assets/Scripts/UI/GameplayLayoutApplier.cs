@@ -14,11 +14,21 @@ namespace SurviveUntilPayday.UI
             ApplyHud(hud);
             ApplyEventPanel(eventPanel);
             ApplyChoicePanel(choicePanel);
-            // HUD를 마지막에 한 번 더 앞으로 (날짜·게이지 한글이 가려지지 않게)
-            if (hud != null)
+            if (hud == null)
             {
-                hud.transform.SetAsLastSibling();
+                return;
             }
+
+            ResultPopupView resultPopup = null;
+            WeeklySummaryPopupView weeklyPopup = null;
+            var canvas = hud.GetComponentInParent<Canvas>();
+            if (canvas != null)
+            {
+                resultPopup = canvas.GetComponentInChildren<ResultPopupView>(true);
+                weeklyPopup = canvas.GetComponentInChildren<WeeklySummaryPopupView>(true);
+            }
+
+            UiModalLayer.RestackModalsAboveHud(hud.transform, resultPopup, weeklyPopup);
         }
 
         private static void ApplyHud(GameHudView hud)
@@ -313,9 +323,9 @@ namespace SurviveUntilPayday.UI
             root.anchorMax = new Vector2(1f, 0f);
             root.pivot = new Vector2(0.5f, 0f);
             root.anchoredPosition = new Vector2(0f, 20f);
-            root.sizeDelta = new Vector2(-40f, 460f);
+            root.sizeDelta = new Vector2(-40f, 500f);
 
-            var offsets = new[] { 268f, 164f, 60f };
+            var offsets = new[] { 292f, 176f, 60f };
             for (var i = 0; i < 3; i++)
             {
                 var button = root.Find($"Choice_{i}") as RectTransform;
@@ -328,7 +338,20 @@ namespace SurviveUntilPayday.UI
                 button.anchorMax = new Vector2(1f, 0f);
                 button.pivot = new Vector2(0.5f, 0f);
                 button.anchoredPosition = new Vector2(0f, offsets[i]);
-                button.sizeDelta = new Vector2(-36f, 90f);
+                button.sizeDelta = new Vector2(-36f, 108f);
+
+                var label = button.GetComponentInChildren<Text>(true);
+                if (label != null)
+                {
+                    label.fontSize = 28;
+                    label.alignment = TextAnchor.MiddleCenter;
+                    UiFont.Apply(label, lineSpacing: UiFont.ComfortableLineSpacing);
+                    var labelRect = label.rectTransform;
+                    labelRect.anchorMin = Vector2.zero;
+                    labelRect.anchorMax = Vector2.one;
+                    labelRect.offsetMin = new Vector2(16f, 10f);
+                    labelRect.offsetMax = new Vector2(-16f, -10f);
+                }
             }
 
             choicePanel.EnsureRerollButton();

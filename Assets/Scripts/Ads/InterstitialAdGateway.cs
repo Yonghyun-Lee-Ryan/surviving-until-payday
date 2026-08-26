@@ -56,7 +56,7 @@ namespace SurviveUntilPayday.Ads
         {
             if (removeInterstitials)
             {
-                reason = "Interstitials removed by purchase.";
+                reason = "Interstitials disabled.";
                 return false;
             }
 

@@ -457,25 +457,28 @@ namespace SurviveUntilPayday.EditorTools
         private static ChoicePanelView BuildChoicePanel(Transform parent)
         {
             var root = CreatePanel(parent, "ChoicePanel", new Vector2(0f, 0f), new Vector2(1f, 0f),
-                new Vector2(0f, 24f), new Vector2(-48f, 430f), new Color(1f, 1f, 1f, 0.01f));
+                new Vector2(0f, 24f), new Vector2(-48f, 500f), new Color(1f, 1f, 1f, 0.01f));
             root.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
             root.GetComponent<Image>().raycastTarget = false;
 
             var buttons = new Button[3];
             var labels = new Text[3];
-            // 하단부터: 선택지 3개, 위쪽에 광고 버튼 공간(약 80px) 확보
-            var offsets = new[] { 250f, 148f, 46f };
+            // 하단부터: 선택지 3개(미리보기 두 줄), 위쪽에 광고 버튼 공간 확보
+            var offsets = new[] { 292f, 176f, 60f };
             for (var i = 0; i < 3; i++)
             {
                 var buttonObject = CreatePanel(root.transform, $"Choice_{i}", new Vector2(0f, 0f),
-                    new Vector2(1f, 0f), new Vector2(0f, offsets[i]), new Vector2(-40f, 88f),
+                    new Vector2(1f, 0f), new Vector2(0f, offsets[i]), new Vector2(-40f, 108f),
                     new Color(0.18f, 0.42f, 0.55f, 1f));
                 buttonObject.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
                 var button = buttonObject.AddComponent<Button>();
                 button.targetGraphic = buttonObject.GetComponent<Image>();
-                var label = CreateText(buttonObject.transform, "Label", $"선택지 {i + 1}", 30,
+                var label = CreateText(buttonObject.transform, "Label", $"선택지 {i + 1}", 28,
                     TextAnchor.MiddleCenter, Vector2.zero, new Vector2(0f, 80f));
                 Stretch(label.rectTransform);
+                label.rectTransform.offsetMin = new Vector2(16f, 10f);
+                label.rectTransform.offsetMax = new Vector2(-16f, -10f);
+                label.lineSpacing = 1.3f;
                 label.color = Color.white;
                 buttons[i] = button;
                 labels[i] = label;

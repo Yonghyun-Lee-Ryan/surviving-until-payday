@@ -53,8 +53,9 @@ namespace SurviveUntilPayday.EditorTools
             var jobTitle = CreateTopText(panelRoot.transform, "JobTitle", "직업", 42, 40f, 48f);
             var jobDesc = CreateTopText(panelRoot.transform, "JobDescription", "설명", 26, 96f, 96f);
             jobDesc.alignment = TextAnchor.MiddleCenter;
-            var hint = CreateTopText(panelRoot.transform, "TraitHint", "특성 선택", 28, 200f, 36f);
-            var selected = CreateTopText(panelRoot.transform, "SelectedTrait", "선택: 특성 없음", 26, 244f, 100f);
+            var hint = CreateTopText(panelRoot.transform, "TraitHint", "특성 선택", 28, 200f, 80f);
+            hint.lineSpacing = 1.3f;
+            var selected = CreateTopText(panelRoot.transform, "SelectedTrait", "선택: 특성 없음", 26, 292f, 100f);
             selected.alignment = TextAnchor.UpperCenter;
 
             var scrollGo = new GameObject("TraitScroll", typeof(RectTransform), typeof(Image), typeof(ScrollRect));

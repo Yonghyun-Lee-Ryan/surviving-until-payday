@@ -9,7 +9,7 @@ namespace SurviveUntilPayday.Settings
     [Serializable]
     public sealed class AppSettingsData
     {
-        public int schemaVersion = 2;
+        public int schemaVersion = 4;
         public bool soundEnabled = true;
         /// <summary>구버전 호환용. schema 2부터는 bgm/sfx를 우선한다.</summary>
         public float soundVolume = 1f;
@@ -19,6 +19,7 @@ namespace SurviveUntilPayday.Settings
         public bool privacyAccepted;
         public bool adsConsentGranted;
         public bool consentFlowCompleted;
+        public bool showChoicePreview;
     }
 
     public interface IAppSettingsStore
@@ -73,7 +74,7 @@ namespace SurviveUntilPayday.Settings
     /// </summary>
     public sealed class AppSettingsService
     {
-        private const int CurrentSchema = 2;
+        private const int CurrentSchema = 4;
 
         private readonly IAppSettingsStore store;
         private AppSettingsData data;
@@ -90,6 +91,9 @@ namespace SurviveUntilPayday.Settings
 
         /// <summary>(enabled, bgmVolume, sfxVolume)</summary>
         public event Action<bool, float, float> AudioSettingsChanged;
+
+        /// <summary>선택 미리보기(경향 표시) 켜짐/꺼짐.</summary>
+        public event Action<bool> ChoicePreviewChanged;
 
         public bool SoundEnabled
         {
@@ -151,6 +155,22 @@ namespace SurviveUntilPayday.Settings
             }
         }
 
+        public bool ShowChoicePreview
+        {
+            get => data.showChoicePreview;
+            set
+            {
+                if (data.showChoicePreview == value)
+                {
+                    return;
+                }
+
+                data.showChoicePreview = value;
+                Persist();
+                ChoicePreviewChanged?.Invoke(value);
+            }
+        }
+
         public bool ConsentFlowCompleted => data.consentFlowCompleted;
 
         public bool AdsConsentGranted => data.adsConsentGranted;
@@ -178,6 +198,7 @@ namespace SurviveUntilPayday.Settings
 
             ApplyAudio();
             Persist();
+            ChoicePreviewChanged?.Invoke(data.showChoicePreview);
         }
 
         public void TryVibrate()
@@ -196,17 +217,26 @@ namespace SurviveUntilPayday.Settings
 
         private void MigrateIfNeeded()
         {
+            data.bgmVolume = Mathf.Clamp01(data.bgmVolume);
+            data.sfxVolume = Mathf.Clamp01(data.sfxVolume);
             if (data.schemaVersion >= CurrentSchema)
             {
-                data.bgmVolume = Mathf.Clamp01(data.bgmVolume);
-                data.sfxVolume = Mathf.Clamp01(data.sfxVolume);
                 return;
             }
 
-            // schema 1 → 2: 단일 soundVolume을 BGM/SFX에 복제
-            var legacy = Mathf.Clamp01(data.soundVolume);
-            data.bgmVolume = legacy;
-            data.sfxVolume = legacy;
+            if (data.schemaVersion < 2)
+            {
+                var legacy = Mathf.Clamp01(data.soundVolume);
+                data.bgmVolume = legacy;
+                data.sfxVolume = legacy;
+            }
+
+            // 기본은 끄기. 유저가 설정에서 직접 켠다.
+            if (data.schemaVersion < 4)
+            {
+                data.showChoicePreview = false;
+            }
+
             data.schemaVersion = CurrentSchema;
             Persist();
         }

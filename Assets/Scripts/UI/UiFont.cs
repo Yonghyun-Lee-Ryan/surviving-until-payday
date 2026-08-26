@@ -30,7 +30,10 @@ namespace SurviveUntilPayday.UI
             }
         }
 
-        public static void Apply(Text text, bool bold = false)
+        /// <summary>한글 멀티라인에서 글자가 붙지 않게 쓰는 행간 배수.</summary>
+        public const float ComfortableLineSpacing = 1.3f;
+
+        public static void Apply(Text text, bool bold = false, float lineSpacing = -1f)
         {
             if (text == null)
             {
@@ -46,6 +49,10 @@ namespace SurviveUntilPayday.UI
             // 한글 메트릭이 커서 Truncate면 한 줄이 통째로 사라질 수 있다.
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            if (lineSpacing > 0f)
+            {
+                text.lineSpacing = lineSpacing;
+            }
         }
 
         private static void EnsureLoaded()

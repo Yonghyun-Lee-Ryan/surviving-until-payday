@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace SurviveUntilPayday.UI
 {
     /// <summary>
-    /// 설정: 사운드 토글 + BGM/SFX 볼륨, 진동, 개인정보, 초기화, (게임 중) 메인 메뉴.
+    /// 설정: 사운드·배경음/효과음, 진동, 선택 미리보기, 개인정보, 크레딧, 초기화, (게임 중) 메인 메뉴.
     /// </summary>
     public sealed class SettingsPanelView : MonoBehaviour
     {
@@ -24,6 +24,7 @@ namespace SurviveUntilPayday.UI
         [SerializeField] private Slider bgmSlider;
         [SerializeField] private Slider sfxSlider;
         [SerializeField] private Button privacyButton;
+        [SerializeField] private Button creditsButton;
         [SerializeField] private Button resetSaveButton;
         [SerializeField] private Button mainMenuButton;
         [SerializeField] private Button closeButton;
@@ -34,7 +35,9 @@ namespace SurviveUntilPayday.UI
         private bool listenersWired;
         private Text bgmValueLabel;
         private Text sfxValueLabel;
-        private const int LayoutVersion = 9;
+        private Toggle previewToggle;
+        private GameObject creditsOverlay;
+        private const int LayoutVersion = 11;
         private const float CheckBoxSize = 25f;
         private int builtLayoutVersion;
 
@@ -94,12 +97,13 @@ namespace SurviveUntilPayday.UI
             if (root != null)
             {
                 root.SetActive(true);
-                root.transform.SetAsLastSibling();
+                UiModalLayer.BringToFront(root.transform);
             }
         }
 
         public void Hide()
         {
+            HideCredits();
             if (root != null)
             {
                 root.SetActive(false);
@@ -132,6 +136,8 @@ namespace SurviveUntilPayday.UI
 
             HideLegacyChildren(root.transform);
             DestroyChildNamed(root.transform, "SettingsCard");
+            DestroyChildNamed(root.transform, "CreditsOverlay");
+            creditsOverlay = null;
 
             layoutReady = true;
             builtLayoutVersion = LayoutVersion;
@@ -162,7 +168,7 @@ namespace SurviveUntilPayday.UI
             cardRect.anchorMax = new Vector2(0.5f, 0.5f);
             cardRect.pivot = new Vector2(0.5f, 0.5f);
             cardRect.anchoredPosition = Vector2.zero;
-            cardRect.sizeDelta = new Vector2(820f, 920f);
+            cardRect.sizeDelta = new Vector2(820f, 1080f);
             card.GetComponent<Image>().color = CardColor;
             card.GetComponent<Image>().raycastTarget = true;
             card.transform.SetAsLastSibling();
@@ -192,13 +198,23 @@ namespace SurviveUntilPayday.UI
             bodyLayout.childForceExpandHeight = true;
 
             soundToggle = CreateCheckRow(body.transform, "SoundToggle", "사운드", flex: 1.5f);
-            bgmSlider = CreateVolumeRow(body.transform, "BgmVolume", "BGM", flex: 2f, out bgmValueLabel);
-            sfxSlider = CreateVolumeRow(body.transform, "SfxVolume", "SFX", flex: 2f, out sfxValueLabel);
+            bgmSlider = CreateVolumeRow(body.transform, "BgmVolume", AccessibilityCopy.BgmLabel, flex: 2f, out bgmValueLabel);
+            sfxSlider = CreateVolumeRow(body.transform, "SfxVolume", AccessibilityCopy.SfxLabel, flex: 2f, out sfxValueLabel);
             vibrationToggle = CreateCheckRow(body.transform, "VibrationToggle", "진동", flex: 1.5f);
+            previewToggle = CreateCheckRow(body.transform, "PreviewToggle", AccessibilityCopy.ChoicePreviewToggle, flex: 1.5f);
             privacyButton = CreateActionButton(body.transform, "PrivacyButton", "개인정보처리방침", flex: 2f, Accent);
+            creditsButton = CreateActionButton(body.transform, "CreditsButton", AccessibilityCopy.CreditsButton, flex: 2f, Accent);
             resetSaveButton = CreateActionButton(body.transform, "ResetSaveButton", "저장 데이터 초기화", flex: 2f, Accent);
             mainMenuButton = CreateActionButton(body.transform, "MainMenuButton", "메인 메뉴로", flex: 2f, Danger);
             closeButton = CreateActionButton(body.transform, "CloseButton", "닫기", flex: 2f, Accent);
+
+            var offlineNote = CreateLabel(card.transform, "OfflineNote", null, AccessibilityCopy.MinBodyFontSize, 72f);
+            offlineNote.text = AccessibilityCopy.OfflineNote;
+            offlineNote.alignment = TextAnchor.UpperCenter;
+            offlineNote.color = new Color(1f, 1f, 1f, 0.72f);
+            offlineNote.horizontalOverflow = HorizontalWrapMode.Wrap;
+            offlineNote.verticalOverflow = VerticalWrapMode.Overflow;
+            UiFont.Apply(offlineNote);
 
             versionLabel = CreateLabel(card.transform, "Version", null, 20, 26f);
             versionLabel.color = new Color(1f, 1f, 1f, 0.55f);
@@ -398,7 +414,7 @@ namespace SurviveUntilPayday.UI
             var row = CreateChild(parent, name, typeof(Image), typeof(LayoutElement), typeof(HorizontalLayoutGroup));
             row.GetComponent<Image>().color = RowColor;
             var element = row.GetComponent<LayoutElement>();
-            element.minHeight = 52f;
+            element.minHeight = AccessibilityCopy.MinTapHeight;
             element.preferredHeight = 0f;
             element.flexibleHeight = flex;
 
@@ -520,7 +536,7 @@ namespace SurviveUntilPayday.UI
             var go = CreateChild(parent, name, typeof(Image), typeof(Button), typeof(LayoutElement));
             go.GetComponent<Image>().color = color;
             var element = go.GetComponent<LayoutElement>();
-            element.minHeight = 52f;
+            element.minHeight = AccessibilityCopy.MinTapHeight;
             element.preferredHeight = 0f;
             element.flexibleHeight = flex;
             element.flexibleWidth = 1f;
@@ -566,6 +582,11 @@ namespace SurviveUntilPayday.UI
                 vibrationToggle.onValueChanged.AddListener(OnVibrationChanged);
             }
 
+            if (previewToggle != null)
+            {
+                previewToggle.onValueChanged.AddListener(OnPreviewChanged);
+            }
+
             if (bgmSlider != null)
             {
                 bgmSlider.onValueChanged.AddListener(OnBgmVolumeChanged);
@@ -579,6 +600,11 @@ namespace SurviveUntilPayday.UI
             if (privacyButton != null)
             {
                 privacyButton.onClick.AddListener(OnPrivacyClicked);
+            }
+
+            if (creditsButton != null)
+            {
+                creditsButton.onClick.AddListener(OnCreditsClicked);
             }
 
             if (resetSaveButton != null)
@@ -603,9 +629,11 @@ namespace SurviveUntilPayday.UI
         {
             soundToggle?.onValueChanged.RemoveAllListeners();
             vibrationToggle?.onValueChanged.RemoveAllListeners();
+            previewToggle?.onValueChanged.RemoveAllListeners();
             bgmSlider?.onValueChanged.RemoveAllListeners();
             sfxSlider?.onValueChanged.RemoveAllListeners();
             privacyButton?.onClick.RemoveAllListeners();
+            creditsButton?.onClick.RemoveAllListeners();
             resetSaveButton?.onClick.RemoveAllListeners();
             mainMenuButton?.onClick.RemoveAllListeners();
             closeButton?.onClick.RemoveAllListeners();
@@ -628,6 +656,11 @@ namespace SurviveUntilPayday.UI
             if (vibrationToggle != null)
             {
                 vibrationToggle.SetIsOnWithoutNotify(settings.VibrationEnabled);
+            }
+
+            if (previewToggle != null)
+            {
+                previewToggle.SetIsOnWithoutNotify(settings.ShowChoicePreview);
             }
 
             if (bgmSlider != null)
@@ -703,6 +736,17 @@ namespace SurviveUntilPayday.UI
             }
         }
 
+        private void OnPreviewChanged(bool enabled)
+        {
+            var settings = AppRoot.Instance?.Settings;
+            if (settings == null)
+            {
+                return;
+            }
+
+            settings.ShowChoicePreview = enabled;
+        }
+
         private void OnBgmVolumeChanged(float value)
         {
             var settings = AppRoot.Instance?.Settings;
@@ -730,6 +774,88 @@ namespace SurviveUntilPayday.UI
         private void OnPrivacyClicked()
         {
             PrivacyPolicyOpener.Open(privacyConfig);
+        }
+
+        private void OnCreditsClicked()
+        {
+            ShowCredits();
+        }
+
+        private void ShowCredits()
+        {
+            EnsureCreditsOverlay();
+            if (creditsOverlay != null)
+            {
+                creditsOverlay.SetActive(true);
+                creditsOverlay.transform.SetAsLastSibling();
+            }
+        }
+
+        private void HideCredits()
+        {
+            if (creditsOverlay != null)
+            {
+                creditsOverlay.SetActive(false);
+            }
+        }
+
+        private void EnsureCreditsOverlay()
+        {
+            if (creditsOverlay != null)
+            {
+                return;
+            }
+
+            if (root == null)
+            {
+                return;
+            }
+
+            creditsOverlay = new GameObject("CreditsOverlay", typeof(RectTransform), typeof(Image));
+            creditsOverlay.transform.SetParent(root.transform, false);
+            var overlayRect = creditsOverlay.GetComponent<RectTransform>();
+            overlayRect.anchorMin = Vector2.zero;
+            overlayRect.anchorMax = Vector2.one;
+            overlayRect.offsetMin = Vector2.zero;
+            overlayRect.offsetMax = Vector2.zero;
+            creditsOverlay.GetComponent<Image>().color = OverlayColor;
+            creditsOverlay.GetComponent<Image>().raycastTarget = true;
+
+            var card = CreateFreshChild(creditsOverlay.transform, "CreditsCard", typeof(Image), typeof(VerticalLayoutGroup));
+            var cardRect = card.GetComponent<RectTransform>();
+            cardRect.anchorMin = new Vector2(0.5f, 0.5f);
+            cardRect.anchorMax = new Vector2(0.5f, 0.5f);
+            cardRect.pivot = new Vector2(0.5f, 0.5f);
+            cardRect.anchoredPosition = Vector2.zero;
+            cardRect.sizeDelta = new Vector2(720f, 780f);
+            card.GetComponent<Image>().color = CardColor;
+            card.GetComponent<Image>().raycastTarget = true;
+
+            var layout = card.GetComponent<VerticalLayoutGroup>();
+            layout.padding = new RectOffset(28, 28, 24, 20);
+            layout.spacing = 12f;
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+
+            var title = CreateLabel(card.transform, "CreditsTitle", null, 28, 40f);
+            title.text = CreditsCopy.Title;
+            title.color = Color.white;
+            UiFont.Apply(title, bold: true);
+
+            var body = CreateLabel(card.transform, "CreditsBody", null, AccessibilityCopy.MinBodyFontSize, 560f);
+            body.text = CreditsCopy.Body;
+            body.alignment = TextAnchor.UpperLeft;
+            body.horizontalOverflow = HorizontalWrapMode.Wrap;
+            body.verticalOverflow = VerticalWrapMode.Overflow;
+            body.color = new Color(0.92f, 0.93f, 0.95f, 1f);
+            UiFont.Apply(body);
+
+            var close = CreateActionButton(card.transform, "CreditsClose", "닫기", flex: 0f, Accent);
+            close.onClick.AddListener(HideCredits);
+            creditsOverlay.SetActive(false);
         }
 
         private void OnResetSaveClicked()

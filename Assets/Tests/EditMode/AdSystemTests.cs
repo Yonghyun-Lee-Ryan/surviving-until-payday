@@ -173,6 +173,25 @@ namespace SurviveUntilPayday.Tests
         }
 
         [Test]
+        public void Interstitial_SetRemoveInterstitials_SkipsShow()
+        {
+            var clock = new ManualAdClock { UtcSeconds = 1 };
+            var quota = new AdQuotaTracker(clock, cooldownSeconds: 0);
+            var interstitial = new InterstitialAdGateway(new MockAdService(), quota, showEveryNRuns: 1);
+
+            for (var i = 0; i < 4; i++)
+            {
+                interstitial.NotifyRunCompleted();
+            }
+
+            Assert.IsTrue(interstitial.ShouldShowOnReturnToMenu(out _));
+
+            interstitial.SetRemoveInterstitials(true);
+            Assert.IsFalse(interstitial.ShouldShowOnReturnToMenu(out var reason));
+            Assert.IsTrue(reason.Contains("disabled"));
+        }
+
+        [Test]
         public void Interstitial_SkipsAfterRewardedAd()
         {
             var clock = new ManualAdClock { UtcSeconds = 1 };

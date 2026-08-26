@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SurviveUntilPayday.Core;
 using SurviveUntilPayday.Data;
 using UnityEngine;
 using UnityEngine.UI;
@@ -105,7 +106,8 @@ namespace SurviveUntilPayday.UI
             JobData preferredJob,
             IReadOnlyList<TraitData> unlockedTraits,
             Action<JobData, TraitData> confirm,
-            Action cancel)
+            Action cancel,
+            string nextGoalHint = null)
         {
             onConfirm = confirm;
             onCancel = cancel;
@@ -118,10 +120,16 @@ namespace SurviveUntilPayday.UI
             var unlockedCount = unlockedTraits?.Count ?? 0;
             if (traitHintLabel != null)
             {
-                traitHintLabel.text = unlockedCount > 0
+                var hint = unlockedCount > 0
                     ? $"해금된 특성 {unlockedCount}개 — 스크롤해서 고르세요."
-                    : "해금된 특성이 없습니다. 「특성 없음」으로 시작할 수 있습니다.";
-                UiFont.Apply(traitHintLabel);
+                    : EmptyStateCopy.NoTraitsHint;
+                if (!string.IsNullOrWhiteSpace(nextGoalHint))
+                {
+                    hint = $"{nextGoalHint}\n{hint}";
+                }
+
+                traitHintLabel.text = hint;
+                UiFont.Apply(traitHintLabel, lineSpacing: UiFont.ComfortableLineSpacing);
             }
 
             if (root != null)
@@ -204,7 +212,7 @@ namespace SurviveUntilPayday.UI
                 jobDescriptionLabel.text = selectedJob != null
                     ? $"{selectedJob.Description}\n월급 {selectedJob.Salary:N0}원 · 시작 현금 {selectedJob.StartingCash:N0}원"
                     : string.Empty;
-                UiFont.Apply(jobDescriptionLabel);
+                UiFont.Apply(jobDescriptionLabel, lineSpacing: UiFont.ComfortableLineSpacing);
             }
         }
 
@@ -263,12 +271,13 @@ namespace SurviveUntilPayday.UI
             }
 
             // 상단: 직업 버튼 행 + 텍스트 블록
+            // hint는 다음 목표 + 스크롤 안내 두 줄. 34px면 selected와 겹친다.
             const float jobRowH = 64f;
             const float titleH = 44f;
-            const float descH = 88f;
-            const float hintH = 34f;
+            const float descH = 96f;
+            const float hintH = 80f;
             const float selectedH = 88f;
-            const float stackGap = 6f;
+            const float stackGap = 12f;
             var headerBlock =
                 jobRowH + stackGap + titleH + stackGap + descH + stackGap + hintH + stackGap + selectedH;
             var headerTop = Mathf.Clamp(
@@ -324,20 +333,23 @@ namespace SurviveUntilPayday.UI
             {
                 jobDescriptionLabel.alignment = TextAnchor.MiddleCenter;
                 jobDescriptionLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
-                jobDescriptionLabel.verticalOverflow = VerticalWrapMode.Truncate;
+                jobDescriptionLabel.verticalOverflow = VerticalWrapMode.Overflow;
+                jobDescriptionLabel.lineSpacing = UiFont.ComfortableLineSpacing;
             }
 
             if (traitHintLabel != null)
             {
                 traitHintLabel.alignment = TextAnchor.MiddleCenter;
                 traitHintLabel.verticalOverflow = VerticalWrapMode.Overflow;
+                traitHintLabel.lineSpacing = UiFont.ComfortableLineSpacing;
             }
 
             if (selectedTraitLabel != null)
             {
                 selectedTraitLabel.alignment = TextAnchor.UpperCenter;
                 selectedTraitLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
-                selectedTraitLabel.verticalOverflow = VerticalWrapMode.Truncate;
+                selectedTraitLabel.verticalOverflow = VerticalWrapMode.Overflow;
+                selectedTraitLabel.lineSpacing = UiFont.ComfortableLineSpacing;
             }
         }
 
@@ -835,7 +847,7 @@ namespace SurviveUntilPayday.UI
             selectedTraitLabel.alignment = TextAnchor.UpperCenter;
             selectedTraitLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
             selectedTraitLabel.verticalOverflow = VerticalWrapMode.Overflow;
-            UiFont.Apply(selectedTraitLabel);
+            UiFont.Apply(selectedTraitLabel, lineSpacing: UiFont.ComfortableLineSpacing);
         }
     }
 }

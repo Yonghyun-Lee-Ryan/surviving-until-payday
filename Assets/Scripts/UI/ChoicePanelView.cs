@@ -42,6 +42,7 @@ namespace SurviveUntilPayday.UI
                 if (choiceLabels[i] != null)
                 {
                     choiceLabels[i].text = hasText ? texts[i] : string.Empty;
+                    StyleChoiceLabel(choiceLabels[i]);
                 }
             }
         }
@@ -71,6 +72,17 @@ namespace SurviveUntilPayday.UI
             {
                 rerollAdLabel.text = label;
             }
+        }
+
+        private static void StyleChoiceLabel(Text label)
+        {
+            if (label == null)
+            {
+                return;
+            }
+
+            label.alignment = TextAnchor.MiddleCenter;
+            UiFont.Apply(label, lineSpacing: UiFont.ComfortableLineSpacing);
         }
 
         public void Bind(Button[] buttons, Text[] labels)
