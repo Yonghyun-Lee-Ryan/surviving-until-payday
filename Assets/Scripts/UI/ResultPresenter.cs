@@ -31,6 +31,8 @@ namespace SurviveUntilPayday.UI
         private RectTransform eventUnlockRoot;
         private Text eventUnlockHeader;
         private Transform eventUnlockContent;
+        private RectTransform bodyScrollRoot;
+        private RectTransform bodyScrollContent;
 
         private void Awake()
         {
@@ -86,6 +88,7 @@ namespace SurviveUntilPayday.UI
             NotifyRunCompletedOnce();
             ShowResult(result, session.Meta.Endings.UnlockedCount);
             RefreshDoubleXpButton(session);
+            RelayoutResultBody();
         }
 
         public void Bind(
@@ -404,94 +407,243 @@ namespace SurviveUntilPayday.UI
         }
 
         /// <summary>
-        /// XP/해금/팁이 여러 줄일 때 고정 Rect에 겹치지 않도록 높이와 버튼 위치를 재배치한다.
+        /// 하단 버튼을 SafeArea 바닥에 고정하고, XP/해금/사건/팁은 그 위 스크롤 영역에만 둔다.
         /// </summary>
         private void RelayoutResultBody()
         {
-            const float width = 900f;
-            const float gap = 16f;
-            var cursorY = -10f;
+            var parent = ResolveSafeArea();
+            if (parent == null)
+            {
+                return;
+            }
 
             Canvas.ForceUpdateCanvases();
+            var parentHeight = parent.rect.height > 100f
+                ? parent.rect.height
+                : CanvasSetupUtility.ReferenceHeight;
+            var showDoubleXp = doubleXpAdButton != null && doubleXpAdButton.gameObject.activeSelf;
+            var stack = ResultScreenLayout.ComputeButtonStack(parentHeight, showDoubleXp);
+            ApplyButtonStack(stack);
 
-            if (experienceLabel != null)
+            var statsBottom = statsLabel != null
+                ? statsLabel.rectTransform.anchoredPosition.y - statsLabel.rectTransform.sizeDelta.y * 0.5f
+                : 64f;
+            var bodyHeight = ResultScreenLayout.BodyViewportHeight(statsBottom, stack.StackTopY);
+            var bodyTop = statsBottom - ResultScreenLayout.BodyButtonGap;
+
+            EnsureBodyScroll(parent);
+            if (bodyScrollRoot != null)
             {
-                var xpHeight = Mathf.Max(48f, experienceLabel.preferredHeight + 8f);
-                experienceLabel.rectTransform.anchoredPosition = new Vector2(0f, cursorY);
-                experienceLabel.rectTransform.sizeDelta = new Vector2(width, xpHeight);
-                experienceLabel.rectTransform.pivot = new Vector2(0.5f, 1f);
-                cursorY -= xpHeight + gap;
+                bodyScrollRoot.anchorMin = bodyScrollRoot.anchorMax = new Vector2(0.5f, 0.5f);
+                bodyScrollRoot.pivot = new Vector2(0.5f, 1f);
+                bodyScrollRoot.anchoredPosition = new Vector2(0f, bodyTop);
+                bodyScrollRoot.sizeDelta = new Vector2(960f, bodyHeight);
             }
 
-            if (unlockLabel != null)
-            {
-                unlockLabel.rectTransform.sizeDelta = new Vector2(width, 800f);
-                Canvas.ForceUpdateCanvases();
-                var unlockHeight = Mathf.Clamp(unlockLabel.preferredHeight + 12f, 40f, 200f);
-                unlockLabel.rectTransform.anchoredPosition = new Vector2(0f, cursorY);
-                unlockLabel.rectTransform.sizeDelta = new Vector2(width, unlockHeight);
-                unlockLabel.rectTransform.pivot = new Vector2(0.5f, 1f);
-                cursorY -= unlockHeight + gap;
-            }
+            LayoutBodyContent();
+            RaiseActionButtons();
+        }
 
-            if (eventUnlockRoot != null && eventUnlockRoot.gameObject.activeSelf)
+        private RectTransform ResolveSafeArea()
+        {
+            if (titleLabel != null)
             {
-                var eventCount = eventUnlockContent != null ? eventUnlockContent.childCount : 0;
-                var eventHeight = Mathf.Clamp(56f + eventCount * 34f, 120f, 260f);
-                eventUnlockRoot.anchoredPosition = new Vector2(0f, cursorY);
-                eventUnlockRoot.sizeDelta = new Vector2(width, eventHeight);
-                eventUnlockRoot.pivot = new Vector2(0.5f, 1f);
-                cursorY -= eventHeight + gap;
-            }
-
-            if (tipLabel != null && !string.IsNullOrWhiteSpace(tipLabel.text))
-            {
-                var tipHeight = Mathf.Clamp(tipLabel.preferredHeight + 8f, 40f, 160f);
-                tipLabel.rectTransform.anchoredPosition = new Vector2(0f, cursorY);
-                tipLabel.rectTransform.sizeDelta = new Vector2(width, tipHeight);
-                tipLabel.rectTransform.pivot = new Vector2(0.5f, 1f);
-                cursorY -= tipHeight + gap;
-            }
-
-            // 버튼은 SafeArea 중앙 앵커 기준. 해금 블록 아래에 두고 하단과 겹치지 않게 클램핑.
-            var buttonTop = Mathf.Min(cursorY - 8f, -200f);
-            var doubleXpY = buttonTop - 45f;
-            var shareY = doubleXpY - 100f;
-            var backY = shareY - 110f;
-            if (backY < -820f)
-            {
-                var shift = -820f - backY;
-                doubleXpY += shift;
-                shareY += shift;
-                backY += shift;
-            }
-
-            if (doubleXpAdButton != null)
-            {
-                var rect = doubleXpAdButton.transform as RectTransform;
-                if (rect != null)
-                {
-                    rect.anchoredPosition = new Vector2(0f, doubleXpY);
-                }
-            }
-
-            if (shareEndingButton != null)
-            {
-                var rect = shareEndingButton.transform as RectTransform;
-                if (rect != null)
-                {
-                    rect.anchoredPosition = new Vector2(0f, shareY);
-                }
+                return titleLabel.rectTransform.parent as RectTransform;
             }
 
             if (backToMenuButton != null)
             {
-                var rect = backToMenuButton.transform as RectTransform;
-                if (rect != null)
-                {
-                    rect.anchoredPosition = new Vector2(0f, backY);
-                }
+                return backToMenuButton.transform.parent as RectTransform;
             }
+
+            return transform as RectTransform;
+        }
+
+        private void ApplyButtonStack(ResultScreenLayout.ButtonStack stack)
+        {
+            PlaceButton(doubleXpAdButton, stack.DoubleXpCenterY);
+            PlaceButton(shareEndingButton, stack.ShareCenterY);
+            PlaceButton(backToMenuButton, stack.BackCenterY);
+        }
+
+        private static void PlaceButton(Button button, float centerY)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            var rect = button.transform as RectTransform;
+            if (rect == null)
+            {
+                return;
+            }
+
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(0f, centerY);
+        }
+
+        private void RaiseActionButtons()
+        {
+            if (doubleXpAdButton != null)
+            {
+                doubleXpAdButton.transform.SetAsLastSibling();
+            }
+
+            if (shareEndingButton != null)
+            {
+                shareEndingButton.transform.SetAsLastSibling();
+            }
+
+            if (backToMenuButton != null)
+            {
+                backToMenuButton.transform.SetAsLastSibling();
+            }
+        }
+
+        private void EnsureBodyScroll(RectTransform parent)
+        {
+            if (bodyScrollRoot != null || parent == null)
+            {
+                return;
+            }
+
+            var existing = parent.Find("ResultBodyScroll") as RectTransform;
+            if (existing != null)
+            {
+                bodyScrollRoot = existing;
+                bodyScrollContent = existing.Find("Viewport/Content") as RectTransform;
+                ReparentBodyIntoScroll();
+                return;
+            }
+
+            var rootGo = new GameObject("ResultBodyScroll", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
+            rootGo.transform.SetParent(parent, false);
+            bodyScrollRoot = rootGo.GetComponent<RectTransform>();
+            var bg = rootGo.GetComponent<Image>();
+            bg.color = new Color(1f, 1f, 1f, 0.001f);
+            bg.raycastTarget = true;
+
+            var viewportGo = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
+            viewportGo.transform.SetParent(rootGo.transform, false);
+            var viewportRt = viewportGo.GetComponent<RectTransform>();
+            viewportRt.anchorMin = Vector2.zero;
+            viewportRt.anchorMax = Vector2.one;
+            viewportRt.offsetMin = Vector2.zero;
+            viewportRt.offsetMax = Vector2.zero;
+            viewportGo.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.01f);
+            viewportGo.GetComponent<Image>().raycastTarget = true;
+
+            var contentGo = new GameObject(
+                "Content",
+                typeof(RectTransform),
+                typeof(VerticalLayoutGroup),
+                typeof(ContentSizeFitter));
+            contentGo.transform.SetParent(viewportGo.transform, false);
+            bodyScrollContent = contentGo.GetComponent<RectTransform>();
+            bodyScrollContent.anchorMin = new Vector2(0f, 1f);
+            bodyScrollContent.anchorMax = new Vector2(1f, 1f);
+            bodyScrollContent.pivot = new Vector2(0.5f, 1f);
+            bodyScrollContent.anchoredPosition = Vector2.zero;
+            bodyScrollContent.sizeDelta = Vector2.zero;
+            var layout = contentGo.GetComponent<VerticalLayoutGroup>();
+            layout.padding = new RectOffset(16, 16, 4, 12);
+            layout.spacing = 12f;
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            contentGo.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var scroll = rootGo.GetComponent<ScrollRect>();
+            scroll.viewport = viewportRt;
+            scroll.content = bodyScrollContent;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 32f;
+
+            ReparentBodyIntoScroll();
+        }
+
+        private void ReparentBodyIntoScroll()
+        {
+            if (bodyScrollContent == null)
+            {
+                return;
+            }
+
+            MoveIntoBody(experienceLabel != null ? experienceLabel.rectTransform : null, 0);
+            MoveIntoBody(unlockLabel != null ? unlockLabel.rectTransform : null, 1);
+            MoveIntoBody(eventUnlockRoot, 2);
+            MoveIntoBody(tipLabel != null ? tipLabel.rectTransform : null, 3);
+        }
+
+        private void MoveIntoBody(RectTransform child, int sibling)
+        {
+            if (child == null || bodyScrollContent == null || child.parent == bodyScrollContent)
+            {
+                return;
+            }
+
+            child.SetParent(bodyScrollContent, false);
+            child.SetSiblingIndex(Mathf.Clamp(sibling, 0, Mathf.Max(0, bodyScrollContent.childCount - 1)));
+        }
+
+        private void LayoutBodyContent()
+        {
+            const float width = 900f;
+            PrepareBodyText(experienceLabel, width, minHeight: 48f, maxHeight: 140f);
+            PrepareBodyText(unlockLabel, width, minHeight: 40f, maxHeight: 220f);
+            PrepareBodyText(tipLabel, width, minHeight: 40f, maxHeight: 140f);
+
+            if (eventUnlockRoot != null && eventUnlockRoot.gameObject.activeSelf)
+            {
+                var eventCount = eventUnlockContent != null ? eventUnlockContent.childCount : 0;
+                var eventHeight = Mathf.Clamp(56f + eventCount * 34f, 120f, 200f);
+                var element = eventUnlockRoot.GetComponent<LayoutElement>();
+                if (element == null)
+                {
+                    element = eventUnlockRoot.gameObject.AddComponent<LayoutElement>();
+                }
+
+                element.minHeight = 120f;
+                element.preferredHeight = eventHeight;
+                element.flexibleHeight = 0f;
+                eventUnlockRoot.sizeDelta = new Vector2(width, eventHeight);
+            }
+
+            if (bodyScrollContent != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(bodyScrollContent);
+            }
+        }
+
+        private static void PrepareBodyText(Text label, float width, float minHeight, float maxHeight)
+        {
+            if (label == null)
+            {
+                return;
+            }
+
+            label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
+            label.alignment = TextAnchor.UpperCenter;
+            label.rectTransform.sizeDelta = new Vector2(width, 800f);
+            Canvas.ForceUpdateCanvases();
+            var height = Mathf.Clamp(label.preferredHeight + 8f, minHeight, maxHeight);
+            label.rectTransform.sizeDelta = new Vector2(width, height);
+            var element = label.GetComponent<LayoutElement>();
+            if (element == null)
+            {
+                element = label.gameObject.AddComponent<LayoutElement>();
+            }
+
+            element.minHeight = minHeight;
+            element.preferredHeight = height;
+            element.flexibleHeight = 0f;
         }
 
         private void EnsureTipLabel()
